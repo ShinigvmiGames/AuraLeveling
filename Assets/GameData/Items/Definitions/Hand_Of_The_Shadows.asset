@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 858a295db3eb8448192da6a3bff8d58e, type: 3}
+  m_Name: Hand_Of_The_Shadows
+  m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  itemName: Hand of the Shadows
+  icon: {fileID: -5688860712739990691, guid: c8118be0b2c1445319754cb32a351ab3, type: 3}
+  slot: 1
+  allowedClasses: 05000000
+  wSTR: 0
+  wDEX: 0
+  wINT: 2
+  wVIT: 0.5

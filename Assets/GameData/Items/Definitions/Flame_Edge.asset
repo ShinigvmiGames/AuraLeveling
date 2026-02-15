@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 858a295db3eb8448192da6a3bff8d58e, type: 3}
+  m_Name: Flame_Edge
+  m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  itemName: Flame Edge
+  icon: {fileID: 3710645932813182471, guid: 1cb876317a50843e789f2ee7bcdc52f6, type: 3}
+  slot: 0
+  allowedClasses: 03000000
+  wSTR: 2
+  wDEX: 0.5
+  wINT: 0
+  wVIT: 0.5

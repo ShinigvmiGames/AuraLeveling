@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: beaa1a63bd9b74ac2aeb8055f21af704, type: 3}
+  m_Name: SO_GateSprites
+  m_EditorClassIdentifier: Assembly-CSharp::GateSpriteSet
+  entries:
+  - rank: 0
+    gateSprite: {fileID: 162008730961379276, guid: 6be862963066549189159226852963b9, type: 3}
+    frameNormalSprite: {fileID: -9123693589810783889, guid: 83783e46c0e4f49b0a8bbf4cdd98e44f, type: 3}
+    frameSRankSprite: {fileID: 0}
+  - rank: 1
+    gateSprite: {fileID: -3802572915828927891, guid: 14f6bf0c1726240e3866f73b5be44150, type: 3}
+    frameNormalSprite: {fileID: -9123693589810783889, guid: 83783e46c0e4f49b0a8bbf4cdd98e44f, type: 3}
+    frameSRankSprite: {fileID: 0}
+  - rank: 2
+    gateSprite: {fileID: -7573403095347520127, guid: d6da9e45129444cbdb2952a0e4ead7ae, type: 3}
+    frameNormalSprite: {fileID: -9123693589810783889, guid: 83783e46c0e4f49b0a8bbf4cdd98e44f, type: 3}
+    frameSRankSprite: {fileID: 0}
+  - rank: 3
+    gateSprite: {fileID: 3416931970498509078, guid: 7a2c40a09ff624d2092ad40cf0a05fd9, type: 3}
+    frameNormalSprite: {fileID: -9123693589810783889, guid: 83783e46c0e4f49b0a8bbf4cdd98e44f, type: 3}
+    frameSRankSprite: {fileID: 0}
+  - rank: 4
+    gateSprite: {fileID: -702769830722143277, guid: c0b5586b01e6f462986d163a7ae0cbfe, type: 3}
+    frameNormalSprite: {fileID: -9123693589810783889, guid: 83783e46c0e4f49b0a8bbf4cdd98e44f, type: 3}
+    frameSRankSprite: {fileID: 0}
+  - rank: 5
+    gateSprite: {fileID: -6783732092111844945, guid: bb2d5447e8cd74e118766f943c3e4e38, type: 3}
+    frameNormalSprite: {fileID: -9123693589810783889, guid: 83783e46c0e4f49b0a8bbf4cdd98e44f, type: 3}
+    frameSRankSprite: {fileID: 0}
