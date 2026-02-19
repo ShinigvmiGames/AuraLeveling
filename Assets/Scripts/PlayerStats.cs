@@ -32,7 +32,10 @@ public int unspentPoints = 0;
     public int gold = 0; // Gold / Mana-Kristalle
 
     [Header("Crafting Currency")]
-public int shadowEssence = 10; // Essenz der Schatten (1 pro Craft)
+    public int shadowEssence = 10;
+
+    [Header("Premium Currency")]
+    public int manaCrystals = 0;
 
 [Header("Equipment Bonuses")]
 public int bonusSTR;
@@ -40,22 +43,6 @@ public int bonusDEX;
 public int bonusINT;
 public int bonusVIT;
 public float bonusAuraPercent;
-
-    public enum ItemRarity
-{
-    ERank,
-    Common,
-    DRank,
-    CRank,
-    Rare,
-    BRank,
-    Hero,
-    ARank,
-    SRank,
-    Monarch,
-    Godlike,
-    AURAFARMING
-}
 
     public bool TrySpendPoint(string statName)
 {
@@ -211,6 +198,23 @@ defense = effVIT * 2;
         if (amount <= 0) return true;
         if (shadowEssence < amount) return false;
         shadowEssence -= amount;
+        onStatsChanged?.Invoke();
+        return true;
+    }
+
+    // ========= ManaCrystal helpers =========
+    public void AddManaCrystals(int amount)
+    {
+        if (amount <= 0) return;
+        manaCrystals += amount;
+        onStatsChanged?.Invoke();
+    }
+
+    public bool SpendManaCrystals(int amount)
+    {
+        if (amount <= 0) return true;
+        if (manaCrystals < amount) return false;
+        manaCrystals -= amount;
         onStatsChanged?.Invoke();
         return true;
     }

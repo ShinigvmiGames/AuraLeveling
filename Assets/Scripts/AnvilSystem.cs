@@ -1,15 +1,12 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
 public class AnvilSystem : MonoBehaviour
 {
     [Header("Refs")]
-    public ItemDatabase itemDatabase; // <- ItemDatabase_Main hier reinziehen
-    public PlayerStats player;        // <- PlayerStats hier reinziehen (oder wird gefunden)
-    [Header("Optional: Auto-add + Popup")]
-    public InventorySystem inventory; // optional
-    public ItemPopup itemPopup;       // optional
+    public ItemDatabase itemDatabase;
+    public PlayerStats player;
 
     [Header("Anvil Level")]
     [Range(1, 100)] public int anvilLevel = 1;
@@ -18,13 +15,139 @@ public class AnvilSystem : MonoBehaviour
     [Header("Craft Cost")]
     public int essenceCostPerCraft = 1;
 
+    // ========= Events =========
+    public event Action<int> OnAnvilLevelChanged;
     public event Action<ItemData> OnCrafted;
-void Start()
+    public event Action OnUpgradeStarted;
+    public event Action OnUpgradeCompleted;
+    public event Action OnUpgradeSkipped;
+
+    // ========= Upgrade Timer State =========
+    [HideInInspector] public bool isUpgrading = false;
+    float upgradeStartTime;
+    float upgradeDuration;
+
+    void Start()
     {
         EnsureRefs();
     }
 
-    // ========= Public Craft API =========
+    void Update()
+    {
+        if (isUpgrading && Time.time >= upgradeStartTime + upgradeDuration)
+        {
+            CompleteUpgrade();
+        }
+    }
+
+    // ========= Level-Up Cost (Gold) =========
+    public int GetUpgradeCost()
+    {
+        if (anvilLevel >= maxAnvilLevel) return -1;
+        // Exponential curve: 50g base, grows ~9.5% per level
+        // Lv1->2: 55g, Lv5->6: 79g, Lv10->11: 125g,
+        // Lv20->21: 313g, Lv50->51: 4950g, Lv99->100: ~480000g
+        int cost = Mathf.RoundToInt(50f * Mathf.Pow(1.095f, anvilLevel));
+        return cost;
+    }
+
+    // ========= Level-Up Duration (Seconds) =========
+    /// <summary>
+    /// Timer duration for upgrading from current level to next.
+    /// Lvl 1->2: 60s (1min), Lvl 5->6: 2.5min, Lvl 10->11: 6min,
+    /// Lvl 20->21: 18min, Lvl 30->31: 38min, Lvl 50->51: 2.5h,
+    /// Lvl 70->71: 10h, Lvl 99->100: 72h
+    /// Sweet-spot: fast enough early to feel rewarding, but later levels
+    /// create anticipation. MC skip keeps whales happy.
+    /// </summary>
+    public float GetUpgradeDuration()
+    {
+        if (anvilLevel >= maxAnvilLevel) return 0f;
+        // 60s base, grows ~5.8% per level (less aggressive than gold cost)
+        // This creates: 1min -> 2.5min -> 6min -> 18min -> 38min -> 2.5h -> 10h -> 72h
+        float seconds = 60f * Mathf.Pow(1.058f, anvilLevel - 1);
+        return seconds;
+    }
+
+    /// <summary>
+    /// How many ManaCrystals to skip the remaining upgrade time.
+    /// 1 MC = 5 minutes. Minimum 1 MC even if less than 5 min remain.
+    /// </summary>
+    public int GetSkipCostMC()
+    {
+        if (!isUpgrading) return 0;
+        float remaining = GetUpgradeRemainingSeconds();
+        if (remaining <= 0f) return 0;
+        int mc = Mathf.CeilToInt(remaining / 300f); // 300s = 5 min
+        return Mathf.Max(1, mc);
+    }
+
+    public float GetUpgradeRemainingSeconds()
+    {
+        if (!isUpgrading) return 0f;
+        return Mathf.Max(0f, (upgradeStartTime + upgradeDuration) - Time.time);
+    }
+
+    public float GetUpgradeProgress01()
+    {
+        if (!isUpgrading || upgradeDuration <= 0f) return 0f;
+        float elapsed = Time.time - upgradeStartTime;
+        return Mathf.Clamp01(elapsed / upgradeDuration);
+    }
+
+    // ========= Can / Start / Skip / Complete Upgrade =========
+    public bool CanStartUpgrade()
+    {
+        if (anvilLevel >= maxAnvilLevel) return false;
+        if (isUpgrading) return false;
+        if (player == null) return false;
+        return player.gold >= GetUpgradeCost();
+    }
+
+    /// <summary>
+    /// Starts the timed upgrade. Spends gold immediately, timer begins.
+    /// </summary>
+    public bool TryStartUpgrade()
+    {
+        if (!CanStartUpgrade()) return false;
+        int cost = GetUpgradeCost();
+        if (!player.SpendGold(cost)) return false;
+
+        isUpgrading = true;
+        upgradeDuration = GetUpgradeDuration();
+        upgradeStartTime = Time.time;
+
+        OnUpgradeStarted?.Invoke();
+        return true;
+    }
+
+    /// <summary>
+    /// Skip the remaining timer with ManaCrystals.
+    /// </summary>
+    public bool TrySkipUpgrade()
+    {
+        if (!isUpgrading) return false;
+        if (player == null) return false;
+
+        int mcCost = GetSkipCostMC();
+        if (mcCost <= 0) return false;
+        if (!player.SpendManaCrystals(mcCost)) return false;
+
+        CompleteUpgrade();
+        OnUpgradeSkipped?.Invoke();
+        return true;
+    }
+
+    void CompleteUpgrade()
+    {
+        if (!isUpgrading) return;
+        isUpgrading = false;
+        anvilLevel++;
+        OnAnvilLevelChanged?.Invoke(anvilLevel);
+        OnUpgradeCompleted?.Invoke();
+    }
+
+    // ========= Crafting =========
     public ItemData CraftItemInstant()
     {
         EnsureRefs();
@@ -34,61 +157,23 @@ void Start()
         SpendEssence();
 
         ItemData item = GenerateItemFromDatabase();
-        // If someone uses Instant craft, we still support auto add + popup:
-        TryAddToInventoryAndPopup(item);
 
-        OnCrafted?.Invoke(item);
+        if (item != null)
+            OnCrafted?.Invoke(item);
 
         return item;
-    }
-
-    public void CraftItem(Action<ItemData> onCrafted)
-    {
-        EnsureRefs();
-
-        if (!HasEnoughEssence())
-        {
-            Debug.Log("Nicht genug Essenz der Schatten!");
-            onCrafted?.Invoke(null);
-            return;
-        }
-
-        SpendEssence();
-        StartCoroutine(CraftRoutine(onCrafted));
-    }
-
-    IEnumerator CraftRoutine(Action<ItemData> onCrafted)
-    {
-        yield return new WaitForSeconds(UnityEngine.Random.Range(0.5f, 1f));
-
-        ItemData item = GenerateItemFromDatabase();
-
-        // ✅ IMPORTANT: auto add + popup BEFORE callback (so UI sees correct inventory state)
-        TryAddToInventoryAndPopup(item);
-
-        OnCrafted?.Invoke(item);
-        onCrafted?.Invoke(item);
     }
 
     // ========= Internals =========
     void EnsureRefs()
     {
         if (player == null) player = FindObjectOfType<PlayerStats>();
-
-        // these two can live anywhere in the scene; we search if not assigned
-        if (inventory == null) inventory = FindObjectOfType<InventorySystem>(true);
-        if (itemPopup == null) itemPopup = FindObjectOfType<ItemPopup>(true);
     }
 
     bool HasEnoughEssence()
     {
         if (player == null) return false;
-        if (player.shadowEssence < essenceCostPerCraft)
-        {
-            Debug.Log("Nicht genug Essenz der Schatten!");
-            return false;
-        }
-        return true;
+        return player.shadowEssence >= essenceCostPerCraft;
     }
 
     void SpendEssence()
@@ -96,49 +181,6 @@ void Start()
         player.SpendEssence(essenceCostPerCraft);
     }
 
-    // ✅ NEW: central place for "put item into inventory and show popup"
-    void TryAddToInventoryAndPopup(ItemData item)
-    {
-        if (item == null) return;
-
-        // If inventory not present, just do nothing (old behaviour).
-        if (inventory == null) return;
-
-        // Try add
-        bool added = inventory.Add(item);
-        if (!added)
-        {
-            Debug.Log("Inventar voll → Item konnte nicht hinzugefügt werden.");
-            return;
-        }
-
-        // Find last added index (common patterns)
-        int idx = FindIndexOfItem(item);
-
-        // Show popup if possible
-        if (itemPopup != null && idx >= 0)
-        {
-            itemPopup.ShowInventoryIndex(idx);
-        }
-    }
-
-    // Best-effort helper: find index of the exact reference (works if inventory stores the same object reference)
-    int FindIndexOfItem(ItemData item)
-    {
-        if (inventory == null || item == null) return -1;
-
-        // If your InventorySystem has a Count + Get(i), this will work.
-        // If not, tell me your InventorySystem code and I’ll adapt in 10 sec.
-        for (int i = 0; i < 999; i++)
-        {
-            var it = inventory.Get(i);
-            if (it == null) continue;
-            if (ReferenceEquals(it, item)) return i;
-        }
-        return -1;
-    }
-
-    // IMPORTANT: muss public sein, weil GateManager es nutzt
     public ItemRarity RollRarity()
     {
         var weights = GetRarityWeightsForAnvilLevel(anvilLevel);
@@ -157,28 +199,20 @@ void Start()
                 return weights[i].rarity;
         }
 
-        return ItemRarity.ERank; // fallback
+        return ItemRarity.ERank;
     }
 
     List<RarityWeight> GetRarityWeightsForAnvilLevel(int lvl)
     {
-        // Smooth scaling 1–100 based on the rarities defined in ItemRarity.cs.
-        // Design goals:
-        // - Level 1: basically only ERank
-        // - Higher rarities gradually become possible, but remain rare (100 levels = slow progression)
         lvl = Mathf.Clamp(lvl, 1, maxAnvilLevel);
+        float t = (maxAnvilLevel <= 1) ? 1f : (lvl - 1f) / (maxAnvilLevel - 1f);
 
-        float t = (maxAnvilLevel <= 1) ? 1f : (lvl - 1f) / (maxAnvilLevel - 1f); // 0..1
-
-        // Helper: lerp with curve (power > 1 pushes growth to late game)
         int W(int start, int end, float power)
         {
             float k = Mathf.Pow(t, Mathf.Max(0.01f, power));
             return Mathf.Max(0, Mathf.RoundToInt(Mathf.Lerp(start, end, k)));
         }
 
-        // Weights roughly tuned for "Aura Farming": lots of trash early, very slow ramp.
-        // You can tweak numbers without touching any other system.
         var list = new List<RarityWeight>
         {
             new RarityWeight(ItemRarity.ERank,       W(1000, 160, 0.60f)),
@@ -195,7 +229,6 @@ void Start()
             new RarityWeight(ItemRarity.AURAFARMING, W(  0,   1, 3.60f)),
         };
 
-        // Level 1 should be ONLY ERank (hard rule)
         if (lvl == 1)
         {
             list.Clear();
@@ -203,20 +236,18 @@ void Start()
             return list;
         }
 
-        // Remove 0-weight entries (early levels)
         for (int i = list.Count - 1; i >= 0; i--)
         {
             if (list[i].weight <= 0) list.RemoveAt(i);
         }
 
-        // Safety: never return empty list
         if (list.Count == 0)
             list.Add(new RarityWeight(ItemRarity.ERank, 1000));
 
         return list;
     }
 
-    ItemData GenerateItemFromDatabase()
+    public ItemData GenerateItemFromDatabase()
     {
         if (itemDatabase == null)
         {
@@ -232,12 +263,11 @@ void Start()
         ItemRarity rarity = RollRarity();
         PlayerClass pc = player.playerClass;
 
-        // ✅ Pool = alle Items die zur Klasse passen (Rarity spielt keine Rolle mehr)
         List<ItemDefinition> pool = itemDatabase.GetFor(pc);
 
         if (pool == null || pool.Count == 0)
         {
-            Debug.LogError($"Keine Items in der Database für Klasse {pc}. Items hinzufügen!");
+            Debug.LogError($"Keine Items in der Database fuer Klasse {pc}. Pruefe ItemDatabase_Main!");
             return null;
         }
 
@@ -287,33 +317,22 @@ void Start()
         item.itemAura = Mathf.RoundToInt(sum * (1f + item.auraBonusPercent / 100f));
         item.sellPrice = Mathf.Clamp(Mathf.RoundToInt(item.itemAura * 0.6f), 1, 999999);
 
-        OnCrafted?.Invoke(item);
-
         return item;
     }
 
-bool IsClassAllowed(ItemDefinition def, PlayerClass pc)
-{
-    if (def == null) return false;
-    // Nur Waffen / Offhand bleiben class-locked
-    bool isWeaponSlot = (def.slot == EquipmentSlot.MainHand ||
-                         def.slot == EquipmentSlot.OffHand);
-
-    // Für Rüstung/Accessories: jede Klasse darf es bekommen
-    if (!isWeaponSlot)
-        return true;
-
-    // Ab hier: Waffen/Offhand brauchen allowedClasses
-    if (def.allowedClasses == null || def.allowedClasses.Length == 0)
+    bool IsClassAllowed(ItemDefinition def, PlayerClass pc)
+    {
+        if (def == null) return false;
+        bool isWeaponSlot = (def.slot == EquipmentSlot.MainHand ||
+                             def.slot == EquipmentSlot.OffHand);
+        if (!isWeaponSlot) return true;
+        if (def.allowedClasses == null || def.allowedClasses.Length == 0) return false;
+        for (int i = 0; i < def.allowedClasses.Length; i++)
+            if (def.allowedClasses[i] == pc) return true;
         return false;
+    }
 
-    for (int i = 0; i < def.allowedClasses.Length; i++)
-        if (def.allowedClasses[i] == pc)
-            return true;
-
-    return false;
-}
-    float GetRarityMultiplier(ItemRarity rarity)
+    public float GetRarityMultiplier(ItemRarity rarity)
     {
         switch (rarity)
         {

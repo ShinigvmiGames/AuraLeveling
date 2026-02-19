@@ -10,31 +10,40 @@ public class ScreenManager : MonoBehaviour
     [Header("Optional Popups")]
     public GameObject itemPopup; // Root vom ItemPopup
 
- void Start()
-{
-    // 0 = Gates, 1 = Anvil, 2 = Character
-    int startTab = PlayerPrefs.GetInt("START_TAB", 0);
-    if (startTab == 1) ShowAnvil();
-    else if (startTab == 2) ShowCharacter();
-    else ShowGates();
+    /// <summary>
+    /// Set to true by AnvilUI while crafting is in progress.
+    /// Prevents screen switching until the craft + popup is done.
+    /// </summary>
+    [HideInInspector] public bool lockScreenSwitch = false;
 
-    PlayerPrefs.DeleteKey("START_TAB"); // optional: reset
-}
+    void Start()
+    {
+        // 0 = Gates, 1 = Anvil, 2 = Character
+        int startTab = PlayerPrefs.GetInt("START_TAB", 0);
+        if (startTab == 1) ShowAnvil();
+        else if (startTab == 2) ShowCharacter();
+        else ShowGates();
+
+        PlayerPrefs.DeleteKey("START_TAB"); // optional: reset
+    }
 
     public void ShowGates()
     {
+        if (lockScreenSwitch) return;
         SetOnly(screenGates);
         ClosePopups();
     }
 
     public void ShowAnvil()
     {
+        if (lockScreenSwitch) return;
         SetOnly(screenAnvil);
         ClosePopups();
     }
 
     public void ShowCharacter()
     {
+        if (lockScreenSwitch) return;
         SetOnly(screenCharacter);
         ClosePopups();
     }

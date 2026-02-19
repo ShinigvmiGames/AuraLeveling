@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+
 public class GateUI : MonoBehaviour
 {
     [Header("Core")]
@@ -10,7 +11,7 @@ public class GateUI : MonoBehaviour
     public GateCardUI[] cards = new GateCardUI[3];
 
     [Header("Card Backgrounds (drag 3 sprites here)")]
-    public Sprite[] cardBackgrounds; // size 3 empfohlen
+    public Sprite[] cardBackgrounds;
 
     [Header("Panels")]
     public GameObject panelSelectGate;
@@ -28,7 +29,14 @@ public class GateUI : MonoBehaviour
     {
         if (gateManager == null) gateManager = FindObjectOfType<GateManager>();
 
-        gateManager?.EnsureGates();
+        // Try to resolve a finished gate when player opens this screen
+        if (gateManager != null)
+        {
+            gateManager.ResolveActiveGateIfReady();
+            gateManager.EnsureGates();
+        }
+
+        ApplyRandomBackground();
         Refresh();
     }
 
@@ -36,15 +44,36 @@ public class GateUI : MonoBehaviour
     {
         if (gateManager == null) return;
 
-        bool running = gateManager.activeGate != null &&
-                       gateManager.GetRemainingGateSeconds() > 0.01f;
+        bool hasActiveGate = gateManager.activeGate != null;
+        float remaining = gateManager.GetRemainingGateSeconds();
+        bool running = hasActiveGate && remaining > 0.01f;
+        bool readyToResolve = gateManager.IsActiveGateReadyToResolve();
+
+        // If gate just finished, resolve it and regenerate
+        if (readyToResolve)
+        {
+            gateManager.ResolveActiveGateIfReady();
+            gateManager.EnsureGates();
+            Refresh();
+            return;
+        }
 
         if (panelSelectGate != null) panelSelectGate.SetActive(!running);
         if (panelGateRunning != null) panelGateRunning.SetActive(running);
 
+        // If not running and no gates available, regenerate
+        if (!running && !hasActiveGate)
+        {
+            if (gateManager.availableGates == null || gateManager.availableGates.Count == 0)
+            {
+                gateManager.EnsureGates();
+                Refresh();
+            }
+        }
+
         if (!running) return;
 
-        int sec = Mathf.CeilToInt(gateManager.GetRemainingGateSeconds());
+        int sec = Mathf.CeilToInt(remaining);
         if (countdownText != null) countdownText.text = FormatTime(sec);
         if (progressFill != null) progressFill.fillAmount = gateManager.GetGateProgress01();
 
@@ -69,15 +98,6 @@ public class GateUI : MonoBehaviour
             if (i < list.Count)
             {
                 cards[i].gameObject.SetActive(true);
-
-                // Background sprite wählen: prefer index i, fallback random
-                Sprite bg = null;
-                if (cardBackgrounds != null && cardBackgrounds.Length > 0)
-                {
-                    int idx = i < cardBackgrounds.Length ? i : Random.Range(0, cardBackgrounds.Length);
-                    bg = cardBackgrounds[idx];
-                }
-
                 cards[i].Setup(list[i], i, gateManager);
             }
             else
@@ -85,6 +105,21 @@ public class GateUI : MonoBehaviour
                 cards[i].gameObject.SetActive(false);
             }
         }
+    }
+
+    /// <summary>
+    /// Picks a random sprite from runningGateBackgrounds and assigns it
+    /// to the runningBgImage so the player sees an actual background
+    /// instead of a plain white image.
+    /// </summary>
+    void ApplyRandomBackground()
+    {
+        if (runningBgImage == null) return;
+        if (runningGateBackgrounds == null || runningGateBackgrounds.Length == 0) return;
+
+        int idx = Random.Range(0, runningGateBackgrounds.Length);
+        runningBgImage.sprite = runningGateBackgrounds[idx];
+        runningBgImage.color = Color.white; // ensure full opacity
     }
 
     string FormatTime(int seconds)
