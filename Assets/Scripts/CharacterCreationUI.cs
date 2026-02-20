@@ -75,7 +75,8 @@ public class CharacterCreationUI : MonoBehaviour
     public Button btnClassNecromancer;
 
     [Header("Info Texts")]
-    public TMP_Text txtSelectedClassMainStat; // main stat + funny line (hidden until class picked)
+    public TMP_Text txtSelectedClassMainStat; // main stat + passive + funny line (hidden until class picked)
+    public TMP_Text txtClassPassive;          // passive skill name + description (hidden until class picked)
     public TMP_Text txtRaceFlavor;            // funny line when selecting race
 
     // ----------------------------
@@ -93,6 +94,8 @@ public class CharacterCreationUI : MonoBehaviour
         // Hide class info until class selected
         if (txtSelectedClassMainStat != null)
             txtSelectedClassMainStat.gameObject.SetActive(false);
+        if (txtClassPassive != null)
+            txtClassPassive.gameObject.SetActive(false);
 
         // Hide name status by default (show only on error)
         if (txtNameStatus != null)
@@ -336,6 +339,8 @@ public class CharacterCreationUI : MonoBehaviour
 
         if (txtSelectedClassMainStat != null)
             txtSelectedClassMainStat.gameObject.SetActive(true);
+        if (txtClassPassive != null)
+            txtClassPassive.gameObject.SetActive(true);
 
         UpdateSelectedClassText();
         UpdateConfirmState();
@@ -343,12 +348,25 @@ public class CharacterCreationUI : MonoBehaviour
 
     void UpdateSelectedClassText()
     {
-        if (txtSelectedClassMainStat == null) return;
         if (selectedClass == null) return;
 
-        string mainStat = GetMainStatForClass(selectedClass.Value);
-        string joke = GetClassJoke(selectedClass.Value);
-        txtSelectedClassMainStat.text = $"<b>Main Stat:</b> {mainStat}\n<i>{joke}</i>";
+        PlayerClass pc = selectedClass.Value;
+
+        // Main stat + joke line
+        if (txtSelectedClassMainStat != null)
+        {
+            string mainStat = GetMainStatForClass(pc);
+            string joke = GetClassJoke(pc);
+            txtSelectedClassMainStat.text = $"<b>Main Stat:</b> {mainStat}\n<i>{joke}</i>";
+        }
+
+        // Passive skill name + description
+        if (txtClassPassive != null)
+        {
+            string passiveName = GetPassiveName(pc);
+            string passiveDesc = GetPassiveDescription(pc);
+            txtClassPassive.text = $"<b>{passiveName}</b>\n<size=85%>{passiveDesc}</size>";
+        }
     }
 
     string GetMainStatForClass(PlayerClass pc)
@@ -356,7 +374,7 @@ public class CharacterCreationUI : MonoBehaviour
         switch (pc)
         {
             case PlayerClass.Assassine:     return "DEX";
-            case PlayerClass.Tank:          return "VIT";
+            case PlayerClass.Tank:          return "STR";
             case PlayerClass.Bogenschuetze: return "DEX";
             case PlayerClass.Krieger:       return "STR";
             case PlayerClass.Magier:        return "INT";
@@ -365,14 +383,49 @@ public class CharacterCreationUI : MonoBehaviour
         }
     }
 
+    string GetPassiveName(PlayerClass pc)
+    {
+        switch (pc)
+        {
+            case PlayerClass.Assassine:     return "Shadow Step";
+            case PlayerClass.Tank:          return "Iron Fortress";
+            case PlayerClass.Bogenschuetze: return "Eagle Eye";
+            case PlayerClass.Krieger:       return "Battle Fury";
+            case PlayerClass.Magier:        return "Arcane Power";
+            case PlayerClass.Nekromant:     return "Soul Drain";
+            default:                        return "Unknown";
+        }
+    }
+
+    string GetPassiveDescription(PlayerClass pc)
+    {
+        switch (pc)
+        {
+            case PlayerClass.Assassine:
+                return "+20% Speed, +15% Crit Rate\nStrike fast, strike deadly. Your enemies won't see it coming.";
+            case PlayerClass.Tank:
+                return "+30% Max HP, Armor cap raised to 60%\nAn unbreakable wall. Nothing gets past you.";
+            case PlayerClass.Bogenschuetze:
+                return "+25% Crit Damage, +10% Speed\nPrecision over power. One perfect shot is all you need.";
+            case PlayerClass.Krieger:
+                return "+15% Damage, +10% Max HP\nBorn for the battlefield. Hit hard. Survive harder.";
+            case PlayerClass.Magier:
+                return "+25% Damage\nPure arcane destruction. The strongest burst in the game.";
+            case PlayerClass.Nekromant:
+                return "+15% Max HP, 15% Lifesteal\nDrains the life force of your enemies to sustain yourself.";
+            default:
+                return "";
+        }
+    }
+
     string GetClassJoke(PlayerClass pc)
     {
         switch (pc)
         {
-            case PlayerClass.Assassine:     return "Blink once… and you’ll miss me. Blink twice… and you’re already dead.";
+            case PlayerClass.Assassine:     return "Blink once… and you'll miss me. Blink twice… and you're already dead.";
             case PlayerClass.Tank:          return "My hobby? Getting hit. Professionally.";
-            case PlayerClass.Bogenschuetze: return "If you can see me, I’m doing it wrong.";
-            case PlayerClass.Krieger:       return "Strategy is great. I prefer ‘charge’ as a lifestyle.";
+            case PlayerClass.Bogenschuetze: return "If you can see me, I'm doing it wrong.";
+            case PlayerClass.Krieger:       return "Strategy is great. I prefer 'charge' as a lifestyle.";
             case PlayerClass.Magier:        return "I read one scroll and now the universe negotiates with me.";
             case PlayerClass.Nekromant:     return "I collect shadows. Totally normal hobby.";
             default:                        return "Pick your chaos wisely.";
