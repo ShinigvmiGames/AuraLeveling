@@ -103,8 +103,8 @@ public static class CombatResolver
             }
         }
 
-        result.playerRemainingHP = Mathf.Max(0, (int)Mathf.Min(pFighter.hp, int.MaxValue));
-        result.enemyRemainingHP = Mathf.Max(0, (int)Mathf.Min(eFighter.hp, int.MaxValue));
+        result.playerRemainingHP = System.Math.Max(0L, pFighter.hp);
+        result.enemyRemainingHP = System.Math.Max(0L, eFighter.hp);
 
         Random.state = oldState;
         return result;
@@ -145,7 +145,7 @@ public static class CombatResolver
         // ±10% variance
         dmgAfterArmor *= Random.Range(0.90f, 1.10f);
 
-        return Mathf.Max(1, (long)dmgAfterArmor);
+        return System.Math.Max(1L, (long)dmgAfterArmor);
     }
 
     /// <summary>

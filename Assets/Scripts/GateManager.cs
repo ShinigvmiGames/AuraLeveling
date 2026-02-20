@@ -215,8 +215,8 @@ void Awake()
         if (player != null)
         {
             // Mirror player stats with rank multiplier
-            gate.enemyHP = Mathf.Max(1, (long)(player.maxHP * mult));
-            gate.enemyDamage = Mathf.Max(1, (long)(player.damage * mult));
+            gate.enemyHP = System.Math.Max(1L, (long)(player.maxHP * mult));
+            gate.enemyDamage = System.Math.Max(1L, (long)(player.damage * mult));
             gate.enemyArmor = Mathf.Max(0, Mathf.RoundToInt(player.armor * mult));
             gate.enemyCritRate = Mathf.Clamp(player.critRate * mult * 0.8f, 0f, 60f); // slightly less crit than player
             gate.enemyCritDamage = Mathf.Max(100f, player.critDamage * mult * 0.85f);

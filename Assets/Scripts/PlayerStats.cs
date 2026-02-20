@@ -125,14 +125,14 @@ public class PlayerStats : MonoBehaviour
         // ===== HP =====
         // effVIT * 15 * (1 + level * 0.02) * auraMultiplier * classHPBonus
         float rawHP = effVIT * 15f * (1f + level * 0.02f) * auraMultiplier * classHPMult;
-        maxHP = Mathf.Max(1, (long)rawHP);
+        maxHP = System.Math.Max(1L, (long)rawHP);
 
         // ===== Damage =====
         // classMainStat * max(1, bonusWeaponDamage) * (1 + level*0.03) * classDmgMult * auraMultiplier
         int classMainStat = GetClassMainStatValue(effSTR, effDEX, effINT, effVIT);
         float rawDamage = classMainStat * Mathf.Max(1f, bonusWeaponDamage)
                         * (1f + level * 0.03f) * classDmgMult * auraMultiplier;
-        damage = Mathf.Max(1, (long)rawDamage);
+        damage = System.Math.Max(1L, (long)rawDamage);
 
         // ===== Armor =====
         // Directly from equipped items
