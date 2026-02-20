@@ -180,18 +180,15 @@ void Awake()
 
     void SetDropChances(GateData gate)
     {
-        // Random item chance:
-        // E 3, D 5, C 8, B 12, A 16, S 32
-        // Epic item chance:
-        // E 1, D 2, C 3, B 5, A 7, S 15
+        // Random item chance per rank, epic items ONLY from S-Rank (20%)
         switch (gate.rank)
         {
-            case GateRank.ERank: gate.randomItemChance = 3f;  gate.epicItemChance = 1f;  break;
-            case GateRank.DRank: gate.randomItemChance = 5f;  gate.epicItemChance = 2f;  break;
-            case GateRank.CRank: gate.randomItemChance = 8f;  gate.epicItemChance = 3f;  break;
-            case GateRank.BRank: gate.randomItemChance = 12f; gate.epicItemChance = 5f;  break;
-            case GateRank.ARank: gate.randomItemChance = 16f; gate.epicItemChance = 7f;  break;
-            case GateRank.SRank: gate.randomItemChance = 32f; gate.epicItemChance = 15f; break;
+            case GateRank.ERank: gate.randomItemChance = 3f;  gate.epicItemChance = 0f;  break;
+            case GateRank.DRank: gate.randomItemChance = 5f;  gate.epicItemChance = 0f;  break;
+            case GateRank.CRank: gate.randomItemChance = 8f;  gate.epicItemChance = 0f;  break;
+            case GateRank.BRank: gate.randomItemChance = 12f; gate.epicItemChance = 0f;  break;
+            case GateRank.ARank: gate.randomItemChance = 16f; gate.epicItemChance = 0f;  break;
+            case GateRank.SRank: gate.randomItemChance = 40f; gate.epicItemChance = 20f; break;
         }
     }
 
@@ -326,9 +323,9 @@ void Awake()
         float rollEpic = UnityEngine.Random.Range(0f, 100f);
         if (rollEpic <= gate.epicItemChance)
         {
-            // Epic -> at least Hero rarity
+            // Epic drop -> at least Hero rarity, guaranteed Epic+ quality
             var rarity = RollDropRarity(forceMinimum: ItemRarity.Hero);
-            TryGrantDropItem(rarity, source: "Gate(Epic)");
+            TryGrantDropItem(rarity, ItemQuality.Epic, source: "Gate(Epic)");
             return;
         }
 
@@ -336,7 +333,7 @@ void Awake()
         if (rollRandom <= gate.randomItemChance)
         {
             var rarity = RollDropRarity(forceMinimum: ItemRarity.ERank);
-            TryGrantDropItem(rarity, source: "Gate");
+            TryGrantDropItem(rarity, ItemQuality.Normal, source: "Gate");
         }
     }
 
@@ -354,15 +351,17 @@ void Awake()
         return r;
     }
 
-    void TryGrantDropItem(ItemRarity rarity, string source)
+    void TryGrantDropItem(ItemRarity rarity, ItemQuality minQuality, string source)
     {
         EnsureRefs();
-        if (player == null || player.playerClass == null) { }
 
         if (anvil != null && anvil.itemDatabase != null)
         {
-            // Use same generation logic as Anvil (best match), but with forced rarity
-            var item = GenerateItemFromDatabaseForcedRarity(anvil.itemDatabase, player, rarity);
+            // Roll quality first, guarantee at least minQuality
+            ItemQuality rolled = AnvilSystem.RollQuality(rarity);
+            ItemQuality quality = rolled > minQuality ? rolled : minQuality;
+
+            var item = GenerateItemFromDatabaseForcedRarity(anvil.itemDatabase, player, rarity, quality);
             if (item != null)
             {
                 GrantItem(item, source);
@@ -370,7 +369,6 @@ void Awake()
             }
         }
 
-        // Fallback: cannot roll item
         Debug.LogWarning("Gate drop failed: ItemDatabase not found or no item matched.");
     }
 
@@ -391,13 +389,11 @@ void Awake()
         Debug.LogWarning("Item granted but no Inventory/Inbox to store it.");
     }
 
-    static ItemData GenerateItemFromDatabaseForcedRarity(ItemDatabase db, PlayerStats player, ItemRarity rarity)
+    static ItemData GenerateItemFromDatabaseForcedRarity(ItemDatabase db, PlayerStats player, ItemRarity rarity, ItemQuality quality)
     {
         if (db == null || player == null) return null;
 
-        // ✅ Pool = alle Items die zur Klasse passen (keine Rarity auf Definition)
         var pool = db.GetFor(player.playerClass);
-
         if (pool == null || pool.Count == 0) return null;
 
         var chosen = pool[UnityEngine.Random.Range(0, pool.Count)];
@@ -409,65 +405,11 @@ void Awake()
         item.itemName = chosen.itemName;
         item.itemLevel = Mathf.Max(1, player.level);
         item.rarity = rarity;
+        item.quality = quality;
 
-        float mult = GetRarityMultiplier(rarity);
-        int budget = Mathf.RoundToInt(item.itemLevel * 2.2f * mult);
-
-        float wSTR = Mathf.Max(0f, chosen.wSTR);
-        float wDEX = Mathf.Max(0f, chosen.wDEX);
-        float wINT = Mathf.Max(0f, chosen.wINT);
-        float wVIT = Mathf.Max(0f, chosen.wVIT);
-        float wSum = wSTR + wDEX + wINT + wVIT;
-        if (wSum < 0.001f) wSum = 1f;
-
-        item.bonusSTR = Mathf.RoundToInt(budget * (wSTR / wSum));
-        item.bonusDEX = Mathf.RoundToInt(budget * (wDEX / wSum));
-        item.bonusINT = Mathf.RoundToInt(budget * (wINT / wSum));
-        item.bonusVIT = Mathf.RoundToInt(budget * (wVIT / wSum));
-
-        item.bonusSTR += UnityEngine.Random.Range(-2, 3);
-        item.bonusDEX += UnityEngine.Random.Range(-2, 3);
-        item.bonusINT += UnityEngine.Random.Range(-2, 3);
-        item.bonusVIT += UnityEngine.Random.Range(-2, 3);
-
-        item.bonusSTR = Mathf.Max(0, item.bonusSTR);
-        item.bonusDEX = Mathf.Max(0, item.bonusDEX);
-        item.bonusINT = Mathf.Max(0, item.bonusINT);
-        item.bonusVIT = Mathf.Max(0, item.bonusVIT);
-
-        if (rarity >= ItemRarity.ARank)
-            item.auraBonusPercent = UnityEngine.Random.Range(5f, 15f);
-        else if (rarity >= ItemRarity.Hero && UnityEngine.Random.value < 0.15f)
-            item.auraBonusPercent = UnityEngine.Random.Range(1f, 6f);
-        else
-            item.auraBonusPercent = 0f;
-
-        int sum = item.bonusSTR + item.bonusDEX + item.bonusINT + item.bonusVIT;
-        item.itemAura = Mathf.RoundToInt(sum * (1f + item.auraBonusPercent / 100f));
-        item.sellPrice = Mathf.RoundToInt((10 + sum) * mult);
+        ItemStatGenerator.GenerateStats(item, player.level, player.playerClass);
 
         return item;
     }
 
-    // ✅ IsClassAllowed ist jetzt in ItemDatabase.GetFor() integriert
-
-    static float GetRarityMultiplier(ItemRarity r)
-    {
-        // Roughly aligned with crafting scaling
-        switch (r)
-        {
-            case ItemRarity.ERank: return 0.8f;
-            case ItemRarity.Common: return 0.9f;
-            case ItemRarity.DRank: return 1.0f;
-            case ItemRarity.CRank: return 1.15f;
-            case ItemRarity.Rare: return 1.3f;
-            case ItemRarity.BRank: return 1.5f;
-            case ItemRarity.Hero: return 1.8f;
-            case ItemRarity.ARank: return 2.2f;
-            case ItemRarity.SRank: return 2.8f;
-            case ItemRarity.Monarch: return 3.4f;
-            case ItemRarity.Godlike: return 4.2f;
-            default: return 1.0f;
-        }
-    }
 }

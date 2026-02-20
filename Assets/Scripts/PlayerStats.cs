@@ -62,22 +62,21 @@ public float bonusAuraPercent;
     return true;
 }
 
-    // Berechnet die Aura des Spielers (Stats + Items + Boni)
+    // Berechnet die Aura des Spielers (Stats + Items + Boni) mit x100 Skalierung
     public int GetAura()
-{
-int effSTR = STR + bonusSTR;
-int effDEX = DEX + bonusDEX;
-int effINT = INT + bonusINT;
-int effVIT = VIT + bonusVIT;
+    {
+        int effSTR = STR + bonusSTR;
+        int effDEX = DEX + bonusDEX;
+        int effINT = INT + bonusINT;
+        int effVIT = VIT + bonusVIT;
 
-// Aura basiert auf ALLEN Main Stats
-int baseAura = effSTR + effDEX + effINT + effVIT;
+        int baseAura = effSTR + effDEX + effINT + effVIT;
 
-float totalAuraBonus = (auraBonusPercent + bonusAuraPercent) / 100f; // level/skills + items
-int finalAura = Mathf.RoundToInt(baseAura * (1f + totalAuraBonus));
+        float totalAuraBonus = (auraBonusPercent + bonusAuraPercent) / 100f;
+        int finalAura = Mathf.RoundToInt(baseAura * 100f * (1f + totalAuraBonus));
 
-return finalAura;
-}
+        return finalAura;
+    }
 
 
     void Start()

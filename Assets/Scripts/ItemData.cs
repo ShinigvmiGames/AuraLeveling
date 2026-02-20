@@ -9,6 +9,7 @@ public class ItemData
     // ===== Basis =====
     public string itemName;
     public ItemRarity rarity;
+    public ItemQuality quality;
 
     // ===== Level =====
     // Immer gleich dem Spielerlevel beim Craften

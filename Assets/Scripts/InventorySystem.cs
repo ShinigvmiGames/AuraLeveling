@@ -56,4 +56,16 @@ public bool TryAdd(ItemData item)
 {
     return Add(item);
 }
+
+public void Swap(int indexA, int indexB)
+{
+    if (indexA < 0 || indexA >= items.Count) return;
+    if (indexB < 0 || indexB >= items.Count) return;
+    if (indexA == indexB) return;
+
+    var tmp = items[indexA];
+    items[indexA] = items[indexB];
+    items[indexB] = tmp;
+    onChanged?.Invoke();
+}
 }

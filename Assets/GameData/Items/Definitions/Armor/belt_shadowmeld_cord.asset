@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 858a295db3eb8448192da6a3bff8d58e, type: 3}
+  m_Name: belt_shadowmeld_cord
+  m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  itemName: Shadowmeld Cord
+  icon: {fileID: 21300000, guid: 903cea12b4eb47a99a2ee74c8859055f, type: 3}
+  slot: 9
+  allowedClasses: 
+  wSTR: 0
+  wDEX: 1
+  wINT: 1
+  wVIT: 0

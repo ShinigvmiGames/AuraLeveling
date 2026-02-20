@@ -8,6 +8,11 @@ public class GateCardUI : MonoBehaviour
     public Image imgGate;     // dein Img_Gate (Sprite) (Material bleibt am Image!)
     public Image imgFrame;    // dein Img_Frame (Sprite)
 
+    [Header("Currency Icons (auto-created if null)")]
+    public Image imgEnergyIcon;
+    public Image imgGoldIcon;
+    public Image imgEssenceIcon;
+
     [Header("Texts")]
     public TMP_Text txtDuration;
     public TMP_Text txtEnergy;
@@ -33,7 +38,9 @@ public class GateCardUI : MonoBehaviour
         index = idx;
         gateManager = manager;
 
-        // Texts
+        EnsureCurrencyIcons();
+
+        // Texts (numbers only — icons are placed next to them)
         if (txtDuration) txtDuration.text = $"{gate.durationSeconds}s";
         if (txtEnergy) txtEnergy.text = $"{gate.energyCost}";
         if (txtGold) txtGold.text = $"{gate.rewardGold}";
@@ -75,5 +82,46 @@ public class GateCardUI : MonoBehaviour
     {
         if (gateManager != null)
             gateManager.AcceptGate(index);
+    }
+
+    /// <summary>
+    /// Auto-create currency icons to the left of the corresponding text fields.
+    /// Icons are small (24x24) and positioned just left of the text.
+    /// </summary>
+    void EnsureCurrencyIcons()
+    {
+        if (imgEnergyIcon == null && txtEnergy != null)
+            imgEnergyIcon = CreateCurrencyIcon(txtEnergy.transform, "Img_EnergyIcon", CurrencyIcons.Energy);
+
+        if (imgGoldIcon == null && txtGold != null)
+            imgGoldIcon = CreateCurrencyIcon(txtGold.transform, "Img_GoldIcon", CurrencyIcons.Gold);
+
+        if (imgEssenceIcon == null && txtEssence != null)
+            imgEssenceIcon = CreateCurrencyIcon(txtEssence.transform, "Img_EssenceIcon", CurrencyIcons.ShadowEssence);
+    }
+
+    Image CreateCurrencyIcon(Transform textTransform, string name, Sprite sprite)
+    {
+        if (sprite == null) return null;
+
+        // Check if already created
+        var existing = textTransform.Find(name);
+        if (existing != null) return existing.GetComponent<Image>();
+
+        var go = new GameObject(name);
+        go.transform.SetParent(textTransform, false);
+        go.layer = 5;
+
+        var rt = go.AddComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0f, 0.5f);
+        rt.anchorMax = new Vector2(0f, 0.5f);
+        rt.anchoredPosition = new Vector2(-18, 0); // left of text
+        rt.sizeDelta = new Vector2(24, 24);
+
+        var img = go.AddComponent<Image>();
+        img.sprite = sprite;
+        img.preserveAspect = true;
+        img.raycastTarget = false;
+        return img;
     }
 }
