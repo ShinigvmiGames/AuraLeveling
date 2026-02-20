@@ -377,11 +377,11 @@ public class AnvilUI : MonoBehaviour
         float remaining = anvilSystem.GetUpgradeRemainingSeconds();
         int mcCost = anvilSystem.GetSkipCostMC();
 
-        // MC cost line: icon + "5 / 12" (cost / your balance)
+        // MC cost line: icon + cost only
         if (skipMCIcon != null)
             skipMCIcon.enabled = true;
         if (skipPopupCostText != null)
-            skipPopupCostText.text = $"{mcCost:N0}  /  {player.manaCrystals:N0}";
+            skipPopupCostText.text = $"{mcCost:N0}";
 
         // Time remaining line: icon + formatted time
         if (skipDurationIcon != null)

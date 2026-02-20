@@ -47,8 +47,12 @@ public class PlayerStats : MonoBehaviour
     public int bonusVIT;
     public float bonusAuraPercent;
 
+    [Header("Equipment Bonuses — Weapon Damage")]
+    // Sum of all equipped weapon min/max damage
+    public int bonusWeaponDmgMin;
+    public int bonusWeaponDmgMax;
+
     [Header("Equipment Bonuses — Combat Substats")]
-    public int bonusWeaponDamage;
     public int bonusArmor;
     public float bonusCritRate;
     public float bonusCritDamage;
@@ -103,8 +107,15 @@ public class PlayerStats : MonoBehaviour
     }
 
     /// <summary>
-    /// Recalculates all derived stats from base + equipment bonuses.
-    /// Fixes the old double-calculation bug.
+    /// Recalculates all derived stats from base + equipment bonuses + class passives.
+    ///
+    /// Class Passives:
+    ///   Assassine:      +20% Speed, +15% Crit Rate
+    ///   Krieger:        +15% Damage, +10% Max HP
+    ///   Tank:           +30% Max HP, Armor cap raised from 50% to 60%
+    ///   Bogenschuetze:  +25% Crit Damage, +10% Speed
+    ///   Magier:         +25% Damage
+    ///   Nekromant:      +15% Max HP (lifesteal 15% handled in CombatResolver)
     /// </summary>
     public void RecalculateStats()
     {
@@ -118,37 +129,59 @@ public class PlayerStats : MonoBehaviour
         auraBonusPercent = (level - 1) * 1.5f;
         float auraMultiplier = 1f + (auraBonusPercent + bonusAuraPercent) / 100f;
 
-        // ===== Class multipliers =====
-        float classDmgMult, classHPMult, classSpeedBonus;
-        GetClassMultipliers(out classDmgMult, out classHPMult, out classSpeedBonus);
+        // ===== HP = VIT * 15 * (1 + level * 0.02) * auraMultiplier =====
+        float rawHP = effVIT * 15f * (1f + level * 0.02f) * auraMultiplier;
 
-        // ===== HP =====
-        // effVIT * 15 * (1 + level * 0.02) * auraMultiplier * classHPBonus
-        float rawHP = effVIT * 15f * (1f + level * 0.02f) * auraMultiplier * classHPMult;
+        // Class HP bonuses
+        switch (playerClass)
+        {
+            case PlayerClass.Tank:      rawHP *= 1.30f; break; // +30% HP
+            case PlayerClass.Nekromant:  rawHP *= 1.15f; break; // +15% HP
+            case PlayerClass.Krieger:    rawHP *= 1.10f; break; // +10% HP
+        }
         maxHP = System.Math.Max(1L, (long)rawHP);
 
-        // ===== Damage =====
-        // classMainStat * max(1, bonusWeaponDamage) * (1 + level*0.03) * classDmgMult * auraMultiplier
+        // ===== Damage = mainStat * weaponDmg * (1 + level*0.03) * auraMultiplier =====
+        // Weapon damage: average of min/max for the derived stat display
+        // Actual combat uses per-attack rolls (see CombatResolver)
         int classMainStat = GetClassMainStatValue(effSTR, effDEX, effINT, effVIT);
-        float rawDamage = classMainStat * Mathf.Max(1f, bonusWeaponDamage)
-                        * (1f + level * 0.03f) * classDmgMult * auraMultiplier;
+        float avgWeaponDmg = Mathf.Max(1f, (bonusWeaponDmgMin + bonusWeaponDmgMax) / 2f);
+        float rawDamage = classMainStat * avgWeaponDmg * (1f + level * 0.03f) * auraMultiplier;
+
+        // Class damage bonuses
+        switch (playerClass)
+        {
+            case PlayerClass.Magier:  rawDamage *= 1.25f; break; // +25% Damage
+            case PlayerClass.Krieger: rawDamage *= 1.15f; break; // +15% Damage
+        }
         damage = System.Math.Max(1L, (long)rawDamage);
 
-        // ===== Armor =====
-        // Directly from equipped items
+        // ===== Armor = directly from equipped armor items =====
         armor = bonusArmor;
 
-        // ===== Crit Rate =====
-        // 5% base + bonusCritRate, cap 75%
-        critRate = Mathf.Clamp(5f + bonusCritRate, 0f, 75f);
+        // ===== Crit Rate = 5% base + bonusCritRate, HARD CAP 100% =====
+        float rawCritRate = 5f + bonusCritRate;
+        // Class crit rate bonus
+        if (playerClass == PlayerClass.Assassine)
+            rawCritRate += 15f; // +15% Crit Rate
+        critRate = Mathf.Clamp(rawCritRate, 0f, 100f);
 
-        // ===== Crit Damage =====
-        // 150% base + bonusCritDamage
-        critDamage = 150f + bonusCritDamage;
+        // ===== Crit Damage = 150% base + bonusCritDamage =====
+        float rawCritDamage = 150f + bonusCritDamage;
+        // Class crit damage bonus
+        if (playerClass == PlayerClass.Bogenschuetze)
+            rawCritDamage += 25f; // +25% Crit Damage (additive to base 150%)
+        critDamage = rawCritDamage;
 
-        // ===== Speed =====
-        // 100 + effDEX*0.5 + bonusSpeed + classSpeedBonus
-        speed = 100f + effDEX * 0.5f + bonusSpeed + classSpeedBonus;
+        // ===== Speed = 100 + DEX*0.5 + bonusSpeed =====
+        float rawSpeed = 100f + effDEX * 0.5f + bonusSpeed;
+        // Class speed bonuses
+        switch (playerClass)
+        {
+            case PlayerClass.Assassine:     rawSpeed *= 1.20f; break; // +20% Speed
+            case PlayerClass.Bogenschuetze: rawSpeed *= 1.10f; break; // +10% Speed
+        }
+        speed = rawSpeed;
 
         onStatsChanged?.Invoke();
     }
@@ -196,25 +229,13 @@ public class PlayerStats : MonoBehaviour
         return GetClassMainStatValue(STR + bonusSTR, DEX + bonusDEX, INT + bonusINT, VIT + bonusVIT);
     }
 
-    void GetClassMultipliers(out float dmgMult, out float hpMult, out float speedBonus)
+    /// <summary>
+    /// Returns the armor damage reduction cap for this class.
+    /// Tank has 60% cap (passive), all others 50%.
+    /// </summary>
+    public float GetArmorCap()
     {
-        switch (playerClass)
-        {
-            case PlayerClass.Krieger:
-                dmgMult = 1.05f; hpMult = 1.2f; speedBonus = 0f; break;
-            case PlayerClass.Tank:
-                dmgMult = 0.9f; hpMult = 1.4f; speedBonus = -10f; break;
-            case PlayerClass.Assassine:
-                dmgMult = 1.0f; hpMult = 1.0f; speedBonus = 15f; break;
-            case PlayerClass.Bogenschuetze:
-                dmgMult = 1.0f; hpMult = 1.0f; speedBonus = 10f; break;
-            case PlayerClass.Magier:
-                dmgMult = 1.0f; hpMult = 1.0f; speedBonus = 0f; break;
-            case PlayerClass.Nekromant:
-                dmgMult = 0.95f; hpMult = 1.1f; speedBonus = 0f; break;
-            default:
-                dmgMult = 1.0f; hpMult = 1.0f; speedBonus = 0f; break;
-        }
+        return playerClass == PlayerClass.Tank ? 0.60f : 0.50f;
     }
 
     // ========= Economy helpers =========

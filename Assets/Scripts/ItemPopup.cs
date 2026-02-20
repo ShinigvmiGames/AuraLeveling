@@ -169,9 +169,14 @@ public class ItemPopup : MonoBehaviour
             if (item.bonusINT > 0) stats += $"INT +{item.bonusINT}\n";
             if (item.bonusVIT > 0) stats += $"VIT +{item.bonusVIT}\n";
 
-            // Combat substats (colored)
-            if (item.weaponDamage > 0)
-                stats += $"<color=#FF6B6B>WPN DMG +{item.weaponDamage}</color>\n";
+            // Weapon Damage (colored red)
+            if (item.weaponDamageMin > 0 || item.weaponDamageMax > 0)
+            {
+                if (item.weaponDamageMin == item.weaponDamageMax)
+                    stats += $"<color=#FF6B6B>DMG +{item.weaponDamageMin}</color>\n";
+                else
+                    stats += $"<color=#FF6B6B>DMG +{item.weaponDamageMin}-{item.weaponDamageMax}</color>\n";
+            }
             if (item.armor > 0)
                 stats += $"<color=#6BAFFF>Armor +{item.armor}</color>\n";
             if (item.critRate > 0f)

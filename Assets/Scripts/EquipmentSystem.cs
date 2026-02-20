@@ -63,8 +63,11 @@ public class EquipmentSystem : MonoBehaviour
         player.bonusVIT = 0;
         player.bonusAuraPercent = 0f;
 
+        // Reset all bonuses — weapon damage
+        player.bonusWeaponDmgMin = 0;
+        player.bonusWeaponDmgMax = 0;
+
         // Reset all bonuses — combat substats
-        player.bonusWeaponDamage = 0;
         player.bonusArmor = 0;
         player.bonusCritRate = 0f;
         player.bonusCritDamage = 0f;
@@ -81,8 +84,11 @@ public class EquipmentSystem : MonoBehaviour
             player.bonusVIT += it.bonusVIT;
             player.bonusAuraPercent += it.auraBonusPercent;
 
+            // Weapon damage (only MainHand/OffHand will have non-zero values)
+            player.bonusWeaponDmgMin += it.weaponDamageMin;
+            player.bonusWeaponDmgMax += it.weaponDamageMax;
+
             // Combat substats
-            player.bonusWeaponDamage += it.weaponDamage;
             player.bonusArmor += it.armor;
             player.bonusCritRate += it.critRate;
             player.bonusCritDamage += it.critDamage;

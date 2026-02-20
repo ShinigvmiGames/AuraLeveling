@@ -218,11 +218,11 @@ void Awake()
             gate.enemyHP = System.Math.Max(1L, (long)(player.maxHP * mult));
             gate.enemyDamage = System.Math.Max(1L, (long)(player.damage * mult));
             gate.enemyArmor = Mathf.Max(0, Mathf.RoundToInt(player.armor * mult));
-            gate.enemyCritRate = Mathf.Clamp(player.critRate * mult * 0.8f, 0f, 60f); // slightly less crit than player
+            gate.enemyCritRate = Mathf.Clamp(player.critRate * mult * 0.8f, 0f, 100f);
             gate.enemyCritDamage = Mathf.Max(100f, player.critDamage * mult * 0.85f);
             gate.enemySpeed = Mathf.Max(50f, player.speed * mult * 0.95f);
 
-            // Legacy main stats (still used for cross-stat reduction)
+            // Main stats for cross-stat reduction
             long baseAura = player.GetAura();
             gate.enemyAura = (int)Mathf.Min(baseAura * mult, int.MaxValue);
             int points = Mathf.Max(4, Mathf.RoundToInt(gate.enemyAura * 0.005f));

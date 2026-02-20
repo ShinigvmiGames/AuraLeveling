@@ -21,12 +21,20 @@ public class ItemData
     public int bonusINT;
     public int bonusVIT;
 
+    // ===== Weapon Damage =====
+    // MainHand: range (minDamage–maxDamage), each attack rolls between them
+    // OffHand: fixed value (weaponDamageMin only, weaponDamageMax == weaponDamageMin)
+    // Other slots: 0
+    public int weaponDamageMin;
+    public int weaponDamageMax;
+
     // ===== Combat Substats =====
-    public int weaponDamage;    // primarily on MainHand/OffHand
-    public int armor;           // primarily on armor pieces
-    public float critRate;      // %, max ~5% per item
-    public float critDamage;    // %, max ~20% per item
-    public float speed;         // flat, max ~15 per item
+    // Armor: only from Head, Chest, Legs, Boots
+    public int armor;
+    // Crit Rate, Crit Damage, Speed: from ALL item slots
+    public float critRate;      // %, hard cap 100% total
+    public float critDamage;    // %
+    public float speed;         // flat
 
     // ===== Aura =====
     // Prozentualer Bonus auf ALLE Stats (z.B. +10%)
