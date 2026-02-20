@@ -75,8 +75,7 @@ public class CharacterCreationUI : MonoBehaviour
     public Button btnClassNecromancer;
 
     [Header("Info Texts")]
-    public TMP_Text txtSelectedClassMainStat; // main stat + passive + funny line (hidden until class picked)
-    public TMP_Text txtClassPassive;          // passive skill name + description (hidden until class picked)
+    public TMP_Text txtSelectedClassMainStat; // main stat + passive skill (hidden until class picked)
     public TMP_Text txtRaceFlavor;            // funny line when selecting race
 
     // ----------------------------
@@ -94,8 +93,6 @@ public class CharacterCreationUI : MonoBehaviour
         // Hide class info until class selected
         if (txtSelectedClassMainStat != null)
             txtSelectedClassMainStat.gameObject.SetActive(false);
-        if (txtClassPassive != null)
-            txtClassPassive.gameObject.SetActive(false);
 
         // Hide name status by default (show only on error)
         if (txtNameStatus != null)
@@ -339,8 +336,6 @@ public class CharacterCreationUI : MonoBehaviour
 
         if (txtSelectedClassMainStat != null)
             txtSelectedClassMainStat.gameObject.SetActive(true);
-        if (txtClassPassive != null)
-            txtClassPassive.gameObject.SetActive(true);
 
         UpdateSelectedClassText();
         UpdateConfirmState();
@@ -349,24 +344,19 @@ public class CharacterCreationUI : MonoBehaviour
     void UpdateSelectedClassText()
     {
         if (selectedClass == null) return;
+        if (txtSelectedClassMainStat == null) return;
 
         PlayerClass pc = selectedClass.Value;
 
-        // Main stat + joke line
-        if (txtSelectedClassMainStat != null)
-        {
-            string mainStat = GetMainStatForClass(pc);
-            string joke = GetClassJoke(pc);
-            txtSelectedClassMainStat.text = $"<b>Main Stat:</b> {mainStat}\n<i>{joke}</i>";
-        }
+        string mainStat = GetMainStatForClass(pc);
+        string passiveName = GetPassiveName(pc);
+        string passiveDesc = GetPassiveDescription(pc);
 
-        // Passive skill name + description
-        if (txtClassPassive != null)
-        {
-            string passiveName = GetPassiveName(pc);
-            string passiveDesc = GetPassiveDescription(pc);
-            txtClassPassive.text = $"<b>{passiveName}</b>\n<size=85%>{passiveDesc}</size>";
-        }
+        // Main Stat + Passive (replaces the old joke)
+        txtSelectedClassMainStat.text =
+            $"<b>Main Stat:</b> {mainStat}\n" +
+            $"<b>{passiveName}</b>\n" +
+            $"<size=85%>{passiveDesc}</size>";
     }
 
     string GetMainStatForClass(PlayerClass pc)
@@ -418,19 +408,6 @@ public class CharacterCreationUI : MonoBehaviour
         }
     }
 
-    string GetClassJoke(PlayerClass pc)
-    {
-        switch (pc)
-        {
-            case PlayerClass.Assassine:     return "Blink once… and you'll miss me. Blink twice… and you're already dead.";
-            case PlayerClass.Tank:          return "My hobby? Getting hit. Professionally.";
-            case PlayerClass.Bogenschuetze: return "If you can see me, I'm doing it wrong.";
-            case PlayerClass.Krieger:       return "Strategy is great. I prefer 'charge' as a lifestyle.";
-            case PlayerClass.Magier:        return "I read one scroll and now the universe negotiates with me.";
-            case PlayerClass.Nekromant:     return "I collect shadows. Totally normal hobby.";
-            default:                        return "Pick your chaos wisely.";
-        }
-    }
 
     // ----------------------------
     // Name auto-check (NO CHECK BUTTON)
