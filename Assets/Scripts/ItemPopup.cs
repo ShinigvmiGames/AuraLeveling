@@ -11,6 +11,9 @@ public class ItemPopup : MonoBehaviour
     public Button sellButton;
     public Button closeButton;
 
+    [Header("Icons (assign in Inspector)")]
+    public Image sellGoldIcon;
+
     [Header("Systems")]
     public PlayerStats player;
     public EquipmentSystem equipment;
@@ -22,9 +25,6 @@ public class ItemPopup : MonoBehaviour
     bool showingEquipped = false;
     bool bound = false;
     bool actionInProgress = false; // prevents double-tap duplication
-
-    // Auto-created sell price icon
-    Image sellGoldIcon;
 
     void Awake()
     {
@@ -48,61 +48,6 @@ public class ItemPopup : MonoBehaviour
         if (player == null) player = FindObjectOfType<PlayerStats>();
         if (equipment == null) equipment = FindObjectOfType<EquipmentSystem>();
         if (inventory == null) inventory = FindObjectOfType<InventorySystem>();
-
-        // Auto-create itemIcon if not wired in Inspector
-        // Large centered icon in the popup (positioned towards center, bigger)
-        if (itemIcon == null && titleText != null)
-        {
-            var go = new GameObject("ItemIcon_Auto");
-            go.transform.SetParent(titleText.transform.parent, false);
-            go.transform.SetAsFirstSibling();
-
-            var rt = go.AddComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0.5f, 0.5f);
-            rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.anchoredPosition = new Vector2(0, 20); // more centered (lower)
-            rt.sizeDelta = new Vector2(260, 260); // bigger icon
-
-            itemIcon = go.AddComponent<Image>();
-            itemIcon.raycastTarget = false;
-            itemIcon.preserveAspect = true;
-            itemIcon.enabled = false;
-
-            // Apply MAT_AdditiveGlow material for better visuals
-            var mats = Resources.FindObjectsOfTypeAll<Material>();
-            foreach (var m in mats)
-            {
-                if (m.name == "MAT_AdditiveGlow")
-                {
-                    itemIcon.material = m;
-                    break;
-                }
-            }
-        }
-
-        // Auto-create sell price gold icon next to statsText
-        if (sellGoldIcon == null && statsText != null)
-        {
-            Sprite goldSprite = CurrencyIcons.Gold;
-            if (goldSprite != null)
-            {
-                var go = new GameObject("SellGoldIcon");
-                go.transform.SetParent(statsText.transform, false);
-                go.layer = 5;
-
-                var rt = go.AddComponent<RectTransform>();
-                rt.anchorMin = new Vector2(0f, 0f);
-                rt.anchorMax = new Vector2(0f, 0f);
-                rt.anchoredPosition = new Vector2(30, 12);
-                rt.sizeDelta = new Vector2(28, 28);
-
-                sellGoldIcon = go.AddComponent<Image>();
-                sellGoldIcon.sprite = goldSprite;
-                sellGoldIcon.preserveAspect = true;
-                sellGoldIcon.raycastTarget = false;
-                sellGoldIcon.enabled = false;
-            }
-        }
     }
 
     void BindButtonsOnce()

@@ -9,8 +9,8 @@ public class InventoryUI : MonoBehaviour
     {
         public Button button;
         public TMP_Text label;
-        public Image icon; // shows item icon (auto-created if null)
-        public Image glowEffect; // quality glow behind icon (auto-created if null)
+        public Image icon; // shows item icon (assign in Inspector)
+        public Image glowEffect; // quality glow behind icon (assign in Inspector)
     }
 
     public InventorySystem inventory;
@@ -35,7 +35,6 @@ public class InventoryUI : MonoBehaviour
                 slots[i].button.onClick.AddListener(() => OnClickSlot(index));
         }
 
-        EnsureSlotImages();
         SetupDragDrop();
         Refresh();
     }
@@ -43,24 +42,6 @@ public class InventoryUI : MonoBehaviour
     void OnDestroy()
     {
         if (inventory != null) inventory.onChanged -= Refresh;
-    }
-
-    /// <summary>
-    /// Auto-create icon and glow Images for slots that don't have them wired in Inspector.
-    /// </summary>
-    void EnsureSlotImages()
-    {
-        if (slots == null) return;
-        foreach (var ui in slots)
-        {
-            if (ui == null || ui.button == null) continue;
-
-            if (ui.icon == null)
-                ui.icon = CreateChildImage(ui.button.transform, "ItemIcon");
-
-            if (ui.glowEffect == null)
-                ui.glowEffect = CreateGlowImage(ui.button.transform);
-        }
     }
 
     void SetupDragDrop()
@@ -139,40 +120,4 @@ public class InventoryUI : MonoBehaviour
         }
     }
 
-    Image CreateChildImage(Transform parent, string name)
-    {
-        var go = new GameObject(name);
-        go.transform.SetParent(parent, false);
-        go.transform.SetAsLastSibling();
-
-        var rt = go.AddComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0.1f, 0.1f);
-        rt.anchorMax = new Vector2(0.9f, 0.9f);
-        rt.offsetMin = Vector2.zero;
-        rt.offsetMax = Vector2.zero;
-
-        var img = go.AddComponent<Image>();
-        img.raycastTarget = false;
-        img.preserveAspect = true;
-        img.enabled = false;
-        return img;
-    }
-
-    Image CreateGlowImage(Transform parent)
-    {
-        var go = new GameObject("QualityGlow");
-        go.transform.SetParent(parent, false);
-        go.transform.SetAsFirstSibling();
-
-        var rt = go.AddComponent<RectTransform>();
-        rt.anchorMin = Vector2.zero;
-        rt.anchorMax = Vector2.one;
-        rt.offsetMin = new Vector2(-10, -10);
-        rt.offsetMax = new Vector2(10, 10);
-
-        var img = go.AddComponent<Image>();
-        img.raycastTarget = false;
-        img.enabled = false;
-        return img;
-    }
 }
