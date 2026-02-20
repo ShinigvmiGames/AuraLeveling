@@ -1,13 +1,22 @@
 fileFormatVersion: 2
-guid: a2f3c9f9dc55948f0a2025743891d5ec
+guid: 0426fa6ef3eb949cf971967b112b6575
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 659735840778358344
-    second: 1000122033_0
+      213: -6043657294105173317
+    second: ManaCrystal_0
   - first:
-      213: 6257682103506228220
-    second: 1000122033_1
+      213: 688824145085840258
+    second: ManaCrystal_1
+  - first:
+      213: -1719588074870239873
+    second: ManaCrystal_2
+  - first:
+      213: 7288180162822282746
+    second: ManaCrystal_3
+  - first:
+      213: 7555898983819403715
+    second: ManaCrystal_4
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -129,45 +138,111 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 1000122033_0
+      name: ManaCrystal_0
       rect:
         serializedVersion: 2
-        x: 129
-        y: 194
-        width: 1285
-        height: 732
+        x: 0
+        y: 8
+        width: 1024
+        height: 1469
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 84e0033704ad72900800000000000000
-      internalID: 659735840778358344
+      spriteID: bb2a9a036bd902ca0800000000000000
+      internalID: -6043657294105173317
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: 1000122033_1
+      name: ManaCrystal_1
       rect:
         serializedVersion: 2
-        x: 1423
-        y: 439
-        width: 6
-        height: 8
+        x: 275
+        y: 595
+        width: 121
+        height: 155
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: cf3dec0f7b0c7d650800000000000000
-      internalID: 6257682103506228220
+      spriteID: 28bbd8019e13f8900800000000000000
+      internalID: 688824145085840258
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ManaCrystal_2
+      rect:
+        serializedVersion: 2
+        x: 339
+        y: 502
+        width: 362
+        height: 617
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f7d8c55b1cbc228e0800000000000000
+      internalID: -1719588074870239873
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ManaCrystal_3
+      rect:
+        serializedVersion: 2
+        x: 714
+        y: 894
+        width: 10
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: afd12106e31d42560800000000000000
+      internalID: 7288180162822282746
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ManaCrystal_4
+      rect:
+        serializedVersion: 2
+        x: 717
+        y: 918
+        width: 20
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3c16a49c712fbd860800000000000000
+      internalID: 7555898983819403715
       vertices: []
       indices: 
       edges: []
@@ -176,7 +251,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: ffa46f19445474f6a86d311eba26e3ed
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -186,8 +261,11 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      1000122033_0: 659735840778358344
-      1000122033_1: 6257682103506228220
+      ManaCrystal_0: -6043657294105173317
+      ManaCrystal_1: 688824145085840258
+      ManaCrystal_2: -1719588074870239873
+      ManaCrystal_3: 7288180162822282746
+      ManaCrystal_4: 7555898983819403715
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
