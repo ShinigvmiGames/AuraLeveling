@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class AnvilUI : MonoBehaviour
 {
-    [Header("Refs")]
+    [Header("Refs (auto-found if empty)")]
     public InventorySystem inventory;
     public AnvilSystem anvilSystem;
     public PlayerStats player;
@@ -21,39 +21,30 @@ public class AnvilUI : MonoBehaviour
     public TMP_Text upgradeCostText;
     public TMP_Text upgradeButtonText;
 
-    [Header("Upgrade Timer UI")]
-    public TMP_Text upgradeTimerText;
-    public Image upgradeProgressFill;
-    public Button skipButton;
-    public TMP_Text skipCostText;
-
-    [Header("Skip Timer Below Button (assign in Inspector)")]
+    [Header("Upgrade Timer")]
     public TMP_Text skipTimerBelowText;
+    public Image upgradeProgressFill;
 
-    [Header("Upgrade Button Images")]
-    [Tooltip("Sprite shown on the upgrade button in normal state (optional)")]
+    [Header("Upgrade Button Sprites (optional)")]
     public Sprite upgradeButtonSprite;
-    [Tooltip("Sprite shown on the upgrade button when in skip mode (optional)")]
     public Sprite skipButtonSprite;
 
-    [Header("Confirmation Dialog Sprites")]
-    [Tooltip("Background sprite for the confirm dialog")]
-    public Sprite confirmDialogSprite;
-    [Tooltip("Gold coin icon sprite")]
-    public Sprite goldIconSprite;
-    [Tooltip("Duration/timer icon sprite")]
-    public Sprite durationIconSprite;
-
-    [Header("Upgrade Confirm Popup (assign in Inspector)")]
+    [Header("Upgrade Confirm Popup")]
     public GameObject confirmPopupRoot;
+    public TMP_Text confirmTitleText;
+    public Image confirmGoldIcon;
     public TMP_Text confirmCostText;
+    public Image confirmDurationIcon;
     public TMP_Text confirmDurationText;
     public Button confirmYesBtn;
     public Button confirmNoBtn;
 
-    [Header("Skip Popup (assign in Inspector)")]
+    [Header("Skip Popup")]
     public GameObject skipPopupRoot;
+    public TMP_Text skipTitleText;
+    public Image skipMCIcon;
     public TMP_Text skipPopupCostText;
+    public Image skipDurationIcon;
     public TMP_Text skipPopupTimeText;
     public Button skipPopupSkipBtn;
     public Button skipPopupCloseBtn;
@@ -66,18 +57,14 @@ public class AnvilUI : MonoBehaviour
     bool confirmPopupOpen = false;
     bool skipPopupOpen = false;
 
-    // === Screen lock ===
     ScreenManager screenManager;
-
-    // Track upgrade state for button switching
     bool wasUpgrading = false;
-    Sprite originalUpgradeSprite; // stored at Awake to restore after skip mode
+    Sprite originalUpgradeSprite;
 
     void Awake()
     {
         ResolveRefs();
 
-        // Store the original upgrade button sprite so we can restore it after skip mode
         if (upgradeButton != null)
         {
             Image btnImg = upgradeButton.GetComponent<Image>();
@@ -85,15 +72,11 @@ public class AnvilUI : MonoBehaviour
                 originalUpgradeSprite = btnImg.sprite;
         }
 
-        // Bind confirm popup buttons
         if (confirmYesBtn != null) confirmYesBtn.onClick.AddListener(OnConfirmYes);
         if (confirmNoBtn != null) confirmNoBtn.onClick.AddListener(OnConfirmNo);
-
-        // Bind skip popup buttons
         if (skipPopupSkipBtn != null) skipPopupSkipBtn.onClick.AddListener(OnPopupSkipPressed);
         if (skipPopupCloseBtn != null) skipPopupCloseBtn.onClick.AddListener(CloseSkipPopup);
 
-        // Ensure popups start hidden
         if (confirmPopupRoot != null) confirmPopupRoot.SetActive(false);
         if (skipPopupRoot != null) skipPopupRoot.SetActive(false);
     }
@@ -110,12 +93,6 @@ public class AnvilUI : MonoBehaviour
         {
             upgradeButton.onClick.RemoveAllListeners();
             upgradeButton.onClick.AddListener(OnUpgradePressed);
-        }
-
-        if (skipButton != null)
-        {
-            skipButton.onClick.RemoveAllListeners();
-            skipButton.onClick.AddListener(OnSkipPressed);
         }
 
         RefreshUI();
@@ -150,7 +127,6 @@ public class AnvilUI : MonoBehaviour
         // === Craft button ===
         if (craftButton != null)
         {
-            // Block crafting while popup is open or during craft animation
             bool popupOpen = popup != null && popup.gameObject.activeSelf;
             bool canCraft = !crafting
                 && !popupOpen
@@ -166,7 +142,6 @@ public class AnvilUI : MonoBehaviour
         // === Upgrade/Skip state ===
         bool upgrading = anvilSystem.isUpgrading;
 
-        // Switch button appearance when upgrade state changes
         if (upgrading != wasUpgrading)
         {
             wasUpgrading = upgrading;
@@ -180,17 +155,13 @@ public class AnvilUI : MonoBehaviour
 
             if (upgrading)
             {
-                // While upgrading: button is "SKIP", always clickable to open skip popup
                 upgradeButton.interactable = true;
-
                 if (upgradeButtonText != null)
                     upgradeButtonText.text = "SKIP";
             }
             else
             {
-                // Not upgrading: show "UPGRADE", interactable if affordable
                 upgradeButton.interactable = !isMaxLevel && anvilSystem.CanStartUpgrade();
-
                 if (upgradeButtonText != null)
                     upgradeButtonText.text = isMaxLevel ? "MAX" : "UPGRADE";
             }
@@ -199,7 +170,7 @@ public class AnvilUI : MonoBehaviour
                 upgradeCostText.text = isMaxLevel ? "MAX" : $"{cost}";
         }
 
-        // Timer text below the button (visible only during upgrade)
+        // Timer below the upgrade button
         if (skipTimerBelowText != null)
         {
             skipTimerBelowText.gameObject.SetActive(upgrading);
@@ -207,17 +178,6 @@ public class AnvilUI : MonoBehaviour
             {
                 float remaining = anvilSystem.GetUpgradeRemainingSeconds();
                 skipTimerBelowText.text = FormatTime(Mathf.CeilToInt(remaining));
-            }
-        }
-
-        // Legacy timer text (if still wired)
-        if (upgradeTimerText != null)
-        {
-            upgradeTimerText.gameObject.SetActive(upgrading);
-            if (upgrading)
-            {
-                float remaining = anvilSystem.GetUpgradeRemainingSeconds();
-                upgradeTimerText.text = FormatTime(Mathf.CeilToInt(remaining));
             }
         }
 
@@ -229,34 +189,24 @@ public class AnvilUI : MonoBehaviour
                 upgradeProgressFill.fillAmount = anvilSystem.GetUpgradeProgress01();
         }
 
-        // Legacy skip button: hide it (we now use the upgrade button as skip)
-        if (skipButton != null)
-            skipButton.gameObject.SetActive(false);
-
         // === Screen lock during crafting ===
         if (screenManager != null)
             screenManager.lockScreenSwitch = crafting;
     }
 
-    /// <summary>
-    /// Switch the upgrade button's image between upgrade and skip sprites.
-    /// </summary>
     void UpdateUpgradeButtonAppearance(bool isSkipMode)
     {
         if (upgradeButton == null) return;
-
         Image btnImage = upgradeButton.GetComponent<Image>();
         if (btnImage == null) return;
 
         if (isSkipMode)
         {
-            // Use skipButtonSprite if assigned, otherwise keep the current image
             if (skipButtonSprite != null)
                 btnImage.sprite = skipButtonSprite;
         }
         else
         {
-            // Restore original sprite
             Sprite restoreSprite = upgradeButtonSprite != null ? upgradeButtonSprite : originalUpgradeSprite;
             if (restoreSprite != null)
                 btnImage.sprite = restoreSprite;
@@ -268,7 +218,6 @@ public class AnvilUI : MonoBehaviour
     {
         if (crafting) return;
         if (player == null || anvilSystem == null) return;
-        // Crafting is allowed during upgrades (uses current level rates)
         if (player.shadowEssence < anvilSystem.essenceCostPerCraft) return;
         if (inventory != null && !inventory.HasSpace()) return;
 
@@ -295,12 +244,6 @@ public class AnvilUI : MonoBehaviour
         float duration = Random.Range(minCraftTime, maxCraftTime);
         yield return new WaitForSeconds(duration);
 
-        // CraftItemInstant() already handles:
-        // 1. Spending essence
-        // 2. Generating the item
-        // 3. Adding to inventory (via TryAddToInventoryAndPopup)
-        // 4. Showing the ItemPopup
-        // Do NOT add to inventory again here - that would duplicate the item!
         ItemData crafted = anvilSystem.CraftItemInstant();
 
         if (crafted == null)
@@ -318,22 +261,13 @@ public class AnvilUI : MonoBehaviour
     {
         if (anvilSystem == null) return;
 
-        // If currently upgrading, clicking the button opens skip popup
         if (anvilSystem.isUpgrading)
         {
             OpenSkipPopup();
             return;
         }
 
-        // Not upgrading: open confirmation dialog
         OpenConfirmPopup();
-    }
-
-    // ========= Skip (legacy direct button) =========
-    public void OnSkipPressed()
-    {
-        if (anvilSystem == null) return;
-        anvilSystem.TrySkipUpgrade();
     }
 
     // =============================================================
@@ -351,11 +285,21 @@ public class AnvilUI : MonoBehaviour
 
         float duration = AnvilSystem.GetUpgradeDurationSeconds(anvilSystem.anvilLevel);
 
-        if (confirmCostText != null)
-            confirmCostText.text = $"<b>{cost}</b>";
+        // Title
+        if (confirmTitleText != null)
+            confirmTitleText.text = "Are you sure?";
 
+        // Gold cost line: icon is always visible, text shows the number
+        if (confirmGoldIcon != null)
+            confirmGoldIcon.enabled = true;
+        if (confirmCostText != null)
+            confirmCostText.text = $"{cost:N0}";
+
+        // Duration line: icon is always visible, text shows formatted time
+        if (confirmDurationIcon != null)
+            confirmDurationIcon.enabled = true;
         if (confirmDurationText != null)
-            confirmDurationText.text = $"<b>{FormatTime(Mathf.CeilToInt(duration))}</b>";
+            confirmDurationText.text = FormatTime(Mathf.CeilToInt(duration));
 
         confirmPopupOpen = true;
         confirmPopupRoot.SetActive(true);
@@ -371,7 +315,6 @@ public class AnvilUI : MonoBehaviour
 
     void UpdateConfirmPopup()
     {
-        // Close if upgrade started somehow while popup was open
         if (confirmPopupOpen && anvilSystem != null && anvilSystem.isUpgrading)
             CloseConfirmPopup();
     }
@@ -396,6 +339,10 @@ public class AnvilUI : MonoBehaviour
     {
         if (skipPopupRoot == null) return;
         if (!anvilSystem.isUpgrading) return;
+
+        // Title
+        if (skipTitleText != null)
+            skipTitleText.text = "Skip upgrade?";
 
         skipPopupOpen = true;
         skipPopupRoot.SetActive(true);
@@ -430,11 +377,17 @@ public class AnvilUI : MonoBehaviour
         float remaining = anvilSystem.GetUpgradeRemainingSeconds();
         int mcCost = anvilSystem.GetSkipCostMC();
 
-        if (skipPopupTimeText != null)
-            skipPopupTimeText.text = $"Time left: {FormatTime(Mathf.CeilToInt(remaining))}";
-
+        // MC cost line: icon + "5 / 12" (cost / your balance)
+        if (skipMCIcon != null)
+            skipMCIcon.enabled = true;
         if (skipPopupCostText != null)
-            skipPopupCostText.text = $"{mcCost}  (You have: {player.manaCrystals})";
+            skipPopupCostText.text = $"{mcCost:N0}  /  {player.manaCrystals:N0}";
+
+        // Time remaining line: icon + formatted time
+        if (skipDurationIcon != null)
+            skipDurationIcon.enabled = true;
+        if (skipPopupTimeText != null)
+            skipPopupTimeText.text = FormatTime(Mathf.CeilToInt(remaining));
 
         if (skipPopupSkipBtn != null)
             skipPopupSkipBtn.interactable = player.manaCrystals >= mcCost;
