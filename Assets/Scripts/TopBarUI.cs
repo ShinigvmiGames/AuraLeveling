@@ -31,7 +31,7 @@ public class TopBarUI : MonoBehaviour
         if (player == null) return;
 
         if (txtLevel != null) txtLevel.text = $"Lv{player.level}";
-        if (txtAura != null) txtAura.text = $"{player.GetAura()}";
+        if (txtAura != null) txtAura.text = FormatNumber(player.GetAura());
         if (txtGold != null) txtGold.text = $"{player.gold}";
         if (txtManaCrystals != null) txtManaCrystals.text = $"{player.manaCrystals}";
     }
@@ -40,5 +40,16 @@ public class TopBarUI : MonoBehaviour
     {
         if (player != null)
             player.onStatsChanged -= Refresh;
+    }
+
+    static string FormatNumber(long value)
+    {
+        if (value >= 1_000_000_000L)
+            return $"{value / 1_000_000_000f:0.0}B";
+        if (value >= 1_000_000L)
+            return $"{value / 1_000_000f:0.0}M";
+        if (value >= 10_000L)
+            return $"{value / 1_000f:0.0}K";
+        return value.ToString("N0");
     }
 }

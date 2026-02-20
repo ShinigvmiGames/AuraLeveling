@@ -1,6 +1,13 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+/// <summary>
+/// OBSOLETE: This is a legacy duplicate of EquipmentSystem.
+/// It directly modifies base STR/DEX/INT/VIT which corrupts stat points.
+/// Use EquipmentSystem instead, which properly uses bonus fields.
+/// This script should be removed from all GameObjects in the scene.
+/// </summary>
+[System.Obsolete("Use EquipmentSystem instead. This legacy script corrupts base stats.")]
 public class PlayerEquipment : MonoBehaviour
 {
     public Dictionary<EquipmentSlot, ItemData> equippedItems =
@@ -11,8 +18,10 @@ public class PlayerEquipment : MonoBehaviour
     void Start()
     {
         playerStats = GetComponent<PlayerStats>();
+        Debug.LogError("PlayerEquipment is OBSOLETE and should be removed! Use EquipmentSystem instead.");
     }
 
+    [System.Obsolete("Use EquipmentSystem.Equip() instead")]
     public void EquipItem(ItemData item)
     {
         if (equippedItems.ContainsKey(item.slot))

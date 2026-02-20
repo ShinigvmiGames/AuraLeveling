@@ -5,6 +5,8 @@ using UnityEngine;
 /// Normal quality: random stat distribution.
 /// Epic quality: class-focused distribution.
 /// Legendary quality: strongly class-focused + guaranteed aura bonus.
+/// Also generates combat substats (weaponDamage, armor, critRate, critDamage, speed)
+/// based on equipment slot.
 /// </summary>
 public static class ItemStatGenerator
 {
@@ -49,6 +51,7 @@ public static class ItemStatGenerator
         float qualityMult = GetQualityMultiplier(item.quality);
         int budget = Mathf.RoundToInt(playerLevel * 2.2f * rarityMult * qualityMult);
 
+        // ===== Main Stat Distribution =====
         float[] splits;
 
         switch (item.quality)
@@ -70,7 +73,10 @@ public static class ItemStatGenerator
         item.bonusINT = Mathf.Max(0, Mathf.RoundToInt(budget * splits[2]) + Random.Range(-2, 4));
         item.bonusVIT = Mathf.Max(0, Mathf.RoundToInt(budget * splits[3]) + Random.Range(-2, 4));
 
-        // Aura bonus percent
+        // ===== Combat Substats (slot-aware) =====
+        GenerateCombatSubstats(item, budget);
+
+        // ===== Aura bonus percent =====
         if (item.quality == ItemQuality.Legendary)
         {
             item.auraBonusPercent = Random.Range(10f, 20f);
@@ -88,12 +94,122 @@ public static class ItemStatGenerator
             item.auraBonusPercent = 0f;
         }
 
-        // Aura calculation (x100 scaling)
+        // ===== Item Aura calculation =====
+        // Now includes combat substats contribution
         int statSum = item.bonusSTR + item.bonusDEX + item.bonusINT + item.bonusVIT;
-        item.itemAura = Mathf.RoundToInt(statSum * 100f * (1f + item.auraBonusPercent / 100f));
+        float combatValue = item.weaponDamage * 2f + item.armor * 0.5f
+                          + item.critRate * 100f + item.critDamage * 50f + item.speed * 30f;
+        item.itemAura = Mathf.RoundToInt((statSum * 100f + combatValue) * (1f + item.auraBonusPercent / 100f));
 
         // Sell price: based on itemAura, scaled down so gold doesn't explode
         item.sellPrice = Mathf.Clamp(Mathf.RoundToInt(item.itemAura * 0.006f + 5f), 1, 999999);
+    }
+
+    /// <summary>
+    /// Generate combat substats based on the item's equipment slot.
+    /// Each slot has different substat priorities.
+    /// </summary>
+    static void GenerateCombatSubstats(ItemData item, int budget)
+    {
+        // Reset combat substats
+        item.weaponDamage = 0;
+        item.armor = 0;
+        item.critRate = 0f;
+        item.critDamage = 0f;
+        item.speed = 0f;
+
+        float combatBudget = budget; // same scale as main stat budget
+
+        switch (item.slot)
+        {
+            case EquipmentSlot.MainHand:
+                // Primary weapon damage source
+                item.weaponDamage = Mathf.Max(1, Mathf.RoundToInt(combatBudget * 2.5f) + Random.Range(-3, 5));
+                // Small chance for minor substats
+                if (Random.value < 0.30f) item.critRate = RollCritRate(combatBudget, 0.4f);
+                if (Random.value < 0.25f) item.critDamage = RollCritDamage(combatBudget, 0.4f);
+                break;
+
+            case EquipmentSlot.OffHand:
+                // Secondary weapon damage + moderate substats
+                item.weaponDamage = Mathf.Max(1, Mathf.RoundToInt(combatBudget * 1.0f) + Random.Range(-2, 4));
+                item.armor = Mathf.Max(0, Mathf.RoundToInt(combatBudget * 0.4f) + Random.Range(-1, 3));
+                if (Random.value < 0.35f) item.critRate = RollCritRate(combatBudget, 0.5f);
+                break;
+
+            case EquipmentSlot.Chest:
+                // Highest armor piece
+                item.armor = Mathf.Max(1, Mathf.RoundToInt(combatBudget * 1.2f) + Random.Range(-2, 5));
+                if (Random.value < 0.20f) item.critDamage = RollCritDamage(combatBudget, 0.3f);
+                break;
+
+            case EquipmentSlot.Head:
+                item.armor = Mathf.Max(1, Mathf.RoundToInt(combatBudget * 0.9f) + Random.Range(-2, 4));
+                if (Random.value < 0.25f) item.critRate = RollCritRate(combatBudget, 0.4f);
+                break;
+
+            case EquipmentSlot.Legs:
+                item.armor = Mathf.Max(1, Mathf.RoundToInt(combatBudget * 1.0f) + Random.Range(-2, 4));
+                if (Random.value < 0.20f) item.speed = RollSpeed(combatBudget, 0.3f);
+                break;
+
+            case EquipmentSlot.Boots:
+                // Armor + high speed chance
+                item.armor = Mathf.Max(1, Mathf.RoundToInt(combatBudget * 0.7f) + Random.Range(-2, 3));
+                if (Random.value < 0.80f) item.speed = RollSpeed(combatBudget, 0.7f);
+                break;
+
+            case EquipmentSlot.Belt:
+                item.armor = Mathf.Max(0, Mathf.RoundToInt(combatBudget * 0.6f) + Random.Range(-2, 3));
+                if (Random.value < 0.30f) item.critDamage = RollCritDamage(combatBudget, 0.3f);
+                if (Random.value < 0.25f) item.speed = RollSpeed(combatBudget, 0.3f);
+                break;
+
+            case EquipmentSlot.Ring:
+                // Crit-focused, little armor
+                item.armor = Mathf.Max(0, Mathf.RoundToInt(combatBudget * 0.15f));
+                if (Random.value < 0.60f) item.critRate = RollCritRate(combatBudget, 0.8f);
+                if (Random.value < 0.60f) item.critDamage = RollCritDamage(combatBudget, 0.8f);
+                break;
+
+            case EquipmentSlot.Amulet:
+                // Crit-focused, little armor
+                item.armor = Mathf.Max(0, Mathf.RoundToInt(combatBudget * 0.15f));
+                if (Random.value < 0.50f) item.critRate = RollCritRate(combatBudget, 0.7f);
+                if (Random.value < 0.60f) item.critDamage = RollCritDamage(combatBudget, 0.8f);
+                if (Random.value < 0.30f) item.speed = RollSpeed(combatBudget, 0.4f);
+                break;
+
+            case EquipmentSlot.Artifact:
+                // All substats possible
+                item.armor = Mathf.Max(0, Mathf.RoundToInt(combatBudget * 0.4f) + Random.Range(-2, 3));
+                if (Random.value < 0.40f) item.weaponDamage = Mathf.Max(0, Mathf.RoundToInt(combatBudget * 0.5f));
+                if (Random.value < 0.40f) item.critRate = RollCritRate(combatBudget, 0.6f);
+                if (Random.value < 0.40f) item.critDamage = RollCritDamage(combatBudget, 0.6f);
+                if (Random.value < 0.40f) item.speed = RollSpeed(combatBudget, 0.5f);
+                break;
+        }
+    }
+
+    /// <summary>Roll crit rate %, capped at 5% per item.</summary>
+    static float RollCritRate(float budget, float intensity)
+    {
+        float raw = budget * 0.015f * intensity + Random.Range(0f, 0.5f);
+        return Mathf.Clamp(Mathf.Round(raw * 10f) / 10f, 0.1f, 5.0f);
+    }
+
+    /// <summary>Roll crit damage %, capped at 20% per item.</summary>
+    static float RollCritDamage(float budget, float intensity)
+    {
+        float raw = budget * 0.06f * intensity + Random.Range(0f, 2f);
+        return Mathf.Clamp(Mathf.Round(raw * 10f) / 10f, 0.5f, 20.0f);
+    }
+
+    /// <summary>Roll flat speed, capped at 15 per item.</summary>
+    static float RollSpeed(float budget, float intensity)
+    {
+        float raw = budget * 0.04f * intensity + Random.Range(0f, 1.5f);
+        return Mathf.Clamp(Mathf.Round(raw * 10f) / 10f, 0.5f, 15.0f);
     }
 
     /// <summary>
@@ -117,6 +233,7 @@ public static class ItemStatGenerator
 
     /// <summary>
     /// Returns splits [STR, DEX, INT, VIT] focused on the class's primary/secondary stats.
+    /// Tank uses STR as primary (was VIT before redesign).
     /// </summary>
     static float[] GetClassFocusedSplits(PlayerClass pc, Vector2 primaryRange, Vector2 secondaryRange)
     {
@@ -130,8 +247,8 @@ public static class ItemStatGenerator
                 secondaryIdx = 3; // VIT
                 break;
             case PlayerClass.Tank:
-                primaryIdx = 3;  // VIT
-                secondaryIdx = 0; // STR
+                primaryIdx = 0;  // STR (was VIT — changed in stat redesign)
+                secondaryIdx = 3; // VIT (was STR)
                 break;
             case PlayerClass.Bogenschuetze:
                 primaryIdx = 1;  // DEX

@@ -163,10 +163,23 @@ public class ItemPopup : MonoBehaviour
         {
             string stats = "";
 
+            // Main stats
             if (item.bonusSTR > 0) stats += $"STR +{item.bonusSTR}\n";
             if (item.bonusDEX > 0) stats += $"DEX +{item.bonusDEX}\n";
             if (item.bonusINT > 0) stats += $"INT +{item.bonusINT}\n";
             if (item.bonusVIT > 0) stats += $"VIT +{item.bonusVIT}\n";
+
+            // Combat substats (colored)
+            if (item.weaponDamage > 0)
+                stats += $"<color=#FF6B6B>WPN DMG +{item.weaponDamage}</color>\n";
+            if (item.armor > 0)
+                stats += $"<color=#6BAFFF>Armor +{item.armor}</color>\n";
+            if (item.critRate > 0f)
+                stats += $"<color=#FFD700>Crit Rate +{item.critRate:0.0}%</color>\n";
+            if (item.critDamage > 0f)
+                stats += $"<color=#FF9500>Crit DMG +{item.critDamage:0.0}%</color>\n";
+            if (item.speed > 0f)
+                stats += $"<color=#4CFF4C>Speed +{item.speed:0.0}</color>\n";
 
             if (item.auraBonusPercent > 0f)
                 stats += $"Aura Bonus: +{item.auraBonusPercent:0.0}%\n";

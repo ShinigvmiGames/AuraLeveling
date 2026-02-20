@@ -23,9 +23,11 @@ public class CharacterUI : MonoBehaviour
 
     [Header("Derived Stats")]
     public TMP_Text txtMaxHP;
-    public TMP_Text txtAttack;
-    public TMP_Text txtMaxMana;
-    public TMP_Text txtDefense;
+    public TMP_Text txtDamage;
+    public TMP_Text txtArmor;
+    public TMP_Text txtCritRate;
+    public TMP_Text txtCritDamage;
+    public TMP_Text txtSpeed;
 
     void Start()
     {
@@ -68,10 +70,13 @@ public class CharacterUI : MonoBehaviour
         if (txtINT != null) txtINT.text = FormatStat("INT", player.INT, player.bonusINT);
         if (txtVIT != null) txtVIT.text = FormatStat("VIT", player.VIT, player.bonusVIT);
 
-        if (txtMaxHP != null) txtMaxHP.text = $"HP: {player.maxHP}";
-        if (txtAttack != null) txtAttack.text = $"ATK: {player.attack}";
-        if (txtMaxMana != null) txtMaxMana.text = $"Mana: {player.maxMana}";
-        if (txtDefense != null) txtDefense.text = $"DEF: {player.defense}";
+        // Derived Stats with big number formatting
+        if (txtMaxHP != null) txtMaxHP.text = $"HP: {FormatNumber(player.maxHP)}";
+        if (txtDamage != null) txtDamage.text = $"DMG: {FormatNumber(player.damage)}";
+        if (txtArmor != null) txtArmor.text = $"Armor: {FormatNumber(player.armor)}";
+        if (txtCritRate != null) txtCritRate.text = $"Crit: {player.critRate:0.0}%";
+        if (txtCritDamage != null) txtCritDamage.text = $"CritDMG: {player.critDamage:0.0}%";
+        if (txtSpeed != null) txtSpeed.text = $"SPD: {player.speed:0.0}";
 
         bool canSpend = player.unspentPoints > 0;
         if (btnSTR != null) btnSTR.interactable = canSpend;
@@ -85,5 +90,19 @@ public class CharacterUI : MonoBehaviour
         if (bonus > 0)
             return $"{name}: {baseVal} <color=#4CFF4C>(+{bonus})</color>";
         return $"{name}: {baseVal}";
+    }
+
+    /// <summary>
+    /// Formats large numbers with K, M, B suffixes.
+    /// </summary>
+    static string FormatNumber(long value)
+    {
+        if (value >= 1_000_000_000L)
+            return $"{value / 1_000_000_000f:0.0}B";
+        if (value >= 1_000_000L)
+            return $"{value / 1_000_000f:0.0}M";
+        if (value >= 10_000L)
+            return $"{value / 1_000f:0.0}K";
+        return value.ToString("N0");
     }
 }

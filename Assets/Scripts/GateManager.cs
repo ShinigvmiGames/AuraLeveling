@@ -196,9 +196,7 @@ void Awake()
     {
         if (player == null) player = FindObjectOfType<PlayerStats>();
 
-        int baseAura = player != null ? player.GetAura() : 10;
-
-        // Enemy gear scaling (placeholder): higher rank means better "equipment"
+        // Rank difficulty multiplier
         float mult = 1f;
         switch (gate.rank)
         {
@@ -210,13 +208,44 @@ void Awake()
             case GateRank.SRank: mult = Random.Range(1.65f, 2.05f); break;
         }
 
-        gate.enemyAura = Mathf.RoundToInt(baseAura * mult);
+        // Random enemy class
+        var classes = System.Enum.GetValues(typeof(PlayerClass));
+        gate.enemyClass = (PlayerClass)classes.GetValue(Random.Range(0, classes.Length));
 
-        int points = Mathf.Max(4, gate.enemyAura / 2);
-        gate.enemySTR = Random.Range(points / 5, points / 3);
-        gate.enemyVIT = Random.Range(points / 5, points / 3);
-        gate.enemyDEX = Random.Range(points / 5, points / 3);
-        gate.enemyINT = Mathf.Max(0, points - (gate.enemySTR + gate.enemyVIT + gate.enemyDEX));
+        if (player != null)
+        {
+            // Mirror player stats with rank multiplier
+            gate.enemyHP = Mathf.Max(1, (long)(player.maxHP * mult));
+            gate.enemyDamage = Mathf.Max(1, (long)(player.damage * mult));
+            gate.enemyArmor = Mathf.Max(0, Mathf.RoundToInt(player.armor * mult));
+            gate.enemyCritRate = Mathf.Clamp(player.critRate * mult * 0.8f, 0f, 60f); // slightly less crit than player
+            gate.enemyCritDamage = Mathf.Max(100f, player.critDamage * mult * 0.85f);
+            gate.enemySpeed = Mathf.Max(50f, player.speed * mult * 0.95f);
+
+            // Legacy main stats (still used for cross-stat reduction)
+            long baseAura = player.GetAura();
+            gate.enemyAura = (int)Mathf.Min(baseAura * mult, int.MaxValue);
+            int points = Mathf.Max(4, Mathf.RoundToInt(gate.enemyAura * 0.005f));
+            gate.enemySTR = Random.Range(points / 5, Mathf.Max(points / 5 + 1, points / 3));
+            gate.enemyVIT = Random.Range(points / 5, Mathf.Max(points / 5 + 1, points / 3));
+            gate.enemyDEX = Random.Range(points / 5, Mathf.Max(points / 5 + 1, points / 3));
+            gate.enemyINT = Mathf.Max(0, points - (gate.enemySTR + gate.enemyVIT + gate.enemyDEX));
+        }
+        else
+        {
+            // Fallback for when player not found
+            gate.enemyHP = 76;
+            gate.enemyDamage = 5;
+            gate.enemyArmor = 0;
+            gate.enemyCritRate = 5f;
+            gate.enemyCritDamage = 150f;
+            gate.enemySpeed = 100f;
+            gate.enemyAura = 10;
+            gate.enemySTR = 5;
+            gate.enemyVIT = 5;
+            gate.enemyDEX = 5;
+            gate.enemyINT = 5;
+        }
     }
 
     // ---------- Accept / Run / Resolve ----------
