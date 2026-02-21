@@ -1,10 +1,13 @@
 fileFormatVersion: 2
-guid: 2d0929e601edc459ba8d2e0b18d1958a
+guid: ba4a1879e443a4332a0b184c22da97f8
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4229954676759400137
-    second: 1000119657_0
+      213: -1407615377637678547
+    second: BootsOfTheFallen_0
+  - first:
+      213: -9076513547362819113
+    second: BootsOfTheFallen_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,13 +129,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 1000119657_0
+      name: BootsOfTheFallen_0
       rect:
         serializedVersion: 2
-        x: 5
-        y: 7
-        width: 374
-        height: 96
+        x: 114
+        y: 327
+        width: 666
+        height: 662
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +144,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 731f0cbf1ae2c45c0800000000000000
-      internalID: -4229954676759400137
+      spriteID: d22678b9545277ce0800000000000000
+      internalID: -1407615377637678547
       vertices: []
       indices: 
       edges: []
@@ -151,7 +154,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 4cafea7d6b65a4a8c89e7f10cb5d4a45
+    spriteID: 9fcaf906efe054f9c8c0eea4a49c848e
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +164,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      1000119657_0: -4229954676759400137
+      BootsOfTheFallen_0: -1407615377637678547
+      BootsOfTheFallen_1: -9076513547362819113
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

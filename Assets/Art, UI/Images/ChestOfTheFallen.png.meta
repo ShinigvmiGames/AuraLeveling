@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 0eb1b8c96b6914ca481991f0f54b63df
+guid: 53cac911a6b56418a8ead4c90fbdd23c
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5201780426792704873
-    second: 1000120655_0
+      213: -3109889428408461474
+    second: ChestOfTheFallen_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 1000120655_0
+      name: ChestOfTheFallen_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 465
-        height: 196
+        width: 830
+        height: 898
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 794e07513409fc7b0800000000000000
-      internalID: -5201780426792704873
+      spriteID: e5798f0ba0477d4d0800000000000000
+      internalID: -3109889428408461474
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      1000120655_0: -5201780426792704873
+      ChestOfTheFallen_0: -3109889428408461474
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -21,6 +21,7 @@ public static class ItemStatGenerator
             case ItemQuality.Normal:    return 1.0f;
             case ItemQuality.Epic:      return 1.2f;
             case ItemQuality.Legendary: return 1.5f;
+            case ItemQuality.Mythic:    return 2.0f;
             default:                    return 1.0f;
         }
     }
@@ -67,6 +68,9 @@ public static class ItemStatGenerator
             case ItemQuality.Legendary:
                 splits = GetClassFocusedSplits(playerClass, primaryRange: new Vector2(0.60f, 0.70f), secondaryRange: new Vector2(0.15f, 0.25f));
                 break;
+            case ItemQuality.Mythic:
+                splits = GetClassFocusedSplits(playerClass, primaryRange: new Vector2(0.70f, 0.80f), secondaryRange: new Vector2(0.10f, 0.20f));
+                break;
             default: // Normal
                 splits = RandomSplit(4);
                 break;
@@ -82,7 +86,11 @@ public static class ItemStatGenerator
         GenerateCombatSubstats(item, budget);
 
         // ===== Aura bonus percent =====
-        if (item.quality == ItemQuality.Legendary)
+        if (item.quality == ItemQuality.Mythic)
+        {
+            item.auraBonusPercent = Random.Range(20f, 35f);
+        }
+        else if (item.quality == ItemQuality.Legendary)
         {
             item.auraBonusPercent = Random.Range(10f, 20f);
         }

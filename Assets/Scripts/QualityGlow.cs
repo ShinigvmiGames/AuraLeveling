@@ -10,8 +10,9 @@ public static class QualityGlow
     static Sprite _glowSprite;
 
     // Quality colors
-    static readonly Color EpicColor = new Color(0.224f, 1f, 0.078f, 0.6f);       // #39FF14 neon green
-    static readonly Color LegendaryColor = new Color(0.749f, 0f, 1f, 0.7f);      // #BF00FF neon purple
+    static readonly Color EpicColor      = new Color(0.6f, 0.2f, 0.9f, 0.6f);    // lila / purple
+    static readonly Color LegendaryColor = new Color(1.0f, 0.7f, 0.1f, 0.7f);    // orange-gold
+    static readonly Color MythicColor    = new Color(0.7f, 0.0f, 0.1f, 0.8f);    // kaiserliches rot / imperial red
 
     /// <summary>
     /// Get or create the shared radial gradient glow sprite.
@@ -72,6 +73,12 @@ public static class QualityGlow
                 glowImage.enabled = true;
                 glowImage.sprite = GetGlowSprite();
                 glowImage.color = LegendaryColor;
+                break;
+
+            case ItemQuality.Mythic:
+                glowImage.enabled = true;
+                glowImage.sprite = GetGlowSprite();
+                glowImage.color = MythicColor;
                 break;
 
             default: // Normal

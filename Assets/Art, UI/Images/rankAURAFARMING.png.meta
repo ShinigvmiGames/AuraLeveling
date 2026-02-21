@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: e40f5fd433f6746f6a7e3977070106d1
+guid: 5f2726b39a1bf42febd2f1efae0a3f7b
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7193312730085449619
-    second: 1000120656_0
+      213: -1413136440609742147
+    second: rankAURAFARMING_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,23 +126,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 1000120656_0
+      name: rankAURAFARMING_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 452
-        height: 170
+        x: 46
+        y: 122
+        width: 1191
+        height: 636
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d6026fc0f283c2c90800000000000000
-      internalID: -7193312730085449619
+      spriteID: db2eb46f4e7836ce0800000000000000
+      internalID: -1413136440609742147
       vertices: []
       indices: 
       edges: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 32789c01988be44668158995b8894576
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      1000120656_0: -7193312730085449619
+      rankAURAFARMING_0: -1413136440609742147
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

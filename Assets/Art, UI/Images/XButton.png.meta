@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 2d0929e601edc459ba8d2e0b18d1958a
+guid: bf8f00a37c656436f969927e892a3c26
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4229954676759400137
-    second: 1000119657_0
+      213: 7228479579958016333
+    second: XButton_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,23 +126,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 1000119657_0
+      name: XButton_0
       rect:
         serializedVersion: 2
-        x: 5
-        y: 7
-        width: 374
-        height: 96
+        x: 69
+        y: 67
+        width: 483
+        height: 484
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 731f0cbf1ae2c45c0800000000000000
-      internalID: -4229954676759400137
+      spriteID: d49ff8d31e7b05460800000000000000
+      internalID: 7228479579958016333
       vertices: []
       indices: 
       edges: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 4cafea7d6b65a4a8c89e7f10cb5d4a45
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      1000119657_0: -4229954676759400137
+      XButton_0: 7228479579958016333
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

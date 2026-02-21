@@ -1,22 +1,28 @@
 fileFormatVersion: 2
-guid: 0426fa6ef3eb949cf971967b112b6575
+guid: a044a0281a50747f4991f19900e9e721
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6043657294105173317
-    second: ManaCrystal_0
+      213: 8943929256939678236
+    second: TrophyOfTheFallen_0
   - first:
-      213: 688824145085840258
-    second: ManaCrystal_1
+      213: -8693509235710389510
+    second: TrophyOfTheFallen_1
   - first:
-      213: -1719588074870239873
-    second: ManaCrystal_2
+      213: -545547148995409183
+    second: TrophyOfTheFallen_2
   - first:
-      213: 7288180162822282746
-    second: ManaCrystal_3
+      213: -5959492019626467015
+    second: TrophyOfTheFallen_3
   - first:
-      213: 7555898983819403715
-    second: ManaCrystal_4
+      213: -801331354213343721
+    second: TrophyOfTheFallen_4
+  - first:
+      213: 7927309854804865866
+    second: TrophyOfTheFallen_5
+  - first:
+      213: 6269727939457981724
+    second: TrophyOfTheFallen_6
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -64,7 +70,7 @@ TextureImporter:
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
-  spriteBorder: {x: 224, y: 495, z: 164, w: 418}
+  spriteBorder: {x: 0, y: 271, z: 0, w: 277}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1
@@ -138,13 +144,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ManaCrystal_0
+      name: TrophyOfTheFallen_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 8
-        width: 1024
-        height: 1469
+        y: 0
+        width: 853
+        height: 1280
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -153,20 +159,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: bb2a9a036bd902ca0800000000000000
-      internalID: -6043657294105173317
+      spriteID: c1aec10b5483f1c70800000000000000
+      internalID: 8943929256939678236
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ManaCrystal_1
+      name: TrophyOfTheFallen_1
       rect:
         serializedVersion: 2
-        x: 275
-        y: 595
-        width: 121
-        height: 155
+        x: 554
+        y: 1033
+        width: 14
+        height: 14
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -175,20 +181,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 28bbd8019e13f8900800000000000000
-      internalID: 688824145085840258
+      spriteID: af297e909637a5780800000000000000
+      internalID: -8693509235710389510
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ManaCrystal_2
+      name: TrophyOfTheFallen_2
       rect:
         serializedVersion: 2
-        x: 339
-        y: 502
-        width: 362
-        height: 617
+        x: 341
+        y: 1010
+        width: 11
+        height: 11
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -197,20 +203,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f7d8c55b1cbc228e0800000000000000
-      internalID: -1719588074870239873
+      spriteID: 1eac6e722c3dd68f0800000000000000
+      internalID: -545547148995409183
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ManaCrystal_3
+      name: TrophyOfTheFallen_3
       rect:
         serializedVersion: 2
-        x: 714
-        y: 894
-        width: 10
-        height: 20
+        x: 398
+        y: 1016
+        width: 8
+        height: 9
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -219,20 +225,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: afd12106e31d42560800000000000000
-      internalID: 7288180162822282746
+      spriteID: 931a3683591ab4da0800000000000000
+      internalID: -5959492019626467015
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ManaCrystal_4
+      name: TrophyOfTheFallen_4
       rect:
         serializedVersion: 2
-        x: 717
-        y: 918
-        width: 20
-        height: 19
+        x: 482
+        y: 1013
+        width: 14
+        height: 17
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -241,8 +247,52 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 3c16a49c712fbd860800000000000000
-      internalID: 7555898983819403715
+      spriteID: 71e1bb4016911e4f0800000000000000
+      internalID: -801331354213343721
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TrophyOfTheFallen_5
+      rect:
+        serializedVersion: 2
+        x: 549
+        y: 1008
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a43f810ff46730e60800000000000000
+      internalID: 7927309854804865866
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TrophyOfTheFallen_6
+      rect:
+        serializedVersion: 2
+        x: 532
+        y: 996
+        width: 13
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c1d1cbda75c820750800000000000000
+      internalID: 6269727939457981724
       vertices: []
       indices: 
       edges: []
@@ -261,11 +311,13 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      ManaCrystal_0: -6043657294105173317
-      ManaCrystal_1: 688824145085840258
-      ManaCrystal_2: -1719588074870239873
-      ManaCrystal_3: 7288180162822282746
-      ManaCrystal_4: 7555898983819403715
+      TrophyOfTheFallen_0: 8943929256939678236
+      TrophyOfTheFallen_1: -8693509235710389510
+      TrophyOfTheFallen_2: -545547148995409183
+      TrophyOfTheFallen_3: -5959492019626467015
+      TrophyOfTheFallen_4: -801331354213343721
+      TrophyOfTheFallen_5: 7927309854804865866
+      TrophyOfTheFallen_6: 6269727939457981724
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

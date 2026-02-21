@@ -14,32 +14,20 @@ public class ItemPopup : MonoBehaviour
     [Header("Worth (eigenes TMP + Coin Icon als Children)")]
     public TMP_Text worthText; // zeigt "Worth: 123" — eigenes GO damit Coin-Icon daneben passt
 
-    [Header("Rarity / Quality Images")]
+    [Header("Rarity Image")]
     public Image rarityImage;   // zeigt das Rarity-Icon (ERank, Common, Rare, etc.)
-    public Image qualityImage;  // zeigt das Quality-Icon (Normal, Epic, Legendary)
 
     [Header("Rarity Sprites (Inspector: ERank..AURAFARMING, 12 Stück)")]
     public Sprite[] raritySprites; // Index = (int)ItemRarity
 
-    [Header("Quality Sprites (Inspector: Normal, Epic, Legendary, 3 Stück)")]
-    public Sprite[] qualitySprites; // Index = (int)ItemQuality
+    [Header("Quality Window Backgrounds (Inspector: Normal, Epic, Legendary, Mythic — 4 Stück)")]
+    public Sprite[] qualitySprites; // Index = (int)ItemQuality — Popup-Fenster wechselt je nach Quality
 
-    [Header("Glow Effect")]
-    public Image glowImage; // Glow-Effekt Image (wie bei Equipment/Inventory)
+    [Header("Popup Window Background")]
+    public Image windowBackground; // das Popup-Fenster Image — Sprite wechselt je nach Quality
 
-    [Header("Glow Colors per Rarity")]
-    public Color glowERank      = new Color(0.6f, 0.6f, 0.6f, 0.4f);
-    public Color glowCommon     = new Color(0.8f, 0.8f, 0.8f, 0.5f);
-    public Color glowDRank      = new Color(0.4f, 0.8f, 0.4f, 0.5f);
-    public Color glowCRank      = new Color(0.3f, 0.7f, 1.0f, 0.5f);
-    public Color glowRare       = new Color(0.3f, 0.4f, 1.0f, 0.6f);
-    public Color glowBRank      = new Color(0.7f, 0.3f, 1.0f, 0.6f);
-    public Color glowHero       = new Color(1.0f, 0.5f, 0.0f, 0.6f);
-    public Color glowARank      = new Color(1.0f, 0.3f, 0.3f, 0.7f);
-    public Color glowSRank      = new Color(1.0f, 0.85f, 0.0f, 0.7f);
-    public Color glowMonarch    = new Color(1.0f, 0.0f, 0.5f, 0.8f);
-    public Color glowGodlike    = new Color(0.9f, 0.0f, 0.9f, 0.8f);
-    public Color glowAURAFARMING = new Color(1.0f, 1.0f, 1.0f, 0.9f);
+    [Header("Glow Effect (per Quality, wie bei Equipment/Inventory)")]
+    public Image glowImage;
 
     [Header("Systems")]
     public PlayerStats player;
@@ -198,27 +186,16 @@ public class ItemPopup : MonoBehaviour
             }
         }
 
-        // Quality Image
-        if (qualityImage != null)
+        // Window Background wechselt je nach Quality
+        if (windowBackground != null && qualitySprites != null)
         {
             int qualityIdx = (int)item.quality;
-            if (qualitySprites != null && qualityIdx >= 0 && qualityIdx < qualitySprites.Length && qualitySprites[qualityIdx] != null)
-            {
-                qualityImage.sprite = qualitySprites[qualityIdx];
-                qualityImage.enabled = true;
-            }
-            else
-            {
-                qualityImage.enabled = false;
-            }
+            if (qualityIdx >= 0 && qualityIdx < qualitySprites.Length && qualitySprites[qualityIdx] != null)
+                windowBackground.sprite = qualitySprites[qualityIdx];
         }
 
-        // Glow Effect (wie bei Equipment/Inventory)
-        if (glowImage != null)
-        {
-            glowImage.enabled = true;
-            glowImage.color = GetGlowColor(item.rarity);
-        }
+        // Glow Effect per Quality (gleiche Farben wie Equipment/Inventory)
+        QualityGlow.Apply(glowImage, item.quality);
 
         // Stats
         if (statsText != null)
@@ -260,26 +237,6 @@ public class ItemPopup : MonoBehaviour
         if (worthText != null)
         {
             worthText.text = $"Worth: {item.sellPrice}";
-        }
-    }
-
-    Color GetGlowColor(ItemRarity rarity)
-    {
-        switch (rarity)
-        {
-            case ItemRarity.ERank:       return glowERank;
-            case ItemRarity.Common:      return glowCommon;
-            case ItemRarity.DRank:       return glowDRank;
-            case ItemRarity.CRank:       return glowCRank;
-            case ItemRarity.Rare:        return glowRare;
-            case ItemRarity.BRank:       return glowBRank;
-            case ItemRarity.Hero:        return glowHero;
-            case ItemRarity.ARank:       return glowARank;
-            case ItemRarity.SRank:       return glowSRank;
-            case ItemRarity.Monarch:     return glowMonarch;
-            case ItemRarity.Godlike:     return glowGodlike;
-            case ItemRarity.AURAFARMING: return glowAURAFARMING;
-            default:                     return glowCommon;
         }
     }
 

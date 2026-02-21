@@ -514,16 +514,19 @@ public class AnvilSystem : MonoBehaviour
                 return ItemQuality.Normal;
 
             case ItemRarity.Monarch:
+                if (roll < 0.1f) return ItemQuality.Mythic;
                 if (roll < 2f) return ItemQuality.Legendary;
                 if (roll < 15f) return ItemQuality.Epic;
                 return ItemQuality.Normal;
 
             case ItemRarity.Godlike:
+                if (roll < 0.3f) return ItemQuality.Mythic;
                 if (roll < 3f) return ItemQuality.Legendary;
                 if (roll < 18f) return ItemQuality.Epic;
                 return ItemQuality.Normal;
 
             case ItemRarity.AURAFARMING:
+                if (roll < 0.5f) return ItemQuality.Mythic;
                 if (roll < 5f) return ItemQuality.Legendary;
                 if (roll < 25f) return ItemQuality.Epic;
                 return ItemQuality.Normal;

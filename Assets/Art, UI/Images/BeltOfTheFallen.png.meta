@@ -1,22 +1,25 @@
 fileFormatVersion: 2
-guid: 0426fa6ef3eb949cf971967b112b6575
+guid: 8b86468fd614347dfb752672f456bd9f
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6043657294105173317
-    second: ManaCrystal_0
+      213: -5802499868120159465
+    second: BeltOfTheFallen_0
   - first:
-      213: 688824145085840258
-    second: ManaCrystal_1
+      213: -3827267270506618081
+    second: BeltOfTheFallen_1
   - first:
-      213: -1719588074870239873
-    second: ManaCrystal_2
+      213: -1415267524704737988
+    second: BeltOfTheFallen_2
   - first:
-      213: 7288180162822282746
-    second: ManaCrystal_3
+      213: -3529063479913768480
+    second: BeltOfTheFallen_3
   - first:
-      213: 7555898983819403715
-    second: ManaCrystal_4
+      213: 1036741688978977374
+    second: BeltOfTheFallen_4
+  - first:
+      213: -3172937369921473276
+    second: BeltOfTheFallen_5
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -64,7 +67,7 @@ TextureImporter:
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
-  spriteBorder: {x: 224, y: 495, z: 164, w: 418}
+  spriteBorder: {x: 0, y: 338, z: 0, w: 282}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1
@@ -138,13 +141,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ManaCrystal_0
+      name: BeltOfTheFallen_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 8
-        width: 1024
-        height: 1469
+        y: 0
+        width: 853
+        height: 1280
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -153,20 +156,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: bb2a9a036bd902ca0800000000000000
-      internalID: -6043657294105173317
+      spriteID: 71b6277ec11697fa0800000000000000
+      internalID: -5802499868120159465
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ManaCrystal_1
+      name: BeltOfTheFallen_1
       rect:
         serializedVersion: 2
-        x: 275
-        y: 595
-        width: 121
-        height: 155
+        x: 347
+        y: 917
+        width: 12
+        height: 14
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -175,20 +178,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 28bbd8019e13f8900800000000000000
-      internalID: 688824145085840258
+      spriteID: f1369f8f1b0d2eac0800000000000000
+      internalID: -3827267270506618081
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ManaCrystal_2
+      name: BeltOfTheFallen_2
       rect:
         serializedVersion: 2
-        x: 339
-        y: 502
-        width: 362
-        height: 617
+        x: 440
+        y: 913
+        width: 6
+        height: 6
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -197,20 +200,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f7d8c55b1cbc228e0800000000000000
-      internalID: -1719588074870239873
+      spriteID: c35e3d74fa5fb5ce0800000000000000
+      internalID: -1415267524704737988
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ManaCrystal_3
+      name: BeltOfTheFallen_3
       rect:
         serializedVersion: 2
-        x: 714
-        y: 894
-        width: 10
-        height: 20
+        x: 603
+        y: 910
+        width: 7
+        height: 10
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -219,20 +222,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: afd12106e31d42560800000000000000
-      internalID: 7288180162822282746
+      spriteID: 0e99fe9767f360fc0800000000000000
+      internalID: -3529063479913768480
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ManaCrystal_4
+      name: BeltOfTheFallen_4
       rect:
         serializedVersion: 2
-        x: 717
-        y: 918
-        width: 20
-        height: 19
+        x: 391
+        y: 903
+        width: 6
+        height: 9
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -241,8 +244,30 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 3c16a49c712fbd860800000000000000
-      internalID: 7555898983819403715
+      spriteID: e523e6fb21f336e00800000000000000
+      internalID: 1036741688978977374
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BeltOfTheFallen_5
+      rect:
+        serializedVersion: 2
+        x: 783
+        y: 566
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 405b443e54677f3d0800000000000000
+      internalID: -3172937369921473276
       vertices: []
       indices: 
       edges: []
@@ -261,11 +286,12 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      ManaCrystal_0: -6043657294105173317
-      ManaCrystal_1: 688824145085840258
-      ManaCrystal_2: -1719588074870239873
-      ManaCrystal_3: 7288180162822282746
-      ManaCrystal_4: 7555898983819403715
+      BeltOfTheFallen_0: -5802499868120159465
+      BeltOfTheFallen_1: -3827267270506618081
+      BeltOfTheFallen_2: -1415267524704737988
+      BeltOfTheFallen_3: -3529063479913768480
+      BeltOfTheFallen_4: 1036741688978977374
+      BeltOfTheFallen_5: -3172937369921473276
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
