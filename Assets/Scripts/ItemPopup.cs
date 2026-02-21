@@ -11,8 +11,8 @@ public class ItemPopup : MonoBehaviour
     public Button sellButton;
     public Button closeButton;
 
-    [Header("Worth (eigenes TMP + Coin Icon als Children)")]
-    public TMP_Text worthText; // zeigt "Worth: 123" — eigenes GO damit Coin-Icon daneben passt
+    [Header("Sell Amount (eigenes TMP + Coin Icon als Children)")]
+    public TMP_Text amountText; // zeigt nur den Zahlenwert, z.B. "123"
 
     [Header("Rarity Image")]
     public Image rarityImage;   // zeigt das Rarity-Icon (ERank, Common, Rare, etc.)
@@ -233,10 +233,10 @@ public class ItemPopup : MonoBehaviour
             statsText.text = stats;
         }
 
-        // Worth (eigenes TMP Feld, damit Coin Icon als Child daneben steht)
-        if (worthText != null)
+        // Sell Amount (nur Zahl, Coin Icon als Child daneben)
+        if (amountText != null)
         {
-            worthText.text = $"Worth: {item.sellPrice}";
+            amountText.text = $"{item.sellPrice}";
         }
     }
 
