@@ -13,5 +13,5 @@ public class ItemDefinition : ScriptableObject
     public PlayerClass[] allowedClasses; // leer = alle Klassen, gesetzt = nur diese
 
     [Header("Quality")]
-    public ItemQuality[] allowedQualities; // welche Qualities dieses Item haben darf (MUSS gesetzt werden)
+    public ItemQuality quality; // die EINE Quality die dieses Item hat (Normal, Epic oder Legendary)
 }

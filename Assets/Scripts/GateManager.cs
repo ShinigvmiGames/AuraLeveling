@@ -352,7 +352,7 @@ void Awake()
         float rollEpic = UnityEngine.Random.Range(0f, 100f);
         if (rollEpic <= gate.epicItemChance)
         {
-            // Epic drop -> at least Hero rarity, guaranteed Epic+ quality
+            // Epic drop -> at least Hero rarity, guaranteed Epic quality
             var rarity = RollDropRarity(forceMinimum: ItemRarity.Hero);
             TryGrantDropItem(rarity, ItemQuality.Epic, source: "Gate(Epic)");
             return;
@@ -362,7 +362,7 @@ void Awake()
         if (rollRandom <= gate.randomItemChance)
         {
             var rarity = RollDropRarity(forceMinimum: ItemRarity.ERank);
-            TryGrantDropItem(rarity, ItemQuality.Normal, source: "Gate");
+            TryGrantDropItem(rarity, source: "Gate");
         }
     }
 
@@ -380,21 +380,44 @@ void Awake()
         return r;
     }
 
-    void TryGrantDropItem(ItemRarity rarity, ItemQuality minQuality, string source)
+    /// <summary>
+    /// Normal gate drop: roll quality first, then pick item from quality pool.
+    /// </summary>
+    void TryGrantDropItem(ItemRarity rarity, string source)
     {
         EnsureRefs();
-
-        if (anvil != null && anvil.itemDatabase != null)
+        if (anvil == null || anvil.itemDatabase == null)
         {
-            var item = GenerateItemFromDatabaseForcedRarity(anvil.itemDatabase, player, rarity, minQuality);
-            if (item != null)
-            {
-                GrantItem(item, source);
-                return;
-            }
+            Debug.LogWarning("Gate drop failed: ItemDatabase not found.");
+            return;
         }
 
-        Debug.LogWarning("Gate drop failed: ItemDatabase not found or no item matched.");
+        PlayerClass pc = player.playerClass;
+        ItemQuality quality = AnvilSystem.RollQuality(rarity);
+
+        var item = GenerateItemFromDatabase(anvil.itemDatabase, pc, rarity, quality, player.level);
+        if (item != null)
+            GrantItem(item, source);
+    }
+
+    /// <summary>
+    /// Forced quality gate drop (e.g. epic drop guarantee).
+    /// Picks item from the forced quality pool directly.
+    /// </summary>
+    void TryGrantDropItem(ItemRarity rarity, ItemQuality forcedQuality, string source)
+    {
+        EnsureRefs();
+        if (anvil == null || anvil.itemDatabase == null)
+        {
+            Debug.LogWarning("Gate drop failed: ItemDatabase not found.");
+            return;
+        }
+
+        PlayerClass pc = player.playerClass;
+
+        var item = GenerateItemFromDatabase(anvil.itemDatabase, pc, rarity, forcedQuality, player.level);
+        if (item != null)
+            GrantItem(item, source);
     }
 
     void GrantItem(ItemData item, string source)
@@ -414,39 +437,42 @@ void Awake()
         Debug.LogWarning("Item granted but no Inventory/Inbox to store it.");
     }
 
-    static ItemData GenerateItemFromDatabaseForcedRarity(ItemDatabase db, PlayerStats player, ItemRarity rarity, ItemQuality minQuality)
+    /// <summary>
+    /// Quality-first item generation: quality is already decided, pick item from that pool.
+    /// Fallback to Normal if no items exist for the rolled quality.
+    /// </summary>
+    static ItemData GenerateItemFromDatabase(ItemDatabase db, PlayerClass pc, ItemRarity rarity, ItemQuality quality, int playerLevel)
     {
-        if (db == null || player == null) return null;
+        if (db == null) return null;
 
-        var pool = db.GetFor(player.playerClass);
-        if (pool == null || pool.Count == 0) return null;
+        // Pool = Items für diese Klasse UND Quality
+        var pool = db.GetFor(pc, quality);
+
+        // Fallback: wenn kein Epic/Legendary Item existiert → Normal
+        if ((pool == null || pool.Count == 0) && quality != ItemQuality.Normal)
+        {
+            quality = ItemQuality.Normal;
+            pool = db.GetFor(pc, quality);
+        }
+
+        if (pool == null || pool.Count == 0)
+        {
+            Debug.LogWarning($"Gate drop: keine Items für {pc} (Quality: {quality})");
+            return null;
+        }
 
         var chosen = pool[UnityEngine.Random.Range(0, pool.Count)];
-
-        // Roll quality with allowedQualities filter, then guarantee at least minQuality
-        ItemQuality rolled = AnvilSystem.RollQuality(rarity, chosen);
-        ItemQuality quality = rolled > minQuality ? rolled : minQuality;
-
-        // Re-filter against allowedQualities after applying minQuality
-        if (chosen.allowedQualities != null && chosen.allowedQualities.Length > 0)
-        {
-            bool allowed = false;
-            for (int i = 0; i < chosen.allowedQualities.Length; i++)
-                if (chosen.allowedQualities[i] == quality) { allowed = true; break; }
-
-            if (!allowed) quality = rolled; // fallback to the filtered roll
-        }
 
         var item = new ItemData();
         item.definition = chosen;
         item.icon = chosen.icon;
         item.slot = chosen.slot;
         item.itemName = chosen.itemName;
-        item.itemLevel = Mathf.Max(1, player.level);
+        item.itemLevel = Mathf.Max(1, playerLevel);
         item.rarity = rarity;
         item.quality = quality;
 
-        ItemStatGenerator.GenerateStats(item, player.level, player.playerClass);
+        ItemStatGenerator.GenerateStats(item, playerLevel, pc);
 
         return item;
     }

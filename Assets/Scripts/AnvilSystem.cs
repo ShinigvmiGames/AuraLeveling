@@ -444,15 +444,26 @@ public class AnvilSystem : MonoBehaviour
         ItemRarity rarity = RollRarity();
         PlayerClass pc = player.playerClass;
 
-        // ✅ Pool = alle Items die zur Klasse passen (Rarity spielt keine Rolle mehr)
-        List<ItemDefinition> pool = itemDatabase.GetFor(pc);
+        // 1. Erst Quality rollen
+        ItemQuality quality = RollQuality(rarity);
+
+        // 2. Pool = Items die zur Klasse passen UND diese Quality haben
+        List<ItemDefinition> pool = itemDatabase.GetFor(pc, quality);
+
+        // Fallback: wenn kein Epic/Legendary Item existiert → Normal
+        if ((pool == null || pool.Count == 0) && quality != ItemQuality.Normal)
+        {
+            quality = ItemQuality.Normal;
+            pool = itemDatabase.GetFor(pc, quality);
+        }
 
         if (pool == null || pool.Count == 0)
         {
-            Debug.LogError($"Keine Items in der Database für Klasse {pc}. Items hinzufügen!");
+            Debug.LogError($"Keine Items in der Database für Klasse {pc} (Quality: {quality}). Items hinzufügen!");
             return null;
         }
 
+        // 3. Zufälliges Item aus dem Quality-Pool wählen
         ItemDefinition chosen = pool[UnityEngine.Random.Range(0, pool.Count)];
 
         ItemData item = new ItemData();
@@ -462,125 +473,64 @@ public class AnvilSystem : MonoBehaviour
         item.itemName = chosen.itemName;
         item.itemLevel = player.level;
         item.rarity = rarity;
-        item.quality = RollQuality(rarity, chosen);
+        item.quality = quality;
 
         ItemStatGenerator.GenerateStats(item, player.level, player.playerClass);
 
         return item;
     }
 
-bool IsClassAllowed(ItemDefinition def, PlayerClass pc)
-{
-    if (def == null) return false;
-    // Nur Waffen / Offhand bleiben class-locked
-    bool isWeaponSlot = (def.slot == EquipmentSlot.MainHand ||
-                         def.slot == EquipmentSlot.OffHand);
-
-    // Für Rüstung/Accessories: jede Klasse darf es bekommen
-    if (!isWeaponSlot)
-        return true;
-
-    // Ab hier: Waffen/Offhand brauchen allowedClasses
-    if (def.allowedClasses == null || def.allowedClasses.Length == 0)
-        return false;
-
-    for (int i = 0; i < def.allowedClasses.Length; i++)
-        if (def.allowedClasses[i] == pc)
-            return true;
-
-    return false;
-}
     /// <summary>
-    /// Roll item quality based on rarity, filtered by the item's allowedQualities.
-    /// If the rolled quality is not allowed, falls back to the best allowed quality.
+    /// Roll item quality based on rarity.
+    /// Quality wird ZUERST gerollt, dann wird das Item aus dem passenden Pool gewählt.
     /// </summary>
-    public static ItemQuality RollQuality(ItemRarity rarity, ItemDefinition def = null)
+    public static ItemQuality RollQuality(ItemRarity rarity)
     {
         float roll = UnityEngine.Random.Range(0f, 100f);
 
-        // Legendary chance: only from SRank+ (1-3%)
-        // Epic chance: from Rare+ (3-15%)
-        ItemQuality rolled;
         switch (rarity)
         {
             case ItemRarity.ERank:
             case ItemRarity.Common:
             case ItemRarity.DRank:
             case ItemRarity.CRank:
-                rolled = ItemQuality.Normal;
-                break;
+                return ItemQuality.Normal;
 
             case ItemRarity.Rare:
-                rolled = (roll < 3f) ? ItemQuality.Epic : ItemQuality.Normal;
-                break;
+                return (roll < 3f) ? ItemQuality.Epic : ItemQuality.Normal;
 
             case ItemRarity.BRank:
-                rolled = (roll < 5f) ? ItemQuality.Epic : ItemQuality.Normal;
-                break;
+                return (roll < 5f) ? ItemQuality.Epic : ItemQuality.Normal;
 
             case ItemRarity.Hero:
-                rolled = (roll < 8f) ? ItemQuality.Epic : ItemQuality.Normal;
-                break;
+                return (roll < 8f) ? ItemQuality.Epic : ItemQuality.Normal;
 
             case ItemRarity.ARank:
-                rolled = (roll < 12f) ? ItemQuality.Epic : ItemQuality.Normal;
-                break;
+                return (roll < 12f) ? ItemQuality.Epic : ItemQuality.Normal;
 
             case ItemRarity.SRank:
-                if (roll < 1f) rolled = ItemQuality.Legendary;
-                else if (roll < 12f) rolled = ItemQuality.Epic;
-                else rolled = ItemQuality.Normal;
-                break;
+                if (roll < 1f) return ItemQuality.Legendary;
+                if (roll < 12f) return ItemQuality.Epic;
+                return ItemQuality.Normal;
 
             case ItemRarity.Monarch:
-                if (roll < 2f) rolled = ItemQuality.Legendary;
-                else if (roll < 15f) rolled = ItemQuality.Epic;
-                else rolled = ItemQuality.Normal;
-                break;
+                if (roll < 2f) return ItemQuality.Legendary;
+                if (roll < 15f) return ItemQuality.Epic;
+                return ItemQuality.Normal;
 
             case ItemRarity.Godlike:
-                if (roll < 3f) rolled = ItemQuality.Legendary;
-                else if (roll < 18f) rolled = ItemQuality.Epic;
-                else rolled = ItemQuality.Normal;
-                break;
+                if (roll < 3f) return ItemQuality.Legendary;
+                if (roll < 18f) return ItemQuality.Epic;
+                return ItemQuality.Normal;
 
             case ItemRarity.AURAFARMING:
-                if (roll < 5f) rolled = ItemQuality.Legendary;
-                else if (roll < 25f) rolled = ItemQuality.Epic;
-                else rolled = ItemQuality.Normal;
-                break;
+                if (roll < 5f) return ItemQuality.Legendary;
+                if (roll < 25f) return ItemQuality.Epic;
+                return ItemQuality.Normal;
 
             default:
-                rolled = ItemQuality.Normal;
-                break;
+                return ItemQuality.Normal;
         }
-
-        // Filter by allowedQualities from ItemDefinition
-        return FilterQuality(rolled, def);
-    }
-
-    /// <summary>
-    /// If the ItemDefinition has allowedQualities set, ensure the rolled quality
-    /// is one of them. Falls back to the best allowed quality that is <= rolled.
-    /// </summary>
-    static ItemQuality FilterQuality(ItemQuality rolled, ItemDefinition def)
-    {
-        if (def == null) return rolled;
-        if (def.allowedQualities == null || def.allowedQualities.Length == 0) return rolled;
-
-        // Check if rolled quality is allowed
-        for (int i = 0; i < def.allowedQualities.Length; i++)
-            if (def.allowedQualities[i] == rolled) return rolled;
-
-        // Not allowed — find the best allowed quality that is <= rolled
-        ItemQuality best = def.allowedQualities[0];
-        for (int i = 1; i < def.allowedQualities.Length; i++)
-        {
-            if (def.allowedQualities[i] <= rolled && def.allowedQualities[i] > best)
-                best = def.allowedQualities[i];
-        }
-
-        return best;
     }
 
 
