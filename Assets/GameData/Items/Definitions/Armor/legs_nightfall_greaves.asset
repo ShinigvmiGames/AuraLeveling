@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: legs_nightfall_greaves
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Nightfall Greaves
-  icon: {fileID: 21300000, guid: 1d698d88817c4ffd920ed5ee85c34f80, type: 3}
+  icon: {fileID: -3352278458200329124, guid: 48ae0eaf64e414908ae8fbc7b0c891ab, type: 3}
   slot: 4
   allowedClasses: 
   wSTR: 0

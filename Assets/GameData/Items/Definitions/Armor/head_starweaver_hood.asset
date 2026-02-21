@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: head_starweaver_hood
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Starweaver Hood
-  icon: {fileID: 21300000, guid: 5871bbb7331b4b509b75dd57cfb60456, type: 3}
+  icon: {fileID: -5944880424243001748, guid: 6a3ca80fabb0940638e0e3ce6c503f4b, type: 3}
   slot: 2
   allowedClasses: 
   wSTR: 0

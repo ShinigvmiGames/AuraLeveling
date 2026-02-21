@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ring_arcane_loop
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Arcane Loop
-  icon: {fileID: 21300000, guid: 4b22acf7577f4b4785fe3bb221ef1b23, type: 3}
+  icon: {fileID: -224836532543033527, guid: 7c499fc4022464a0396dfcc7bce5af7d, type: 3}
   slot: 6
   allowedClasses: 
   wSTR: 0

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: amulet_eclipse_medallion
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Eclipse Medallion
-  icon: {fileID: 21300000, guid: b896cc6454fc4b4a9603d49adb493405, type: 3}
+  icon: {fileID: 6018977893612618058, guid: 8923ef2cb6e7a432f96d5dda8e510bba, type: 3}
   slot: 7
   allowedClasses: 
   wSTR: 1

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: artifact_orb_of_abyss
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Orb of the Abyss
-  icon: {fileID: 21300000, guid: 13b61d4cc3cf40469d5c1b0ca73fd682, type: 3}
+  icon: {fileID: 6805444289396696414, guid: 4b1c1ac17e28d40548407c8abc409516, type: 3}
   slot: 8
   allowedClasses: 
   wSTR: 0

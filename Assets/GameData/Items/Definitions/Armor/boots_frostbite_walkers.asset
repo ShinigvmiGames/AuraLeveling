@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: boots_frostbite_walkers
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Frostbite Walkers
-  icon: {fileID: 21300000, guid: ff3cfcc7a0af4474a4c17a05dfa07aef, type: 3}
+  icon: {fileID: -6128272821777042783, guid: f9855f034cf344a01ba7dc72da902b1f, type: 3}
   slot: 5
   allowedClasses: 
   wSTR: 0

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: amulet_soulchain_pendant
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Soulchain Pendant
-  icon: {fileID: 21300000, guid: dd690985ab9642daaa2c7c81b65f84f9, type: 3}
+  icon: {fileID: -4349007012760999649, guid: f9128aa672d3243998d170946feae768, type: 3}
   slot: 7
   allowedClasses: 
   wSTR: 0

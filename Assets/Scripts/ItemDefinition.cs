@@ -11,4 +11,7 @@ public class ItemDefinition : ScriptableObject
     [Header("Rules")]
     public EquipmentSlot slot;
     public PlayerClass[] allowedClasses; // leer = alle Klassen, gesetzt = nur diese
+
+    [Header("Quality")]
+    public ItemQuality[] allowedQualities; // welche Qualities dieses Item haben darf (MUSS gesetzt werden)
 }

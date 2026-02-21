@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: belt_windweaver_sash
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Windweaver Sash
-  icon: {fileID: 21300000, guid: fa74afe5436e4defa84fb5954ffe0565, type: 3}
+  icon: {fileID: 7012378583110553405, guid: 16be18e3e28a34c8b860da47ad64839a, type: 3}
   slot: 9
   allowedClasses: 
   wSTR: 0

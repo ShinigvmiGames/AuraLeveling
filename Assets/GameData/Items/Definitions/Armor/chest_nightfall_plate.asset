@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 858a295db3eb8448192da6a3bff8d58e, type: 3}
-  m_Name: ring_of_thorns
+  m_Name: chest_nightfall_plate
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
-  itemName: Ring of Thorns
-  icon: {fileID: 21300000, guid: f48e690971c4443abc886a69ac9d6e3c, type: 3}
-  slot: 6
+  itemName: Nightfall Plate
+  icon: {fileID: 3979253381115340734, guid: e52546916d8e34714bb416d34983cae9, type: 3}
+  slot: 3
   allowedClasses: 
   wSTR: 1
   wDEX: 0

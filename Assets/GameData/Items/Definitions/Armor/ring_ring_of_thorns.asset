@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 858a295db3eb8448192da6a3bff8d58e, type: 3}
-  m_Name: chest_infernal_cuirass
+  m_Name: ring_ring_of_thorns
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
-  itemName: Infernal Cuirass
-  icon: {fileID: 21300000, guid: fcf47997a5bc4ed08544e5dd43dbf701, type: 3}
-  slot: 3
+  itemName: Ring of Thorns
+  icon: {fileID: -8299632859226137141, guid: 599a31d15450447d6ac7b241bf2895e2, type: 3}
+  slot: 6
   allowedClasses: 
   wSTR: 1
   wDEX: 0

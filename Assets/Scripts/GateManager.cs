@@ -386,11 +386,7 @@ void Awake()
 
         if (anvil != null && anvil.itemDatabase != null)
         {
-            // Roll quality first, guarantee at least minQuality
-            ItemQuality rolled = AnvilSystem.RollQuality(rarity);
-            ItemQuality quality = rolled > minQuality ? rolled : minQuality;
-
-            var item = GenerateItemFromDatabaseForcedRarity(anvil.itemDatabase, player, rarity, quality);
+            var item = GenerateItemFromDatabaseForcedRarity(anvil.itemDatabase, player, rarity, minQuality);
             if (item != null)
             {
                 GrantItem(item, source);
@@ -418,7 +414,7 @@ void Awake()
         Debug.LogWarning("Item granted but no Inventory/Inbox to store it.");
     }
 
-    static ItemData GenerateItemFromDatabaseForcedRarity(ItemDatabase db, PlayerStats player, ItemRarity rarity, ItemQuality quality)
+    static ItemData GenerateItemFromDatabaseForcedRarity(ItemDatabase db, PlayerStats player, ItemRarity rarity, ItemQuality minQuality)
     {
         if (db == null || player == null) return null;
 
@@ -426,6 +422,20 @@ void Awake()
         if (pool == null || pool.Count == 0) return null;
 
         var chosen = pool[UnityEngine.Random.Range(0, pool.Count)];
+
+        // Roll quality with allowedQualities filter, then guarantee at least minQuality
+        ItemQuality rolled = AnvilSystem.RollQuality(rarity, chosen);
+        ItemQuality quality = rolled > minQuality ? rolled : minQuality;
+
+        // Re-filter against allowedQualities after applying minQuality
+        if (chosen.allowedQualities != null && chosen.allowedQualities.Length > 0)
+        {
+            bool allowed = false;
+            for (int i = 0; i < chosen.allowedQualities.Length; i++)
+                if (chosen.allowedQualities[i] == quality) { allowed = true; break; }
+
+            if (!allowed) quality = rolled; // fallback to the filtered roll
+        }
 
         var item = new ItemData();
         item.definition = chosen;

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: belt_chains_of_binding
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Chains of Binding
-  icon: {fileID: 21300000, guid: f213c59a97b944e4a6c56718703b2a6b, type: 3}
+  icon: {fileID: -964834827755608902, guid: 2bbf632c7a1d043eeaf6bf5d283fc99e, type: 3}
   slot: 9
   allowedClasses: 
   wSTR: 1

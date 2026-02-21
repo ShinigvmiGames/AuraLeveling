@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: legs_emberforged_cuisses
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Emberforged Cuisses
-  icon: {fileID: 21300000, guid: 22d0574908cb4e49a787fe9a21ec3b64, type: 3}
+  icon: {fileID: 7364829325926405603, guid: a95e4761775d7459283f0558f8da20a3, type: 3}
   slot: 4
   allowedClasses: 
   wSTR: 1
