@@ -13,10 +13,7 @@ MonoBehaviour:
   m_Name: artifact_dragons_heart_stone
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Dragon's Heart Stone
-  icon: {fileID: 4586204860679216993, guid: d42484471f46f46859b32b818032d901, type: 3}
+  icon: {fileID: 21300000, guid: d42484471f46f46859b32b818032d901, type: 3}
   slot: 8
   allowedClasses: 
-  wSTR: 1
-  wDEX: 0
-  wINT: 0
-  wVIT: 1
+  quality: 0

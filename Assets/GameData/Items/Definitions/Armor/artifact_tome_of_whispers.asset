@@ -13,10 +13,7 @@ MonoBehaviour:
   m_Name: artifact_tome_of_whispers
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Tome of Whispers
-  icon: {fileID: -5014033261449287203, guid: 3316ed7c2b7174f98b4c09c7b86cf5e6, type: 3}
+  icon: {fileID: 21300000, guid: 3316ed7c2b7174f98b4c09c7b86cf5e6, type: 3}
   slot: 8
   allowedClasses: 
-  wSTR: 0
-  wDEX: 0
-  wINT: 1
-  wVIT: 1
+  quality: 0

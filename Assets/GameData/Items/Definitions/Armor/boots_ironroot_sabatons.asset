@@ -13,10 +13,7 @@ MonoBehaviour:
   m_Name: boots_ironroot_sabatons
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Ironroot Sabatons
-  icon: {fileID: 6698587325199497612, guid: c421c590b2a8e4b8599817f16d108a5d, type: 3}
+  icon: {fileID: 21300000, guid: c421c590b2a8e4b8599817f16d108a5d, type: 3}
   slot: 5
   allowedClasses: 
-  wSTR: 0
-  wDEX: 0
-  wINT: 0
-  wVIT: 2
+  quality: 0

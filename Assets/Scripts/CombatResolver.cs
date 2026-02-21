@@ -42,7 +42,7 @@ public static class CombatResolver
         public int armor;
         public float armorCap;       // 0.50 normally, 0.60 for Tank
         public float critRate;       // capped at 100
-        public float critDamage;     // e.g. 150 = 1.5x
+        public float critDamage;     // ZUSÄTZLICH zum normalen Schaden, e.g. 50 = 1.5x total
         public float speed;
         public StatType mainStatType;
         public int crossStatValue;   // main stat value for cross-stat defense
@@ -248,9 +248,10 @@ public static class CombatResolver
         float dmgAfterArmor = baseDamage * (1f - totalReduction);
 
         // Crit check (critRate already capped at 100 by PlayerStats)
+        // critDamage ist ZUSÄTZLICH zum normalen Schaden (z.B. 50% = 1.5x total)
         if (Random.value * 100f < attacker.critRate)
         {
-            dmgAfterArmor *= attacker.critDamage / 100f;
+            dmgAfterArmor *= (1f + attacker.critDamage / 100f);
         }
 
         // ±5% variance

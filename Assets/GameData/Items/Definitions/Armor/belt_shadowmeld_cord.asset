@@ -13,10 +13,7 @@ MonoBehaviour:
   m_Name: belt_shadowmeld_cord
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Shadowmeld Cord
-  icon: {fileID: -837205798773423359, guid: 47637a5fa732a4a918c36b2b16fe6a73, type: 3}
+  icon: {fileID: -6531762521971765430, guid: 47637a5fa732a4a918c36b2b16fe6a73, type: 3}
   slot: 9
   allowedClasses: 
-  wSTR: 0
-  wDEX: 1
-  wINT: 1
-  wVIT: 0
+  quality: 0

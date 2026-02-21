@@ -13,10 +13,7 @@ MonoBehaviour:
   m_Name: artifact_chrono_shard
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Chrono Shard
-  icon: {fileID: -6765682711950889668, guid: 292d65cf987b441dbbfd72d20ddca367, type: 3}
+  icon: {fileID: 21300000, guid: 292d65cf987b441dbbfd72d20ddca367, type: 3}
   slot: 8
   allowedClasses: 
-  wSTR: 0
-  wDEX: 1
-  wINT: 1
-  wVIT: 0
+  quality: 0

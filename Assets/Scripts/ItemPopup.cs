@@ -11,8 +11,35 @@ public class ItemPopup : MonoBehaviour
     public Button sellButton;
     public Button closeButton;
 
-    [Header("Icons (assign in Inspector)")]
-    public Image sellGoldIcon;
+    [Header("Worth (eigenes TMP + Coin Icon als Children)")]
+    public TMP_Text worthText; // zeigt "Worth: 123" — eigenes GO damit Coin-Icon daneben passt
+
+    [Header("Rarity / Quality Images")]
+    public Image rarityImage;   // zeigt das Rarity-Icon (ERank, Common, Rare, etc.)
+    public Image qualityImage;  // zeigt das Quality-Icon (Normal, Epic, Legendary)
+
+    [Header("Rarity Sprites (Inspector: ERank..AURAFARMING, 12 Stück)")]
+    public Sprite[] raritySprites; // Index = (int)ItemRarity
+
+    [Header("Quality Sprites (Inspector: Normal, Epic, Legendary, 3 Stück)")]
+    public Sprite[] qualitySprites; // Index = (int)ItemQuality
+
+    [Header("Glow Effect")]
+    public Image glowImage; // Glow-Effekt Image (wie bei Equipment/Inventory)
+
+    [Header("Glow Colors per Rarity")]
+    public Color glowERank      = new Color(0.6f, 0.6f, 0.6f, 0.4f);
+    public Color glowCommon     = new Color(0.8f, 0.8f, 0.8f, 0.5f);
+    public Color glowDRank      = new Color(0.4f, 0.8f, 0.4f, 0.5f);
+    public Color glowCRank      = new Color(0.3f, 0.7f, 1.0f, 0.5f);
+    public Color glowRare       = new Color(0.3f, 0.4f, 1.0f, 0.6f);
+    public Color glowBRank      = new Color(0.7f, 0.3f, 1.0f, 0.6f);
+    public Color glowHero       = new Color(1.0f, 0.5f, 0.0f, 0.6f);
+    public Color glowARank      = new Color(1.0f, 0.3f, 0.3f, 0.7f);
+    public Color glowSRank      = new Color(1.0f, 0.85f, 0.0f, 0.7f);
+    public Color glowMonarch    = new Color(1.0f, 0.0f, 0.5f, 0.8f);
+    public Color glowGodlike    = new Color(0.9f, 0.0f, 0.9f, 0.8f);
+    public Color glowAURAFARMING = new Color(1.0f, 1.0f, 1.0f, 0.9f);
 
     [Header("Systems")]
     public PlayerStats player;
@@ -149,13 +176,48 @@ public class ItemPopup : MonoBehaviour
                 itemIcon.sprite = item.icon;
         }
 
-        // Title: "Shadowfang" or fallback to slot name
-        // Subtitle line: Quality + Rarity + Slot + Level
+        // Title: nur Item-Name + Slot + Level (Rarity/Quality werden jetzt als Images angezeigt)
         if (titleText != null)
         {
             string name = !string.IsNullOrEmpty(item.itemName) ? item.itemName : item.slot.ToString();
-            string qualityTag = item.quality != ItemQuality.Normal ? $"[{item.quality}] " : "";
-            titleText.text = $"{qualityTag}{name}\n<size=70%>{item.rarity} {item.slot}  Lv {item.itemLevel}</size>";
+            titleText.text = $"{name}\n<size=70%>{item.slot}  Lv {item.itemLevel}</size>";
+        }
+
+        // Rarity Image
+        if (rarityImage != null)
+        {
+            int rarityIdx = (int)item.rarity;
+            if (raritySprites != null && rarityIdx >= 0 && rarityIdx < raritySprites.Length && raritySprites[rarityIdx] != null)
+            {
+                rarityImage.sprite = raritySprites[rarityIdx];
+                rarityImage.enabled = true;
+            }
+            else
+            {
+                rarityImage.enabled = false;
+            }
+        }
+
+        // Quality Image
+        if (qualityImage != null)
+        {
+            int qualityIdx = (int)item.quality;
+            if (qualitySprites != null && qualityIdx >= 0 && qualityIdx < qualitySprites.Length && qualitySprites[qualityIdx] != null)
+            {
+                qualityImage.sprite = qualitySprites[qualityIdx];
+                qualityImage.enabled = true;
+            }
+            else
+            {
+                qualityImage.enabled = false;
+            }
+        }
+
+        // Glow Effect (wie bei Equipment/Inventory)
+        if (glowImage != null)
+        {
+            glowImage.enabled = true;
+            glowImage.color = GetGlowColor(item.rarity);
         }
 
         // Stats
@@ -190,13 +252,34 @@ public class ItemPopup : MonoBehaviour
                 stats += $"Aura Bonus: +{item.auraBonusPercent:0.0}%\n";
 
             stats += $"\nItem Aura: {item.itemAura}";
-            stats += $"\nSell:       {item.sellPrice}";
 
             statsText.text = stats;
+        }
 
-            // Show gold icon next to sell price
-            if (sellGoldIcon != null)
-                sellGoldIcon.enabled = true;
+        // Worth (eigenes TMP Feld, damit Coin Icon als Child daneben steht)
+        if (worthText != null)
+        {
+            worthText.text = $"Worth: {item.sellPrice}";
+        }
+    }
+
+    Color GetGlowColor(ItemRarity rarity)
+    {
+        switch (rarity)
+        {
+            case ItemRarity.ERank:       return glowERank;
+            case ItemRarity.Common:      return glowCommon;
+            case ItemRarity.DRank:       return glowDRank;
+            case ItemRarity.CRank:       return glowCRank;
+            case ItemRarity.Rare:        return glowRare;
+            case ItemRarity.BRank:       return glowBRank;
+            case ItemRarity.Hero:        return glowHero;
+            case ItemRarity.ARank:       return glowARank;
+            case ItemRarity.SRank:       return glowSRank;
+            case ItemRarity.Monarch:     return glowMonarch;
+            case ItemRarity.Godlike:     return glowGodlike;
+            case ItemRarity.AURAFARMING: return glowAURAFARMING;
+            default:                     return glowCommon;
         }
     }
 

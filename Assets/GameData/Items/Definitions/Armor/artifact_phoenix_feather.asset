@@ -13,10 +13,7 @@ MonoBehaviour:
   m_Name: artifact_phoenix_feather
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Phoenix Feather
-  icon: {fileID: -7564063329622713624, guid: 8efec2f4cf77d43d3b2594633f2bd918, type: 3}
+  icon: {fileID: 21300000, guid: 8efec2f4cf77d43d3b2594633f2bd918, type: 3}
   slot: 8
   allowedClasses: 
-  wSTR: 1
-  wDEX: 1
-  wINT: 0
-  wVIT: 0
+  quality: 0

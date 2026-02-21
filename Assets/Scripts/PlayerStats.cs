@@ -159,18 +159,19 @@ public class PlayerStats : MonoBehaviour
         // ===== Armor = directly from equipped armor items =====
         armor = bonusArmor;
 
-        // ===== Crit Rate = 5% base + bonusCritRate, HARD CAP 100% =====
-        float rawCritRate = 5f + bonusCritRate;
+        // ===== Crit Rate = 15% base + bonusCritRate, HARD CAP 100% =====
+        float rawCritRate = 15f + bonusCritRate;
         // Class crit rate bonus
         if (playerClass == PlayerClass.Assassine)
             rawCritRate += 15f; // +15% Crit Rate
         critRate = Mathf.Clamp(rawCritRate, 0f, 100f);
 
-        // ===== Crit Damage = 150% base + bonusCritDamage =====
-        float rawCritDamage = 150f + bonusCritDamage;
+        // ===== Crit Damage = 50% base + bonusCritDamage =====
+        // Crit DMG ist ZUSÄTZLICH zum normalen Schaden (50% = 1.5x total)
+        float rawCritDamage = 50f + bonusCritDamage;
         // Class crit damage bonus
         if (playerClass == PlayerClass.Bogenschuetze)
-            rawCritDamage += 25f; // +25% Crit Damage (additive to base 150%)
+            rawCritDamage += 25f; // +25% Crit Damage (additive to base 50%)
         critDamage = rawCritDamage;
 
         // ===== Speed = 100 + DEX*0.5 + bonusSpeed =====

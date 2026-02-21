@@ -13,10 +13,7 @@ MonoBehaviour:
   m_Name: legs_boneweaver_tassets
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Boneweaver Tassets
-  icon: {fileID: 306712509398631252, guid: afaa26e28e62748a399058ba74a755e0, type: 3}
+  icon: {fileID: 21300000, guid: afaa26e28e62748a399058ba74a755e0, type: 3}
   slot: 4
   allowedClasses: 
-  wSTR: 0
-  wDEX: 0
-  wINT: 1
-  wVIT: 1
+  quality: 0

@@ -13,10 +13,7 @@ MonoBehaviour:
   m_Name: chest_voidwalker_plate
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Voidwalker Plate
-  icon: {fileID: 7382686265102811934, guid: ac72d68dd91be42aa81d228f6a15016d, type: 3}
+  icon: {fileID: 21300000, guid: ac72d68dd91be42aa81d228f6a15016d, type: 3}
   slot: 3
   allowedClasses: 
-  wSTR: 1
-  wDEX: 0
-  wINT: 0
-  wVIT: 1
+  quality: 0

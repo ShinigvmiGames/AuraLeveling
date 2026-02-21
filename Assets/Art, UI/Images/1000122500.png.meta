@@ -142,9 +142,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 317
-        y: 124
+        y: 117
         width: 900
-        height: 900
+        height: 907
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -155,94 +155,6 @@ TextureImporter:
       bones: []
       spriteID: 0a7bbbfeee3785fb0800000000000000
       internalID: -4658846344453310560
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 1000122500_1
-      rect:
-        serializedVersion: 2
-        x: 1048
-        y: 636
-        width: 43
-        height: 22
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 046200c68ad7a2830800000000000000
-      internalID: 4047185377465738816
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 1000122500_2
-      rect:
-        serializedVersion: 2
-        x: 1101
-        y: 447
-        width: 7
-        height: 7
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: edf9d13c76e1a33b0800000000000000
-      internalID: -5532075761267269666
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 1000122500_3
-      rect:
-        serializedVersion: 2
-        x: 1114
-        y: 451
-        width: 6
-        height: 7
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 84e94b3e1d619ad70800000000000000
-      internalID: 9054793616529333832
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 1000122500_4
-      rect:
-        serializedVersion: 2
-        x: 441
-        y: 399
-        width: 13
-        height: 13
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: a2b6938ef5ed62fb0800000000000000
-      internalID: -4672803059850974422
       vertices: []
       indices: 
       edges: []

@@ -13,10 +13,7 @@ MonoBehaviour:
   m_Name: chest_nightfall_plate
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Nightfall Plate
-  icon: {fileID: 3979253381115340734, guid: e52546916d8e34714bb416d34983cae9, type: 3}
+  icon: {fileID: 21300000, guid: e52546916d8e34714bb416d34983cae9, type: 3}
   slot: 3
   allowedClasses: 
-  wSTR: 1
-  wDEX: 0
-  wINT: 0
-  wVIT: 1
+  quality: 0

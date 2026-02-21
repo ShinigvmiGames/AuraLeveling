@@ -17,6 +17,10 @@ public class GateUI : MonoBehaviour
     public GameObject panelSelectGate;
     public GameObject panelGateRunning;
 
+    [Header("Energy Display (SelectGate Panel)")]
+    public TMP_Text energyText; // zeigt z.B. "57/100"
+    public EnergySystem energySystem; // optional, wird per FindObjectOfType gesucht
+
     [Header("Running UI")]
     public TMP_Text countdownText;
     public TMP_Text runningRankText;
@@ -28,6 +32,7 @@ public class GateUI : MonoBehaviour
     void OnEnable()
     {
         if (gateManager == null) gateManager = FindObjectOfType<GateManager>();
+        if (energySystem == null) energySystem = FindObjectOfType<EnergySystem>();
 
         // Try to resolve a finished gate when player opens this screen
         if (gateManager != null)
@@ -38,6 +43,7 @@ public class GateUI : MonoBehaviour
 
         ApplyRandomBackground();
         Refresh();
+        RefreshEnergy();
     }
 
     void Update()
@@ -70,6 +76,9 @@ public class GateUI : MonoBehaviour
                 Refresh();
             }
         }
+
+        // Energy-Anzeige immer aktualisieren (auch im SelectGate Panel)
+        RefreshEnergy();
 
         if (!running) return;
 
@@ -120,6 +129,15 @@ public class GateUI : MonoBehaviour
         int idx = Random.Range(0, runningGateBackgrounds.Length);
         runningBgImage.sprite = runningGateBackgrounds[idx];
         runningBgImage.color = Color.white; // ensure full opacity
+    }
+
+    void RefreshEnergy()
+    {
+        if (energyText == null) return;
+        if (energySystem == null) energySystem = FindObjectOfType<EnergySystem>();
+        if (energySystem == null) return;
+
+        energyText.text = $"{energySystem.currentEnergy}/{energySystem.maxEnergy}";
     }
 
     string FormatTime(int seconds)

@@ -13,10 +13,7 @@ MonoBehaviour:
   m_Name: legs_titan_legplates
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Titan Legplates
-  icon: {fileID: -7334310109085863111, guid: be3ce26bbf00943018a33432cfa568fb, type: 3}
+  icon: {fileID: 21300000, guid: be3ce26bbf00943018a33432cfa568fb, type: 3}
   slot: 4
   allowedClasses: 
-  wSTR: 1
-  wDEX: 0
-  wINT: 0
-  wVIT: 1
+  quality: 0

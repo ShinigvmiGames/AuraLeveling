@@ -13,10 +13,7 @@ MonoBehaviour:
   m_Name: boots_gale_striders
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Gale Striders
-  icon: {fileID: 2064417487047975751, guid: e977984dd58d8407e98058e85acc9d6b, type: 3}
+  icon: {fileID: 21300000, guid: e977984dd58d8407e98058e85acc9d6b, type: 3}
   slot: 5
   allowedClasses: 
-  wSTR: 0
-  wDEX: 1
-  wINT: 0
-  wVIT: 1
+  quality: 0
