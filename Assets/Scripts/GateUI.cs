@@ -230,7 +230,7 @@ public class GateUI : MonoBehaviour
             rechargeTitleText.text = $"{used}/{max} recharged today";
 
         if (rechargeBodyText != null)
-            rechargeBodyText.text = $"Recharge {energySystem.energyPerRecharge} Energy for";
+            rechargeBodyText.text = $"Recharge {energySystem.energyPerRecharge} Energy for 1";
 
         panelRechargeConfirm.SetActive(true);
         panelRechargeConfirm.transform.SetAsLastSibling();
