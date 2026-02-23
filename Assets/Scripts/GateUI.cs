@@ -46,25 +46,6 @@ public class GateUI : MonoBehaviour
     public Sprite gateSRankSprite;   // rotes Gate (S-Rank)
     public float gateRotateSpeed = 90f;
 
-    [Header("Pulsing Glow (Running Panel)")]
-    public Image glowImage;               // Glow-Image hinter dem Gate
-    public Color glowNormalColor = new Color(0.3f, 0.5f, 1.0f, 0.4f);  // blau
-    public Color glowSRankColor  = new Color(1.0f, 0.15f, 0.1f, 0.5f); // rot
-    [Range(0.5f, 3f)]
-    public float glowPulseSpeed = 1.5f;   // wie schnell der Glow pulsiert
-    [Range(0.1f, 0.5f)]
-    public float glowMinAlpha = 0.2f;     // niedrigster Alpha
-    [Range(0.6f, 1.0f)]
-    public float glowMaxAlphaNormal = 0.7f;
-    [Range(0.8f, 1.0f)]
-    public float glowMaxAlphaSRank = 1.0f; // S-Rank pulsiert heftiger
-    [Range(0.9f, 1.3f)]
-    public float glowScaleMin = 0.95f;
-    [Range(1.0f, 1.5f)]
-    public float glowScaleMaxNormal = 1.1f;
-    [Range(1.1f, 1.6f)]
-    public float glowScaleMaxSRank = 1.25f; // S-Rank skaliert mehr
-
     [Header("Skip Button (Running Panel)")]
     public Button btnSkipGate;             // "SKIP 1 (MC Icon)" Button
     public TMP_Text skipButtonText;        // optional: falls du den Text per Code setzen willst
@@ -164,6 +145,8 @@ public class GateUI : MonoBehaviour
         // Gate Sprite + Rotation
         if (runningGateImage != null)
         {
+            runningGateImage.type = Image.Type.Simple;
+
             Sprite targetSprite = isSRank ? gateSRankSprite : gateNormalSprite;
             if (targetSprite != null && runningGateImage.sprite != targetSprite)
                 runningGateImage.sprite = targetSprite;
@@ -171,31 +154,6 @@ public class GateUI : MonoBehaviour
             runningGateImage.transform.Rotate(0, 0, -gateRotateSpeed * Time.deltaTime);
         }
 
-        // Pulsing Glow
-        UpdateGlow(isSRank);
-    }
-
-    // ==================== Pulsing Glow ====================
-    void UpdateGlow(bool isSRank)
-    {
-        if (glowImage == null) return;
-
-        glowImage.enabled = true;
-
-        float t = (Mathf.Sin(Time.time * glowPulseSpeed * Mathf.PI * 2f) + 1f) * 0.5f; // 0..1 sine wave
-
-        // Alpha pulsing
-        float maxAlpha = isSRank ? glowMaxAlphaSRank : glowMaxAlphaNormal;
-        float alpha = Mathf.Lerp(glowMinAlpha, maxAlpha, t);
-
-        // Color
-        Color baseColor = isSRank ? glowSRankColor : glowNormalColor;
-        glowImage.color = new Color(baseColor.r, baseColor.g, baseColor.b, alpha);
-
-        // Scale pulsing (S-Rank skaliert mehr)
-        float scaleMax = isSRank ? glowScaleMaxSRank : glowScaleMaxNormal;
-        float scale = Mathf.Lerp(glowScaleMin, scaleMax, t);
-        glowImage.rectTransform.localScale = new Vector3(scale, scale, 1f);
     }
 
     // ==================== Skip Gate ====================
@@ -230,7 +188,7 @@ public class GateUI : MonoBehaviour
             rechargeTitleText.text = $"{used}/{max} recharged today";
 
         if (rechargeBodyText != null)
-            rechargeBodyText.text = $"Recharge {energySystem.energyPerRecharge} Energy for 1      ?";
+            rechargeBodyText.text = $"Recharge {energySystem.energyPerRecharge} Energy for 1   ?";
 
         panelRechargeConfirm.SetActive(true);
         panelRechargeConfirm.transform.SetAsLastSibling();

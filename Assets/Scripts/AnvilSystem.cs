@@ -99,12 +99,13 @@ public class AnvilSystem : MonoBehaviour
     }
 
     /// <summary>
-    /// Skip cost in ManaCrystals: 1 MC per 10 minutes remaining, minimum 1.
+    /// Skip cost in ManaCrystals: 1 MC per 5 minutes remaining.
+    /// 5:00 = 1 MC, 5:01 = 2 MC, 10:00 = 2 MC, 55:00 = 11 MC.
     /// </summary>
     public int GetSkipCostMC()
     {
         float remaining = GetUpgradeRemainingSeconds();
-        return Mathf.Max(1, Mathf.CeilToInt(remaining / 600f));
+        return Mathf.Max(1, Mathf.CeilToInt(remaining / 300f));
     }
 
     public bool TrySkipUpgrade()
