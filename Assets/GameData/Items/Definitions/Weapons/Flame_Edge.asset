@@ -15,8 +15,5 @@ MonoBehaviour:
   itemName: Flame Edge
   icon: {fileID: 3710645932813182471, guid: 1cb876317a50843e789f2ee7bcdc52f6, type: 3}
   slot: 0
-  allowedClasses: 03000000
-  wSTR: 2
-  wDEX: 0.5
-  wINT: 0
-  wVIT: 0.5
+  allowedClasses: 01000000
+  quality: 0

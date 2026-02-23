@@ -15,8 +15,5 @@ MonoBehaviour:
   itemName: Dagger of the Dead
   icon: {fileID: 3039205280311987968, guid: d91359a7a5fcf45cc98736d33a4cd932, type: 3}
   slot: 0
-  allowedClasses: 05000000
-  wSTR: 0
-  wDEX: 0
-  wINT: 2
-  wVIT: 1
+  allowedClasses: 04000000
+  quality: 0

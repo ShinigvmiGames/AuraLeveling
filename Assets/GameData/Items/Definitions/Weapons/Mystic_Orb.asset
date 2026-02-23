@@ -15,8 +15,5 @@ MonoBehaviour:
   itemName: Mystic Orb
   icon: {fileID: 2793884532107958592, guid: 51e386d29ceba4ad9aaa86809828c8f4, type: 3}
   slot: 1
-  allowedClasses: 04000000
-  wSTR: 0
-  wDEX: 0.3
-  wINT: 2
-  wVIT: 0.7
+  allowedClasses: 03000000
+  quality: 0

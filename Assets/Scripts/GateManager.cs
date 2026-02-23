@@ -288,6 +288,26 @@ void Awake()
     }
 
     /// <summary>
+    /// Skip the active gate for 1 MC. Instantly resolves combat.
+    /// </summary>
+    public bool SkipGate(PlayerStats playerRef)
+    {
+        if (activeGate == null) return false;
+        if (playerRef == null) return false;
+
+        if (!playerRef.SpendManaCrystals(1))
+        {
+            Debug.Log("Nicht genug Mana Crystals zum Skippen!");
+            return false;
+        }
+
+        activeGateEndTime = Time.time - 1f;
+        gateReadyToResolve = true;
+        ResolveGateInternal();
+        return true;
+    }
+
+    /// <summary>
     /// Call this from Gate UI when the player enters the Gates screen AFTER timer ended.
     /// Returns true if a resolve happened.
     /// </summary>

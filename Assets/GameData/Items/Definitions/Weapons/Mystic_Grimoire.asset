@@ -15,8 +15,5 @@ MonoBehaviour:
   itemName: Mystic Grimoire
   icon: {fileID: -80477797761535400, guid: 2378a4b72e66a44a085529e91f87deab, type: 3}
   slot: 0
-  allowedClasses: 04000000
-  wSTR: 0
-  wDEX: 0.3
-  wINT: 2
-  wVIT: 0.7
+  allowedClasses: 03000000
+  quality: 0

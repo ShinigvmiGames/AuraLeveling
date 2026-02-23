@@ -10145,6 +10145,9 @@ MonoBehaviour:
   runningGateBackgrounds:
   - {fileID: -4528339643038973982, guid: 9fd9571f31a3841ee9d86017ffcba9e2, type: 3}
   - {fileID: 7088929673931145024, guid: c5b02d606c89a44499bf72d32008a443, type: 3}
+  gateNormalSprite: {fileID: 6197130208427272035, guid: 95f9759ffd9af45ee95b0c5f3323c081, type: 3}
+  gateSRankSprite: {fileID: 7737247590472883853, guid: d9f4b67aa735345c39ac2f3684405535, type: 3}
+  gateRotateSpeed: 90
 --- !u!1 &957138734
 GameObject:
   m_ObjectHideFlags: 0

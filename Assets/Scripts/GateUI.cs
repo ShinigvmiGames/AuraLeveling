@@ -6,6 +6,7 @@ public class GateUI : MonoBehaviour
 {
     [Header("Core")]
     public GateManager gateManager;
+    public PlayerStats player;
 
     [Header("Cards (3 in Hierarchy)")]
     public GateCardUI[] cards = new GateCardUI[3];
@@ -18,8 +19,12 @@ public class GateUI : MonoBehaviour
     public GameObject panelGateRunning;
 
     [Header("Energy Display (SelectGate Panel)")]
-    public TMP_Text energyText; // zeigt z.B. "57/100"
-    public EnergySystem energySystem; // optional, wird per FindObjectOfType gesucht
+    public TMP_Text energyText;
+    public EnergySystem energySystem;
+
+    [Header("Energy Recharge Button (SelectGate Panel)")]
+    public Button btnRechargeEnergy;       // der "+" Button neben der Energy-Anzeige
+    public TMP_Text rechargeCountText;     // optional: zeigt "7/10" verbleibende Aufladungen
 
     [Header("Running UI")]
     public TMP_Text countdownText;
@@ -34,12 +39,40 @@ public class GateUI : MonoBehaviour
     public Sprite gateSRankSprite;   // rotes Gate (S-Rank)
     public float gateRotateSpeed = 90f;
 
+    [Header("Pulsing Glow (Running Panel)")]
+    public Image glowImage;               // Glow-Image hinter dem Gate
+    public Color glowNormalColor = new Color(0.3f, 0.5f, 1.0f, 0.4f);  // blau
+    public Color glowSRankColor  = new Color(1.0f, 0.15f, 0.1f, 0.5f); // rot
+    [Range(0.5f, 3f)]
+    public float glowPulseSpeed = 1.5f;   // wie schnell der Glow pulsiert
+    [Range(0.1f, 0.5f)]
+    public float glowMinAlpha = 0.2f;     // niedrigster Alpha
+    [Range(0.6f, 1.0f)]
+    public float glowMaxAlphaNormal = 0.7f;
+    [Range(0.8f, 1.0f)]
+    public float glowMaxAlphaSRank = 1.0f; // S-Rank pulsiert heftiger
+    [Range(0.9f, 1.3f)]
+    public float glowScaleMin = 0.95f;
+    [Range(1.0f, 1.5f)]
+    public float glowScaleMaxNormal = 1.1f;
+    [Range(1.1f, 1.6f)]
+    public float glowScaleMaxSRank = 1.25f; // S-Rank skaliert mehr
+
+    [Header("Skip Button (Running Panel)")]
+    public Button btnSkipGate;             // "SKIP 1 (MC Icon)" Button
+    public TMP_Text skipButtonText;        // optional: falls du den Text per Code setzen willst
+
+    bool skipBound = false;
+    bool rechargeBound = false;
+
     void OnEnable()
     {
         if (gateManager == null) gateManager = FindObjectOfType<GateManager>();
         if (energySystem == null) energySystem = FindObjectOfType<EnergySystem>();
+        if (player == null) player = FindObjectOfType<PlayerStats>();
 
-        // Try to resolve a finished gate when player opens this screen
+        BindButtons();
+
         if (gateManager != null)
         {
             gateManager.ResolveActiveGateIfReady();
@@ -51,6 +84,20 @@ public class GateUI : MonoBehaviour
         RefreshEnergy();
     }
 
+    void BindButtons()
+    {
+        if (!skipBound && btnSkipGate != null)
+        {
+            btnSkipGate.onClick.AddListener(OnSkipPressed);
+            skipBound = true;
+        }
+        if (!rechargeBound && btnRechargeEnergy != null)
+        {
+            btnRechargeEnergy.onClick.AddListener(OnRechargePressed);
+            rechargeBound = true;
+        }
+    }
+
     void Update()
     {
         if (gateManager == null) return;
@@ -60,7 +107,6 @@ public class GateUI : MonoBehaviour
         bool running = hasActiveGate && remaining > 0.01f;
         bool readyToResolve = gateManager.IsActiveGateReadyToResolve();
 
-        // If gate just finished, resolve it and regenerate
         if (readyToResolve)
         {
             gateManager.ResolveActiveGateIfReady();
@@ -72,7 +118,6 @@ public class GateUI : MonoBehaviour
         if (panelSelectGate != null) panelSelectGate.SetActive(!running);
         if (panelGateRunning != null) panelGateRunning.SetActive(running);
 
-        // If not running and no gates available, regenerate
         if (!running && !hasActiveGate)
         {
             if (gateManager.availableGates == null || gateManager.availableGates.Count == 0)
@@ -82,11 +127,11 @@ public class GateUI : MonoBehaviour
             }
         }
 
-        // Energy-Anzeige immer aktualisieren (auch im SelectGate Panel)
         RefreshEnergy();
 
         if (!running) return;
 
+        // --- Running Panel Updates ---
         int sec = Mathf.CeilToInt(remaining);
         if (countdownText != null) countdownText.text = FormatTime(sec);
         if (progressFill != null) progressFill.fillAmount = gateManager.GetGateProgress01();
@@ -94,18 +139,67 @@ public class GateUI : MonoBehaviour
         if (runningRankText != null && gateManager.activeGate != null)
             runningRankText.text = $"{gateManager.activeGate.rank}";
 
+        bool isSRank = gateManager.activeGate != null && gateManager.activeGate.rank == GateRank.SRank;
+
+        // Gate Sprite + Rotation
         if (runningGateImage != null)
         {
-            // Gate-Sprite: blau für A-E Rank, rot für S-Rank
-            Sprite targetSprite = (gateManager.activeGate.rank == GateRank.SRank) ? gateSRankSprite : gateNormalSprite;
+            Sprite targetSprite = isSRank ? gateSRankSprite : gateNormalSprite;
             if (targetSprite != null && runningGateImage.sprite != targetSprite)
                 runningGateImage.sprite = targetSprite;
 
-            // Rotation im Uhrzeigersinn (negative Z)
             runningGateImage.transform.Rotate(0, 0, -gateRotateSpeed * Time.deltaTime);
+        }
+
+        // Pulsing Glow
+        UpdateGlow(isSRank);
+    }
+
+    // ==================== Pulsing Glow ====================
+    void UpdateGlow(bool isSRank)
+    {
+        if (glowImage == null) return;
+
+        glowImage.enabled = true;
+
+        float t = (Mathf.Sin(Time.time * glowPulseSpeed * Mathf.PI * 2f) + 1f) * 0.5f; // 0..1 sine wave
+
+        // Alpha pulsing
+        float maxAlpha = isSRank ? glowMaxAlphaSRank : glowMaxAlphaNormal;
+        float alpha = Mathf.Lerp(glowMinAlpha, maxAlpha, t);
+
+        // Color
+        Color baseColor = isSRank ? glowSRankColor : glowNormalColor;
+        glowImage.color = new Color(baseColor.r, baseColor.g, baseColor.b, alpha);
+
+        // Scale pulsing (S-Rank skaliert mehr)
+        float scaleMax = isSRank ? glowScaleMaxSRank : glowScaleMaxNormal;
+        float scale = Mathf.Lerp(glowScaleMin, scaleMax, t);
+        glowImage.rectTransform.localScale = new Vector3(scale, scale, 1f);
+    }
+
+    // ==================== Skip Gate ====================
+    void OnSkipPressed()
+    {
+        if (gateManager == null || player == null) return;
+
+        if (gateManager.SkipGate(player))
+        {
+            gateManager.EnsureGates();
+            Refresh();
         }
     }
 
+    // ==================== Energy Recharge ====================
+    void OnRechargePressed()
+    {
+        if (energySystem == null || player == null) return;
+
+        energySystem.BuyEnergyWithMC(player);
+        RefreshEnergy();
+    }
+
+    // ==================== Refresh ====================
     public void Refresh()
     {
         if (gateManager == null) return;
@@ -129,11 +223,6 @@ public class GateUI : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Picks a random sprite from runningGateBackgrounds and assigns it
-    /// to the runningBgImage so the player sees an actual background
-    /// instead of a plain white image.
-    /// </summary>
     void ApplyRandomBackground()
     {
         if (runningBgImage == null) return;
@@ -141,7 +230,7 @@ public class GateUI : MonoBehaviour
 
         int idx = Random.Range(0, runningGateBackgrounds.Length);
         runningBgImage.sprite = runningGateBackgrounds[idx];
-        runningBgImage.color = Color.white; // ensure full opacity
+        runningBgImage.color = Color.white;
     }
 
     void RefreshEnergy()
@@ -151,6 +240,14 @@ public class GateUI : MonoBehaviour
         if (energySystem == null) return;
 
         energyText.text = $"{energySystem.currentEnergy}/{energySystem.maxEnergy}";
+
+        // Recharge count anzeigen (optional)
+        if (rechargeCountText != null)
+            rechargeCountText.text = $"{energySystem.GetRemainingRecharges()}/{energySystem.maxRechargesPerDay}";
+
+        // Recharge Button deaktivieren wenn Limit erreicht
+        if (btnRechargeEnergy != null)
+            btnRechargeEnergy.interactable = energySystem.GetRemainingRecharges() > 0;
     }
 
     string FormatTime(int seconds)
