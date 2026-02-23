@@ -65,7 +65,7 @@ public class GateCardUI : MonoBehaviour
     void Update()
     {
         if (imgGate != null && imgGate.gameObject.activeInHierarchy)
-            imgGate.rectTransform.Rotate(0f, 0f, gateRotateSpeed * Time.deltaTime);
+            imgGate.rectTransform.Rotate(0f, 0f, -gateRotateSpeed * Time.deltaTime);
     }
 
     void OnAccept()

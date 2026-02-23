@@ -1,10 +1,16 @@
 fileFormatVersion: 2
-guid: bb2d5447e8cd74e118766f943c3e4e38
+guid: 95f9759ffd9af45ee95b0c5f3323c081
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6783732092111844945
-    second: 1000120636_0
+      213: 6197130208427272035
+    second: NormalGate_0
+  - first:
+      213: 7129287508657491830
+    second: NormalGate_1
+  - first:
+      213: -2263108520866508108
+    second: NormalGate_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,23 +132,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 1000120636_0
+      name: NormalGate_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 802
-        height: 806
+        x: 301
+        y: 17
+        width: 680
+        height: 680
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: fa9814e9a975bd1a0800000000000000
-      internalID: -6783732092111844945
+      spriteID: 367662c3711a00650800000000000000
+      internalID: 6197130208427272035
       vertices: []
       indices: 
       edges: []
@@ -151,7 +157,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: b1df91973dc734fe8bf8e014b3d19eda
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +167,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      1000120636_0: -6783732092111844945
+      NormalGate_0: 6197130208427272035
+      NormalGate_1: 7129287508657491830
+      NormalGate_2: -2263108520866508108
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

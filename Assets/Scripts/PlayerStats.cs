@@ -111,8 +111,7 @@ public class PlayerStats : MonoBehaviour
     ///
     /// Class Passives:
     ///   Assassine:      +20% Speed, +15% Crit Rate
-    ///   Krieger:        +15% Damage, +10% Max HP
-    ///   Tank:           +30% Max HP, Armor cap raised from 50% to 60%
+    ///   Warrior:        +15% Max HP, Armor cap raised from 50% to 60%
     ///   Bogenschuetze:  +25% Crit Damage, +10% Speed
     ///   Magier:         +25% Damage
     ///   Nekromant:      +15% Max HP (lifesteal 15% handled in CombatResolver)
@@ -135,9 +134,8 @@ public class PlayerStats : MonoBehaviour
         // Class HP bonuses
         switch (playerClass)
         {
-            case PlayerClass.Tank:      rawHP *= 1.30f; break; // +30% HP
+            case PlayerClass.Warrior:   rawHP *= 1.15f; break; // +15% HP
             case PlayerClass.Nekromant:  rawHP *= 1.15f; break; // +15% HP
-            case PlayerClass.Krieger:    rawHP *= 1.10f; break; // +10% HP
         }
         maxHP = System.Math.Max(1L, (long)rawHP);
 
@@ -149,11 +147,8 @@ public class PlayerStats : MonoBehaviour
         float rawDamage = classMainStat * avgWeaponDmg * (1f + level * 0.03f) * auraMultiplier;
 
         // Class damage bonuses
-        switch (playerClass)
-        {
-            case PlayerClass.Magier:  rawDamage *= 1.25f; break; // +25% Damage
-            case PlayerClass.Krieger: rawDamage *= 1.15f; break; // +15% Damage
-        }
+        if (playerClass == PlayerClass.Magier)
+            rawDamage *= 1.25f; // +25% Damage
         damage = System.Math.Max(1L, (long)rawDamage);
 
         // ===== Armor = directly from equipped armor items =====
@@ -195,9 +190,8 @@ public class PlayerStats : MonoBehaviour
         switch (playerClass)
         {
             case PlayerClass.Assassine:     return effDEX;
-            case PlayerClass.Tank:          return effSTR;   // was VIT, now STR
+            case PlayerClass.Warrior:       return effSTR;
             case PlayerClass.Bogenschuetze: return effDEX;
-            case PlayerClass.Krieger:       return effSTR;
             case PlayerClass.Magier:        return effINT;
             case PlayerClass.Nekromant:     return effINT;
             default:                        return effSTR;
@@ -212,9 +206,8 @@ public class PlayerStats : MonoBehaviour
         switch (playerClass)
         {
             case PlayerClass.Assassine:     return StatType.DEX;
-            case PlayerClass.Tank:          return StatType.STR;
+            case PlayerClass.Warrior:       return StatType.STR;
             case PlayerClass.Bogenschuetze: return StatType.DEX;
-            case PlayerClass.Krieger:       return StatType.STR;
             case PlayerClass.Magier:        return StatType.INT;
             case PlayerClass.Nekromant:     return StatType.INT;
             default:                        return StatType.STR;
@@ -236,7 +229,7 @@ public class PlayerStats : MonoBehaviour
     /// </summary>
     public float GetArmorCap()
     {
-        return playerClass == PlayerClass.Tank ? 0.60f : 0.50f;
+        return playerClass == PlayerClass.Warrior ? 0.60f : 0.50f;
     }
 
     // ========= Economy helpers =========

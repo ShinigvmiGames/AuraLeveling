@@ -29,6 +29,11 @@ public class GateUI : MonoBehaviour
     public Image runningBgImage;
     public Sprite[] runningGateBackgrounds;
 
+    [Header("Gate Sprites (Running Panel)")]
+    public Sprite gateNormalSprite;  // blaues Gate (A-E Rank)
+    public Sprite gateSRankSprite;   // rotes Gate (S-Rank)
+    public float gateRotateSpeed = 90f;
+
     void OnEnable()
     {
         if (gateManager == null) gateManager = FindObjectOfType<GateManager>();
@@ -90,7 +95,15 @@ public class GateUI : MonoBehaviour
             runningRankText.text = $"{gateManager.activeGate.rank}";
 
         if (runningGateImage != null)
-            runningGateImage.transform.Rotate(0, 0, 90f * Time.deltaTime);
+        {
+            // Gate-Sprite: blau für A-E Rank, rot für S-Rank
+            Sprite targetSprite = (gateManager.activeGate.rank == GateRank.SRank) ? gateSRankSprite : gateNormalSprite;
+            if (targetSprite != null && runningGateImage.sprite != targetSprite)
+                runningGateImage.sprite = targetSprite;
+
+            // Rotation im Uhrzeigersinn (negative Z)
+            runningGateImage.transform.Rotate(0, 0, -gateRotateSpeed * Time.deltaTime);
+        }
     }
 
     public void Refresh()

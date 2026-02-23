@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: d6da9e45129444cbdb2952a0e4ead7ae
+guid: d9f4b67aa735345c39ac2f3684405535
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7573403095347520127
-    second: 1000120634_0
+      213: 7737247590472883853
+    second: RedGate_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 1000120634_0
+      name: RedGate_0
       rect:
         serializedVersion: 2
-        x: 22
-        y: 10
-        width: 651
-        height: 531
+        x: 300
+        y: 18
+        width: 680
+        height: 680
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 18d97f8a20ed5e690800000000000000
-      internalID: -7573403095347520127
+      spriteID: d8e126990b9306b60800000000000000
+      internalID: 7737247590472883853
       vertices: []
       indices: 
       edges: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: c61c9a9f44ed145599c444c24b3e5a78
+    spriteID: 8823444c985a847ec9cbc523cfd4c9d3
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      1000120634_0: -7573403095347520127
+      RedGate_0: 7737247590472883853
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

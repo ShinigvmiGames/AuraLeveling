@@ -129,12 +129,12 @@ TextureImporter:
       name: rankSRANK_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1280
-        height: 853
+        x: 81
+        y: 148
+        width: 1126
+        height: 623
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: ecfbd401d509b4c0d8aece9a4f1adff4
     internalID: 0
     vertices: []
     indices: 

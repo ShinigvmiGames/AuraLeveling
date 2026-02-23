@@ -68,9 +68,8 @@ public class CharacterCreationUI : MonoBehaviour
 
     [Header("Class Buttons")]
     public Button btnClassAssassin;
-    public Button btnClassTank;
-    public Button btnClassArcher;
     public Button btnClassWarrior;
+    public Button btnClassArcher;
     public Button btnClassMage;
     public Button btnClassNecromancer;
 
@@ -162,9 +161,8 @@ public class CharacterCreationUI : MonoBehaviour
 
         // Class buttons
         if (btnClassAssassin) btnClassAssassin.onClick.AddListener(() => SelectClass(PlayerClass.Assassine));
-        if (btnClassTank) btnClassTank.onClick.AddListener(() => SelectClass(PlayerClass.Tank));
+        if (btnClassWarrior) btnClassWarrior.onClick.AddListener(() => SelectClass(PlayerClass.Warrior));
         if (btnClassArcher) btnClassArcher.onClick.AddListener(() => SelectClass(PlayerClass.Bogenschuetze));
-        if (btnClassWarrior) btnClassWarrior.onClick.AddListener(() => SelectClass(PlayerClass.Krieger));
         if (btnClassMage) btnClassMage.onClick.AddListener(() => SelectClass(PlayerClass.Magier));
         if (btnClassNecromancer) btnClassNecromancer.onClick.AddListener(() => SelectClass(PlayerClass.Nekromant));
     }
@@ -364,9 +362,8 @@ public class CharacterCreationUI : MonoBehaviour
         switch (pc)
         {
             case PlayerClass.Assassine:     return "DEX";
-            case PlayerClass.Tank:          return "STR";
+            case PlayerClass.Warrior:       return "STR";
             case PlayerClass.Bogenschuetze: return "DEX";
-            case PlayerClass.Krieger:       return "STR";
             case PlayerClass.Magier:        return "INT";
             case PlayerClass.Nekromant:     return "INT";
             default:                        return "-";
@@ -378,9 +375,8 @@ public class CharacterCreationUI : MonoBehaviour
         switch (pc)
         {
             case PlayerClass.Assassine:     return "Shadow Step";
-            case PlayerClass.Tank:          return "Iron Fortress";
+            case PlayerClass.Warrior:       return "Iron Fury";
             case PlayerClass.Bogenschuetze: return "Eagle Eye";
-            case PlayerClass.Krieger:       return "Battle Fury";
             case PlayerClass.Magier:        return "Arcane Power";
             case PlayerClass.Nekromant:     return "Soul Drain";
             default:                        return "Unknown";
@@ -393,12 +389,10 @@ public class CharacterCreationUI : MonoBehaviour
         {
             case PlayerClass.Assassine:
                 return "+20% Speed, +15% Crit Rate\nStrike fast, strike deadly. Your enemies won't see it coming.";
-            case PlayerClass.Tank:
-                return "+30% Max HP, Armor cap raised to 60%\nAn unbreakable wall. Nothing gets past you.";
+            case PlayerClass.Warrior:
+                return "+15% Max HP, Armor cap raised to 60%\nBorn for the battlefield. Shield up, fight on.";
             case PlayerClass.Bogenschuetze:
                 return "+25% Crit Damage, +10% Speed\nPrecision over power. One perfect shot is all you need.";
-            case PlayerClass.Krieger:
-                return "+15% Damage, +10% Max HP\nBorn for the battlefield. Hit hard. Survive harder.";
             case PlayerClass.Magier:
                 return "+25% Damage\nPure arcane destruction. The strongest burst in the game.";
             case PlayerClass.Nekromant:

@@ -283,17 +283,13 @@ public static class ItemStatGenerator
                 primaryIdx = 1;  // DEX
                 secondaryIdx = 3; // VIT
                 break;
-            case PlayerClass.Tank:
-                primaryIdx = 0;  // STR (was VIT — changed in stat redesign)
-                secondaryIdx = 3; // VIT (was STR)
+            case PlayerClass.Warrior:
+                primaryIdx = 0;  // STR
+                secondaryIdx = 3; // VIT
                 break;
             case PlayerClass.Bogenschuetze:
                 primaryIdx = 1;  // DEX
                 secondaryIdx = 0; // STR
-                break;
-            case PlayerClass.Krieger:
-                primaryIdx = 0;  // STR
-                secondaryIdx = 3; // VIT
                 break;
             case PlayerClass.Magier:
                 primaryIdx = 2;  // INT

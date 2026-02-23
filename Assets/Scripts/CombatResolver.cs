@@ -63,7 +63,6 @@ public static class CombatResolver
         switch (player.playerClass)
         {
             case PlayerClass.Magier:  playerClassDmgMult = 1.25f; break;
-            case PlayerClass.Krieger: playerClassDmgMult = 1.15f; break;
         }
 
         Fighter pFighter = new Fighter
@@ -268,9 +267,8 @@ public static class CombatResolver
         switch (pc)
         {
             case PlayerClass.Assassine:     return StatType.DEX;
-            case PlayerClass.Tank:          return StatType.STR;
+            case PlayerClass.Warrior:       return StatType.STR;
             case PlayerClass.Bogenschuetze: return StatType.DEX;
-            case PlayerClass.Krieger:       return StatType.STR;
             case PlayerClass.Magier:        return StatType.INT;
             case PlayerClass.Nekromant:     return StatType.INT;
             default:                        return StatType.STR;
@@ -285,9 +283,8 @@ public static class CombatResolver
         switch (gate.enemyClass)
         {
             case PlayerClass.Assassine:     return gate.enemyDEX;
-            case PlayerClass.Tank:          return gate.enemySTR;
+            case PlayerClass.Warrior:       return gate.enemySTR;
             case PlayerClass.Bogenschuetze: return gate.enemyDEX;
-            case PlayerClass.Krieger:       return gate.enemySTR;
             case PlayerClass.Magier:        return gate.enemyINT;
             case PlayerClass.Nekromant:     return gate.enemyINT;
             default:                        return gate.enemySTR;
