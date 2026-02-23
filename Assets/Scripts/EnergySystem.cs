@@ -43,7 +43,7 @@ public class EnergySystem : MonoBehaviour
 
         premiumEnergyBoughtToday++;
         currentEnergy += energyPerRecharge;
-        currentEnergy = Mathf.Min(currentEnergy, maxEnergy + 200);
+        // Energy darf über maxEnergy hinausgehen (kein hartes Cap)
 
         Debug.Log($"Energy +{energyPerRecharge} ({premiumEnergyBoughtToday}/{maxRechargesPerDay})");
         return true;
@@ -52,5 +52,16 @@ public class EnergySystem : MonoBehaviour
     public int GetRemainingRecharges()
     {
         return Mathf.Max(0, maxRechargesPerDay - premiumEnergyBoughtToday);
+    }
+
+    /// <summary>
+    /// Daily Reset: Energy auf maxEnergy (100), Aufladungen auf 0.
+    /// Aufrufen bei Tageswechsel (z.B. per DailyResetManager).
+    /// </summary>
+    public void DailyReset()
+    {
+        currentEnergy = maxEnergy;
+        premiumEnergyBoughtToday = 0;
+        Debug.Log("Energy Daily Reset: zurück auf " + maxEnergy);
     }
 }

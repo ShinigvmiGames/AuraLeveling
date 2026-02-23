@@ -26,6 +26,13 @@ public class GateUI : MonoBehaviour
     public Button btnRechargeEnergy;       // der "+" Button neben der Energy-Anzeige
     public TMP_Text rechargeCountText;     // optional: zeigt "7/10" verbleibende Aufladungen
 
+    [Header("Recharge Confirm Popup")]
+    public GameObject panelRechargeConfirm;   // das Popup Panel (anfangs disabled)
+    public TMP_Text rechargeTitleText;        // "[3/10 recharged today]"
+    public TMP_Text rechargeBodyText;         // optional: Fragetext (kann auch statisch in Unity sein)
+    public Button btnConfirmRecharge;         // Confirm Button im Popup
+    public Button btnCloseRecharge;           // Close/X Button im Popup
+
     [Header("Running UI")]
     public TMP_Text countdownText;
     public TMP_Text runningRankText;
@@ -64,6 +71,7 @@ public class GateUI : MonoBehaviour
 
     bool skipBound = false;
     bool rechargeBound = false;
+    bool confirmBound = false;
 
     void OnEnable()
     {
@@ -96,6 +104,18 @@ public class GateUI : MonoBehaviour
             btnRechargeEnergy.onClick.AddListener(OnRechargePressed);
             rechargeBound = true;
         }
+        if (!confirmBound)
+        {
+            if (btnConfirmRecharge != null)
+                btnConfirmRecharge.onClick.AddListener(OnConfirmRecharge);
+            if (btnCloseRecharge != null)
+                btnCloseRecharge.onClick.AddListener(CloseRechargePopup);
+            confirmBound = true;
+        }
+
+        // Popup anfangs ausblenden
+        if (panelRechargeConfirm != null)
+            panelRechargeConfirm.SetActive(false);
     }
 
     void Update()
@@ -194,9 +214,41 @@ public class GateUI : MonoBehaviour
     void OnRechargePressed()
     {
         if (energySystem == null || player == null) return;
+        if (panelRechargeConfirm == null)
+        {
+            // Kein Popup vorhanden → direkt kaufen (fallback)
+            energySystem.BuyEnergyWithMC(player);
+            RefreshEnergy();
+            return;
+        }
+
+        // Popup öffnen und Texte setzen
+        int used = energySystem.premiumEnergyBoughtToday;
+        int max = energySystem.maxRechargesPerDay;
+
+        if (rechargeTitleText != null)
+            rechargeTitleText.text = $"{used}/{max} recharged today";
+
+        if (rechargeBodyText != null)
+            rechargeBodyText.text = $"Recharge {energySystem.energyPerRecharge} Energy for 1 Mana Crystal?";
+
+        panelRechargeConfirm.SetActive(true);
+        panelRechargeConfirm.transform.SetAsLastSibling();
+    }
+
+    void OnConfirmRecharge()
+    {
+        if (energySystem == null || player == null) return;
 
         energySystem.BuyEnergyWithMC(player);
         RefreshEnergy();
+        CloseRechargePopup();
+    }
+
+    void CloseRechargePopup()
+    {
+        if (panelRechargeConfirm != null)
+            panelRechargeConfirm.SetActive(false);
     }
 
     // ==================== Refresh ====================
