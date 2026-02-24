@@ -11573,9 +11573,10 @@ MonoBehaviour:
   barFillNormal: {fileID: -3791447102025579685, guid: d6ce42d40bcb046ea99fa96458ce4000, type: 3}
   barBgSRank: {fileID: -8736543308066857298, guid: 9be36a34430624e1aa2e4041608af2bb, type: 3}
   barFillSRank: {fileID: 5656730970166676711, guid: e815de2eeda124e1184cbe4a00ef9ff5, type: 3}
+  sRankVideoBackground: {fileID: 1840851049}
   gateNormalSprite: {fileID: 6197130208427272035, guid: 95f9759ffd9af45ee95b0c5f3323c081, type: 3}
   gateSRankSprite: {fileID: 7737247590472883853, guid: d9f4b67aa735345c39ac2f3684405535, type: 3}
-  gateRotateSpeed: 30
+  gateRotateSpeed: 37
   btnSkipGate: {fileID: 894887936}
   skipButtonText: {fileID: 92556677}
 --- !u!1 &957138734
@@ -19778,7 +19779,7 @@ VideoPlayer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1840851049}
   m_Enabled: 1
-  m_VideoClip: {fileID: 0}
+  m_VideoClip: {fileID: 32900000, guid: da75b9e111f0c4b44a35d9cec634c3c7, type: 3}
   m_TargetCameraAlpha: 1
   m_TargetCamera3DLayout: 0
   m_TargetCamera: {fileID: 0}
