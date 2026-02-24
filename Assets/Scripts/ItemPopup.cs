@@ -11,22 +11,22 @@ public class ItemPopup : MonoBehaviour
     public Button sellButton;
     public Button closeButton;
 
-    [Header("Sell Amount (eigenes TMP + Coin Icon als Children)")]
-    public TMP_Text amountText; // zeigt nur den Zahlenwert, z.B. "123"
+    [Header("Sell Amount (own TMP + Coin Icon as Children)")]
+    public TMP_Text amountText; // shows only the numeric value, e.g. "123"
 
     [Header("Rarity Image")]
-    public Image rarityImage;   // zeigt das Rarity-Icon (ERank, Common, Rare, etc.)
+    public Image rarityImage;   // shows the rarity icon (ERank, Common, Rare, etc.)
 
-    [Header("Rarity Sprites (Inspector: ERank..AURAFARMING, 12 Stück)")]
+    [Header("Rarity Sprites (Inspector: ERank..AURAFARMING, 12 entries)")]
     public Sprite[] raritySprites; // Index = (int)ItemRarity
 
-    [Header("Quality Window Backgrounds (Inspector: Normal, Epic, Legendary, Mythic — 4 Stück)")]
-    public Sprite[] qualitySprites; // Index = (int)ItemQuality — Popup-Fenster wechselt je nach Quality
+    [Header("Quality Window Backgrounds (Inspector: Normal, Epic, Legendary, Mythic — 4 entries)")]
+    public Sprite[] qualitySprites; // Index = (int)ItemQuality — popup window changes by quality
 
     [Header("Popup Window Background")]
-    public Image windowBackground; // das Popup-Fenster Image — Sprite wechselt je nach Quality
+    public Image windowBackground; // the popup window Image — sprite changes by quality
 
-    [Header("Glow Effect (per Quality, wie bei Equipment/Inventory)")]
+    [Header("Glow Effect (per Quality, same as Equipment/Inventory)")]
     public Image glowImage;
 
     [Header("Systems")]
@@ -46,14 +46,14 @@ public class ItemPopup : MonoBehaviour
         EnsureRefs();
         BindButtonsOnce();
 
-        // WICHTIG:
-        // NICHT hier oder in Start deaktivieren, wenn du später per Code öffnen willst.
-        // Lass den Default-State im Inspector entscheiden (meist: disabled).
+        // IMPORTANT:
+        // Do NOT disable here or in Start if you want to open via code later.
+        // Let the default state be decided in the Inspector (usually: disabled).
     }
 
     void OnEnable()
     {
-        // falls Scene-Wechsel / Objects neu geladen werden
+        // in case scene switch / objects are reloaded
         EnsureRefs();
         BindButtonsOnce();
     }
@@ -164,7 +164,7 @@ public class ItemPopup : MonoBehaviour
                 itemIcon.sprite = item.icon;
         }
 
-        // Title: nur Item-Name + Slot + Level (Rarity/Quality werden jetzt als Images angezeigt)
+        // Title: only item name + slot + level (rarity/quality are now shown as images)
         if (titleText != null)
         {
             string name = !string.IsNullOrEmpty(item.itemName) ? item.itemName : item.slot.ToString();
@@ -186,7 +186,7 @@ public class ItemPopup : MonoBehaviour
             }
         }
 
-        // Window Background wechselt je nach Quality
+        // Window background changes by quality
         if (windowBackground != null && qualitySprites != null)
         {
             int qualityIdx = (int)item.quality;
@@ -194,7 +194,7 @@ public class ItemPopup : MonoBehaviour
                 windowBackground.sprite = qualitySprites[qualityIdx];
         }
 
-        // Glow Effect per Quality (gleiche Farben wie Equipment/Inventory)
+        // Glow effect per quality (same colors as Equipment/Inventory)
         QualityGlow.Apply(glowImage, item.quality);
 
         // Stats
@@ -233,7 +233,7 @@ public class ItemPopup : MonoBehaviour
             statsText.text = stats;
         }
 
-        // Sell Amount (nur Zahl, Coin Icon als Child daneben)
+        // Sell amount (number only, coin icon as child next to it)
         if (amountText != null)
         {
             amountText.text = $"{item.sellPrice}";

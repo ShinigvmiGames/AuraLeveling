@@ -4,38 +4,46 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
 
-[System.Serializable]
-public class RaceModels
-{
-    public RaceType race;
-    public Sprite[] maleModels;
-    public Sprite[] femaleModels;
-}
-
 public class CharacterCreationUI : MonoBehaviour
 {
-    [Header("UI Steps (Assign in Inspector)")]
-    public GameObject CC_Header;     // Step 1
-    public GameObject CC_Portrait;   // Step 1
-    public GameObject CC_Class;      // Step 2
+    [Header("UI Steps")]
+    public GameObject CC_Header;     // Step 1: Race/Gender/Features
+    public GameObject CC_Portrait;   // Step 1: Portrait preview area
+    public GameObject CC_Class;      // Step 2: Class + Name
 
-    [Header("Preview")]
-    public Image portraitImage;
-    public TMP_Text txtModelIndex;
+    [Header("Portrait Builder")]
+    public PortraitBuilder portraitBuilder;
 
     [Header("Race Buttons")]
     public Button btnRaceHuman;
     public Button btnRaceOrc;
-    public Button btnRaceElf;
-    public Button btnRaceDemon;
+    public Button btnRaceFrostelf;
+    public Button btnRaceGhost;
 
     [Header("Gender Buttons")]
     public Button btnMale;
     public Button btnFemale;
 
-    [Header("Model Picker")]
-    public Button btnPrev;
-    public Button btnNext;
+    [Header("Feature Pickers (5 categories, each has Prev/Next + label)")]
+    public Button btnEyesPrev;
+    public Button btnEyesNext;
+    public TMP_Text txtEyesLabel;
+
+    public Button btnHairPrev;
+    public Button btnHairNext;
+    public TMP_Text txtHairLabel;
+
+    public Button btnMarksPrev;
+    public Button btnMarksNext;
+    public TMP_Text txtMarksLabel;
+
+    public Button btnMouthPrev;
+    public Button btnMouthNext;
+    public TMP_Text txtMouthLabel;
+
+    public Button btnHeadgearPrev;
+    public Button btnHeadgearNext;
+    public TMP_Text txtHeadgearLabel;
 
     [Header("Continue / Back")]
     public Button btnContinue;       // Step1 -> Step2
@@ -55,16 +63,8 @@ public class CharacterCreationUI : MonoBehaviour
     [Header("Confirm")]
     public Button btnConfirm;
 
-    [Header("Data")]
-    public RaceModels[] raceModels;
-
-    [Header("Selection State")]
-    public RaceType selectedRace = RaceType.Human;
-    public GenderType selectedGender = GenderType.Male;
-    public int selectedModelIndex = 0;
-
     [Header("Class Selection")]
-    public PlayerClass? selectedClass = null; // ✅ no default selected
+    public PlayerClass? selectedClass = null;
 
     [Header("Class Buttons")]
     public Button btnClassAssassin;
@@ -74,36 +74,35 @@ public class CharacterCreationUI : MonoBehaviour
     public Button btnClassNecromancer;
 
     [Header("Info Texts")]
-    public TMP_Text txtSelectedClassMainStat; // main stat + passive skill (hidden until class picked)
-    public TMP_Text txtRaceFlavor;            // funny line when selecting race
+    public TMP_Text txtSelectedClassMainStat;
+    public TMP_Text txtRaceFlavor;
 
-    // ----------------------------
-    // Name auto-check gating
-    // ----------------------------
+    // --- Selection State ---
+    RaceType selectedRace = RaceType.Human;
+    GenderType selectedGender = GenderType.Male;
+    int[] featureVariants = new int[5]; // Eyes, Hair, Marks, Mouth, Headgear (0-4)
+    const int VARIANTS_PER_FEATURE = 5;
+
+    // --- Name check ---
     bool nameCheckedOk = false;
     string lastCheckedName = "";
     Coroutine nameCheckRoutine;
 
     void Start()
     {
-        // Force Step 1 as default
         SetStep1Active();
 
-        // Hide class info until class selected
         if (txtSelectedClassMainStat != null)
             txtSelectedClassMainStat.gameObject.SetActive(false);
 
-        // Hide name status by default (show only on error)
         if (txtNameStatus != null)
             txtNameStatus.gameObject.SetActive(false);
 
         BindButtons();
-
-        RefreshPreview();
+        RefreshPortrait();
         ApplySelectedVisuals();
         UpdateRaceFlavorText();
-
-        // Kick first check state
+        RefreshFeatureLabels();
         OnNameChanged();
         UpdateConfirmState();
     }
@@ -113,39 +112,43 @@ public class CharacterCreationUI : MonoBehaviour
         // Race
         if (btnRaceHuman) btnRaceHuman.onClick.AddListener(() => SetRace(RaceType.Human));
         if (btnRaceOrc) btnRaceOrc.onClick.AddListener(() => SetRace(RaceType.Orc));
-        if (btnRaceElf) btnRaceElf.onClick.AddListener(() => SetRace(RaceType.Elf));
-        if (btnRaceDemon) btnRaceDemon.onClick.AddListener(() => SetRace(RaceType.Demon));
+        if (btnRaceFrostelf) btnRaceFrostelf.onClick.AddListener(() => SetRace(RaceType.Frostelf));
+        if (btnRaceGhost) btnRaceGhost.onClick.AddListener(() => SetRace(RaceType.Ghost));
 
         // Gender
         if (btnMale) btnMale.onClick.AddListener(() => SetGender(GenderType.Male));
         if (btnFemale) btnFemale.onClick.AddListener(() => SetGender(GenderType.Female));
 
-        // Model arrows
-        if (btnPrev) btnPrev.onClick.AddListener(PrevModel);
-        if (btnNext) btnNext.onClick.AddListener(NextModel);
+        // Feature pickers
+        if (btnEyesPrev) btnEyesPrev.onClick.AddListener(() => CycleFeature(0, -1));
+        if (btnEyesNext) btnEyesNext.onClick.AddListener(() => CycleFeature(0, 1));
+        if (btnHairPrev) btnHairPrev.onClick.AddListener(() => CycleFeature(1, -1));
+        if (btnHairNext) btnHairNext.onClick.AddListener(() => CycleFeature(1, 1));
+        if (btnMarksPrev) btnMarksPrev.onClick.AddListener(() => CycleFeature(2, -1));
+        if (btnMarksNext) btnMarksNext.onClick.AddListener(() => CycleFeature(2, 1));
+        if (btnMouthPrev) btnMouthPrev.onClick.AddListener(() => CycleFeature(3, -1));
+        if (btnMouthNext) btnMouthNext.onClick.AddListener(() => CycleFeature(3, 1));
+        if (btnHeadgearPrev) btnHeadgearPrev.onClick.AddListener(() => CycleFeature(4, -1));
+        if (btnHeadgearNext) btnHeadgearNext.onClick.AddListener(() => CycleFeature(4, 1));
 
-        // Continue (Step1 -> Step2)
+        // Continue / Back
         if (btnContinue)
         {
             btnContinue.onClick.RemoveAllListeners();
             btnContinue.onClick.AddListener(OnContinuePressed);
         }
-
-        // Back Step2 -> Step1
         if (btnBackToStep1)
         {
             btnBackToStep1.onClick.RemoveAllListeners();
             btnBackToStep1.onClick.AddListener(OnBackToStep1Pressed);
         }
-
-        // Back Step1 -> CharacterSelect scene
         if (btnBackToSelect)
         {
             btnBackToSelect.onClick.RemoveAllListeners();
             btnBackToSelect.onClick.AddListener(OnBackToSelectPressed);
         }
 
-        // Name live -> auto check
+        // Name
         if (inputName != null)
         {
             inputName.onValueChanged.RemoveAllListeners();
@@ -167,9 +170,7 @@ public class CharacterCreationUI : MonoBehaviour
         if (btnClassNecromancer) btnClassNecromancer.onClick.AddListener(() => SelectClass(PlayerClass.Nekromant));
     }
 
-    // ----------------------------
-    // Step control
-    // ----------------------------
+    // ==================== Step Control ====================
     void SetStep1Active()
     {
         if (CC_Header) CC_Header.SetActive(true);
@@ -186,113 +187,81 @@ public class CharacterCreationUI : MonoBehaviour
 
     void OnContinuePressed()
     {
-        var models = GetCurrentModelList();
-        if (models == null || models.Length == 0)
-            return;
-
         SetStep2Active();
         UpdateConfirmState();
     }
 
-    void OnBackToStep1Pressed()
-    {
-        SetStep1Active();
-    }
+    void OnBackToStep1Pressed() => SetStep1Active();
+    void OnBackToSelectPressed() => SceneManager.LoadScene(sceneCharacterSelect);
 
-    void OnBackToSelectPressed()
-    {
-        SceneManager.LoadScene(sceneCharacterSelect);
-    }
-
-    // ----------------------------
-    // Race / Gender / Model
-    // ----------------------------
+    // ==================== Race / Gender ====================
     void SetRace(RaceType race)
     {
         selectedRace = race;
-        selectedModelIndex = 0;
-        RefreshPreview();
+        ResetFeatures();
+        RefreshPortrait();
         ApplySelectedVisuals();
         UpdateRaceFlavorText();
+        RefreshFeatureLabels();
     }
 
     void SetGender(GenderType gender)
     {
         selectedGender = gender;
-        selectedModelIndex = 0;
-        RefreshPreview();
+        ResetFeatures();
+        RefreshPortrait();
         ApplySelectedVisuals();
+        RefreshFeatureLabels();
     }
 
-    void PrevModel()
+    void ResetFeatures()
     {
-        var models = GetCurrentModelList();
-        if (models == null || models.Length == 0) return;
-
-        selectedModelIndex--;
-        if (selectedModelIndex < 0) selectedModelIndex = models.Length - 1;
-
-        RefreshPreview();
+        for (int i = 0; i < featureVariants.Length; i++)
+            featureVariants[i] = 0;
     }
 
-    void NextModel()
+    // ==================== Feature Picker ====================
+    void CycleFeature(int featureIndex, int direction)
     {
-        var models = GetCurrentModelList();
-        if (models == null || models.Length == 0) return;
+        featureVariants[featureIndex] += direction;
+        if (featureVariants[featureIndex] < 0) featureVariants[featureIndex] = VARIANTS_PER_FEATURE - 1;
+        if (featureVariants[featureIndex] >= VARIANTS_PER_FEATURE) featureVariants[featureIndex] = 0;
 
-        selectedModelIndex++;
-        if (selectedModelIndex >= models.Length) selectedModelIndex = 0;
+        // Update only the changed layer for performance
+        PortraitFeature feature = (PortraitFeature)featureIndex;
+        if (portraitBuilder != null)
+            portraitBuilder.SetFeature(feature, selectedRace, selectedGender, featureVariants[featureIndex]);
 
-        RefreshPreview();
+        RefreshFeatureLabels();
     }
 
-    Sprite[] GetCurrentModelList()
+    void RefreshFeatureLabels()
     {
-        if (raceModels == null) return null;
-
-        foreach (var rm in raceModels)
-        {
-            if (rm != null && rm.race == selectedRace)
-                return selectedGender == GenderType.Male ? rm.maleModels : rm.femaleModels;
-        }
-        return null;
+        if (txtEyesLabel) txtEyesLabel.text = $"Eyes {featureVariants[0] + 1}/{VARIANTS_PER_FEATURE}";
+        if (txtHairLabel) txtHairLabel.text = $"Hair {featureVariants[1] + 1}/{VARIANTS_PER_FEATURE}";
+        if (txtMarksLabel) txtMarksLabel.text = $"Marks {featureVariants[2] + 1}/{VARIANTS_PER_FEATURE}";
+        if (txtMouthLabel) txtMouthLabel.text = $"Mouth {featureVariants[3] + 1}/{VARIANTS_PER_FEATURE}";
+        if (txtHeadgearLabel) txtHeadgearLabel.text = $"Headgear {featureVariants[4] + 1}/{VARIANTS_PER_FEATURE}";
     }
 
-    void RefreshPreview()
+    // ==================== Portrait ====================
+    void RefreshPortrait()
     {
-        var models = GetCurrentModelList();
+        if (portraitBuilder == null) return;
 
-        if (portraitImage != null)
-        {
-            if (models != null && models.Length > 0)
-            {
-                selectedModelIndex = Mathf.Clamp(selectedModelIndex, 0, models.Length - 1);
-                portraitImage.sprite = models[selectedModelIndex];
-                portraitImage.color = Color.white;
-            }
-            else
-            {
-                portraitImage.sprite = null;
-                portraitImage.color = new Color(1, 1, 1, 0.15f);
-            }
-        }
-
-        if (txtModelIndex != null)
-        {
-            int count = (models == null) ? 0 : models.Length;
-            txtModelIndex.text = (count > 0) ? $"Model {selectedModelIndex + 1}/{count}" : "No Models";
-        }
+        portraitBuilder.SetBase(selectedRace, selectedGender);
+        portraitBuilder.Build(selectedRace, selectedGender,
+            featureVariants[0], featureVariants[1], featureVariants[2],
+            featureVariants[3], featureVariants[4]);
     }
 
-    // ----------------------------
-    // Visual highlights
-    // ----------------------------
+    // ==================== Visual Highlights ====================
     void ApplySelectedVisuals()
     {
         SetBtnSelected(btnRaceHuman, selectedRace == RaceType.Human);
         SetBtnSelected(btnRaceOrc, selectedRace == RaceType.Orc);
-        SetBtnSelected(btnRaceElf, selectedRace == RaceType.Elf);
-        SetBtnSelected(btnRaceDemon, selectedRace == RaceType.Demon);
+        SetBtnSelected(btnRaceFrostelf, selectedRace == RaceType.Frostelf);
+        SetBtnSelected(btnRaceGhost, selectedRace == RaceType.Ghost);
 
         SetBtnSelected(btnMale, selectedGender == GenderType.Male);
         SetBtnSelected(btnFemale, selectedGender == GenderType.Female);
@@ -301,16 +270,13 @@ public class CharacterCreationUI : MonoBehaviour
     void SetBtnSelected(Button b, bool selected)
     {
         if (b == null) return;
-
         var colors = b.colors;
         colors.normalColor = selected ? new Color(0.70f, 0.88f, 1f, 1f) : Color.white;
         colors.highlightedColor = colors.normalColor;
         b.colors = colors;
     }
 
-    // ----------------------------
-    // Race funny line
-    // ----------------------------
+    // ==================== Race Flavor Text ====================
     void UpdateRaceFlavorText()
     {
         if (txtRaceFlavor == null) return;
@@ -319,15 +285,13 @@ public class CharacterCreationUI : MonoBehaviour
         {
             RaceType.Human => "Humans: somehow always confident… even at level 1.",
             RaceType.Orc => "Orcs: peace was never an option.",
-            RaceType.Elf => "Frost Elves: elegant, cold, and silently judging you.",
-            RaceType.Demon => "Demons: charming smile, questionable decisions.",
+            RaceType.Frostelf => "Frost Elves: elegant, cold, and silently judging you.",
+            RaceType.Ghost => "Ghosts: already dead, nothing left to lose.",
             _ => "Choose wisely."
         };
     }
 
-    // ----------------------------
-    // Class selection + text (HIDDEN until selected)
-    // ----------------------------
+    // ==================== Class Selection ====================
     void SelectClass(PlayerClass pc)
     {
         selectedClass = pc;
@@ -341,16 +305,13 @@ public class CharacterCreationUI : MonoBehaviour
 
     void UpdateSelectedClassText()
     {
-        if (selectedClass == null) return;
-        if (txtSelectedClassMainStat == null) return;
+        if (selectedClass == null || txtSelectedClassMainStat == null) return;
 
         PlayerClass pc = selectedClass.Value;
-
         string mainStat = GetMainStatForClass(pc);
         string passiveName = GetPassiveName(pc);
         string passiveDesc = GetPassiveDescription(pc);
 
-        // Main Stat + Passive (replaces the old joke)
         txtSelectedClassMainStat.text =
             $"<b>Main Stat:</b> {mainStat}\n" +
             $"<b>{passiveName}</b>\n" +
@@ -359,60 +320,54 @@ public class CharacterCreationUI : MonoBehaviour
 
     string GetMainStatForClass(PlayerClass pc)
     {
-        switch (pc)
+        return pc switch
         {
-            case PlayerClass.Assassine:     return "DEX";
-            case PlayerClass.Warrior:       return "STR";
-            case PlayerClass.Bogenschuetze: return "DEX";
-            case PlayerClass.Magier:        return "INT";
-            case PlayerClass.Nekromant:     return "INT";
-            default:                        return "-";
-        }
+            PlayerClass.Assassine => "DEX",
+            PlayerClass.Warrior => "STR",
+            PlayerClass.Bogenschuetze => "DEX",
+            PlayerClass.Magier => "INT",
+            PlayerClass.Nekromant => "INT",
+            _ => "-"
+        };
     }
 
     string GetPassiveName(PlayerClass pc)
     {
-        switch (pc)
+        return pc switch
         {
-            case PlayerClass.Assassine:     return "Shadow Step";
-            case PlayerClass.Warrior:       return "Iron Fury";
-            case PlayerClass.Bogenschuetze: return "Eagle Eye";
-            case PlayerClass.Magier:        return "Arcane Power";
-            case PlayerClass.Nekromant:     return "Soul Drain";
-            default:                        return "Unknown";
-        }
+            PlayerClass.Assassine => "Shadow Step",
+            PlayerClass.Warrior => "Iron Fury",
+            PlayerClass.Bogenschuetze => "Eagle Eye",
+            PlayerClass.Magier => "Arcane Power",
+            PlayerClass.Nekromant => "Soul Drain",
+            _ => "Unknown"
+        };
     }
 
     string GetPassiveDescription(PlayerClass pc)
     {
-        switch (pc)
+        return pc switch
         {
-            case PlayerClass.Assassine:
-                return "+20% Speed, +15% Crit Rate\nStrike fast, strike deadly. Your enemies won't see it coming.";
-            case PlayerClass.Warrior:
-                return "+15% Max HP, Armor cap raised to 60%\nBorn for the battlefield. Shield up, fight on.";
-            case PlayerClass.Bogenschuetze:
-                return "+25% Crit Damage, +10% Speed\nPrecision over power. One perfect shot is all you need.";
-            case PlayerClass.Magier:
-                return "+25% Damage\nPure arcane destruction. The strongest burst in the game.";
-            case PlayerClass.Nekromant:
-                return "+15% Max HP, 15% Lifesteal\nDrains the life force of your enemies to sustain yourself.";
-            default:
-                return "";
-        }
+            PlayerClass.Assassine =>
+                "+20% Speed, +15% Crit Rate\nStrike fast, strike deadly. Your enemies won't see it coming.",
+            PlayerClass.Warrior =>
+                "+15% Max HP, Armor cap raised to 60%\nBorn for the battlefield. Shield up, fight on.",
+            PlayerClass.Bogenschuetze =>
+                "+25% Crit Damage, +10% Speed\nPrecision over power. One perfect shot is all you need.",
+            PlayerClass.Magier =>
+                "+25% Damage\nPure arcane destruction. The strongest burst in the game.",
+            PlayerClass.Nekromant =>
+                "+15% Max HP, 15% Lifesteal\nDrains the life force of your enemies to sustain yourself.",
+            _ => ""
+        };
     }
 
-
-    // ----------------------------
-    // Name auto-check (NO CHECK BUTTON)
-    // ----------------------------
+    // ==================== Name Validation ====================
     void OnNameChanged()
     {
-        // Invalidate old check immediately
         nameCheckedOk = false;
         lastCheckedName = "";
 
-        // Hide status while typing (we only show errors)
         if (txtNameStatus != null)
             txtNameStatus.gameObject.SetActive(false);
 
@@ -448,7 +403,6 @@ public class CharacterCreationUI : MonoBehaviour
         }
 
         bool available = ProfileManager.Instance.IsNameAvailable(name);
-
         if (!available)
         {
             ShowNameError("Name is already in use.");
@@ -458,11 +412,9 @@ public class CharacterCreationUI : MonoBehaviour
             yield break;
         }
 
-        // ✅ Valid
         nameCheckedOk = true;
         lastCheckedName = name;
 
-        // Hide any error now
         if (txtNameStatus != null)
             txtNameStatus.gameObject.SetActive(false);
 
@@ -476,61 +428,40 @@ public class CharacterCreationUI : MonoBehaviour
         txtNameStatus.text = msg;
     }
 
-    // ----------------------------
-    // Confirm gating
-    // ----------------------------
+    // ==================== Confirm ====================
     void UpdateConfirmState()
     {
         bool classOk = (selectedClass != null);
-
         string currentName = (inputName != null) ? inputName.text.Trim() : "";
         bool nameOk = nameCheckedOk && currentName == lastCheckedName;
 
-        bool ok = classOk && nameOk;
-
         if (btnConfirm != null)
-            btnConfirm.interactable = ok;
+            btnConfirm.interactable = classOk && nameOk;
     }
 
-    // ----------------------------
-    // Confirm -> Save -> Main (Anvil tab)
-    // ----------------------------
     void ConfirmCreate()
     {
         if (btnConfirm == null || !btnConfirm.interactable) return;
-
-        if (ProfileManager.Instance == null)
-        {
-            ShowNameError("ProfileManager missing.");
-            return;
-        }
-
-        if (selectedClass == null)
-            return;
+        if (ProfileManager.Instance == null) { ShowNameError("ProfileManager missing."); return; }
+        if (selectedClass == null) return;
 
         var pm = ProfileManager.Instance;
-
-        int slot = pm.GetHighestAvailableSlotIndex(); // highest free slot
-        if (slot < 0)
-        {
-            ShowNameError("All character slots are full.");
-            return;
-        }
+        int slot = pm.GetHighestAvailableSlotIndex();
+        if (slot < 0) { ShowNameError("All character slots are full."); return; }
 
         string name = inputName.text.Trim();
 
         CharacterData cd = new CharacterData(
-            name,
-            1,
-            selectedRace,
-            selectedGender,
-            selectedModelIndex,
+            name, 1,
+            selectedRace, selectedGender,
+            featureVariants[0], featureVariants[1], featureVariants[2],
+            featureVariants[3], featureVariants[4],
             selectedClass.Value
         );
 
         pm.CreateOrReplaceCharacter(slot, cd);
 
-        PlayerPrefs.SetInt("START_TAB", 1); // 1 = Anvil
+        PlayerPrefs.SetInt("START_TAB", 1);
         PlayerPrefs.Save();
 
         SceneManager.LoadScene(sceneMain);

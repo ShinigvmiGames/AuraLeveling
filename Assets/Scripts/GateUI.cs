@@ -23,20 +23,20 @@ public class GateUI : MonoBehaviour
     public EnergySystem energySystem;
 
     [Header("Energy Recharge Button (SelectGate Panel)")]
-    public Button btnRechargeEnergy;       // der "+" Button neben der Energy-Anzeige
-    public TMP_Text rechargeCountText;     // optional: zeigt "7/10" verbleibende Aufladungen
+    public Button btnRechargeEnergy;       // the "+" button next to the energy display
+    public TMP_Text rechargeCountText;     // optional: shows "7/10" remaining recharges
 
     [Header("Recharge Confirm Popup")]
     public GameObject panelRechargeConfirm;   // das Popup Panel (anfangs disabled)
-    public TMP_Text rechargeTitleText;        // "[3/10 recharged today]"
-    public TMP_Text rechargeBodyText;         // optional: Fragetext (kann auch statisch in Unity sein)
+    public TMP_Text rechargeTitleText;        // e.g. "3/10 recharged today"
+    public TMP_Text rechargeBodyText;         // optional: question text (can also be static in Unity)
     public Button btnConfirmRecharge;         // Confirm Button im Popup
     public Button btnCloseRecharge;           // Close/X Button im Popup
 
     [Header("Running UI")]
     public TMP_Text countdownText;
     public Image runningRankImage;         // Rank als Bild (ersetzt runningRankText)
-    public RankSpriteSet rankSprites;      // gleiche ScriptableObject wie bei GateCardUI
+    public RankSpriteSet rankSprites;      // same ScriptableObject as GateCardUI
     public Image runningGateImage;
     public Image runningBgImage;
     public Sprite[] runningGateBackgrounds;
@@ -46,8 +46,8 @@ public class GateUI : MonoBehaviour
     public Image gateProgressBarFill;      // Fill-Image (Filled, Left-to-Right)
     public Sprite barBgNormal;             // normale Bar Background Sprite
     public Sprite barFillNormal;           // normale Bar Fill Sprite
-    public Sprite barBgSRank;             // S-Rank Bar Background Sprite (rot/schwarz)
-    public Sprite barFillSRank;           // S-Rank Bar Fill Sprite (rot/schwarz)
+    public Sprite barBgSRank;             // S-Rank Bar Background Sprite (red/black)
+    public Sprite barFillSRank;           // S-Rank Bar Fill Sprite (red/black)
 
     [Header("S-Rank Video Background (Running Panel)")]
     public GameObject sRankVideoBackground;  // RawImage + VideoPlayer, nur bei S-Rank sichtbar
@@ -105,7 +105,7 @@ public class GateUI : MonoBehaviour
             confirmBound = true;
         }
 
-        // Popup anfangs ausblenden
+        // Hide popup initially
         if (panelRechargeConfirm != null)
             panelRechargeConfirm.SetActive(false);
     }
@@ -149,7 +149,7 @@ public class GateUI : MonoBehaviour
 
         bool isSRank = gateManager.activeGate != null && gateManager.activeGate.rank == GateRank.SRank;
 
-        // Progress Bar — Sprites tauschen je nach Rank
+        // Progress Bar — swap sprites based on rank
         if (gateProgressBarFill != null)
         {
             gateProgressBarFill.fillAmount = gateManager.GetGateProgress01();
@@ -162,14 +162,14 @@ public class GateUI : MonoBehaviour
             if (targetBg != null) gateProgressBarBg.sprite = targetBg;
         }
 
-        // Rank Image (statt Text)
+        // Rank Image (instead of Text)
         if (runningRankImage != null && rankSprites != null && gateManager.activeGate != null)
         {
             Sprite rankSprite = rankSprites.Get(gateManager.activeGate.rank);
             if (rankSprite != null) runningRankImage.sprite = rankSprite;
         }
 
-        // S-Rank Video Background — nur bei S-Rank sichtbar
+        // S-Rank Video Background — only visible for S-Rank
         if (sRankVideoBackground != null)
             sRankVideoBackground.SetActive(isSRank);
 
@@ -205,13 +205,13 @@ public class GateUI : MonoBehaviour
         if (energySystem == null || player == null) return;
         if (panelRechargeConfirm == null)
         {
-            // Kein Popup vorhanden → direkt kaufen (fallback)
+            // No popup available — buy directly (fallback)
             energySystem.BuyEnergyWithMC(player);
             RefreshEnergy();
             return;
         }
 
-        // Popup öffnen und Texte setzen
+        // Open popup and set texts
         int used = energySystem.premiumEnergyBoughtToday;
         int max = energySystem.maxRechargesPerDay;
 
@@ -282,11 +282,11 @@ public class GateUI : MonoBehaviour
 
         energyText.text = $"{energySystem.currentEnergy}/{energySystem.maxEnergy}";
 
-        // Recharge count anzeigen (optional)
+        // Show recharge count (optional)
         if (rechargeCountText != null)
             rechargeCountText.text = $"{energySystem.GetRemainingRecharges()}/{energySystem.maxRechargesPerDay}";
 
-        // Recharge Button deaktivieren wenn Limit erreicht
+        // Disable recharge button when limit reached
         if (btnRechargeEnergy != null)
             btnRechargeEnergy.interactable = energySystem.GetRemainingRecharges() > 0;
     }

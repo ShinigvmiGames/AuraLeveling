@@ -103,7 +103,7 @@ public class PlayerStats : MonoBehaviour
     void Start()
     {
         RecalculateStats();
-        Debug.Log("Player Stats initialisiert");
+        Debug.Log("Player Stats initialized");
     }
 
     /// <summary>
@@ -162,7 +162,7 @@ public class PlayerStats : MonoBehaviour
         critRate = Mathf.Clamp(rawCritRate, 0f, 100f);
 
         // ===== Crit Damage = 50% base + bonusCritDamage =====
-        // Crit DMG ist ZUSÄTZLICH zum normalen Schaden (50% = 1.5x total)
+        // Crit DMG is ADDITIONAL to normal damage (50% = 1.5x total)
         float rawCritDamage = 50f + bonusCritDamage;
         // Class crit damage bonus
         if (playerClass == PlayerClass.Bogenschuetze)
@@ -310,8 +310,8 @@ public class PlayerStats : MonoBehaviour
         xpToNextLevel = Mathf.RoundToInt(xpToNextLevel * 1.25f);
         unspentPoints += 3;
 
-        Debug.Log("LEVEL UP! Neues Level: " + level);
-        Debug.Log("Du hast 3 Statuspunkte zu vergeben!");
+        Debug.Log("LEVEL UP! New level: " + level);
+        Debug.Log("You have 3 stat points to spend!");
 
         RecalculateStats();
     }

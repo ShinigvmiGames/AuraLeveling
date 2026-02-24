@@ -75,9 +75,9 @@ public class CharacterUI : MonoBehaviour
         if (txtPoints != null)
         {
             if (player.unspentPoints > 0)
-                txtPoints.text = $"Verfügbare Punkte: <color=#FFD700>{player.unspentPoints}</color>";
+                txtPoints.text = $"Available Points: <color=#FFD700>{player.unspentPoints}</color>";
             else
-                txtPoints.text = "Verfügbare Punkte: 0";
+                txtPoints.text = "Available Points: 0";
         }
 
         if (txtSTR != null) txtSTR.text = FormatStat("STR", player.STR, player.bonusSTR);

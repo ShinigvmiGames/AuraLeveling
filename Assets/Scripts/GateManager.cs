@@ -262,7 +262,7 @@ void Awake()
 
         if (energy != null && !energy.UseEnergy(selected.energyCost))
         {
-            Debug.Log("Nicht genug Energie!");
+            Debug.Log("Not enough energy!");
             return;
         }
 
@@ -297,7 +297,7 @@ void Awake()
 
         if (!playerRef.SpendManaCrystals(1))
         {
-            Debug.Log("Nicht genug Mana Crystals zum Skippen!");
+            Debug.Log("Not enough Mana Crystals to skip!");
             return false;
         }
 
@@ -343,7 +343,7 @@ void Awake()
         }
         else
         {
-            Debug.Log("Gate verloren → keine Belohnung.");
+            Debug.Log("Gate lost — no rewards.");
         }
 
         // Clear state
@@ -465,10 +465,10 @@ void Awake()
     {
         if (db == null) return null;
 
-        // Pool = Items für diese Klasse UND Quality
+        // Pool = items for this class AND quality
         var pool = db.GetFor(pc, quality);
 
-        // Fallback: wenn kein Epic/Legendary Item existiert → Normal
+        // Fallback: if no Epic/Legendary item exists → Normal
         if ((pool == null || pool.Count == 0) && quality != ItemQuality.Normal)
         {
             quality = ItemQuality.Normal;
@@ -477,7 +477,7 @@ void Awake()
 
         if (pool == null || pool.Count == 0)
         {
-            Debug.LogWarning($"Gate drop: keine Items für {pc} (Quality: {quality})");
+            Debug.LogWarning($"Gate drop: no items for {pc} (Quality: {quality})");
             return null;
         }
 

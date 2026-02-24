@@ -13,18 +13,18 @@ public class SplashScreenUI : MonoBehaviour
     public CanvasGroup fadeOverlayGroup;  // optional: CanvasGroup auf FlashOverlay (kann null sein)
 
     [Header("Timing")]
-    public float inputDelay = 1f;         // 1 Sekunde Sperre
-    public float blinkSpeed = 1.2f;       // höher = schneller blinken (1.0–1.6 passt meist gut)
-    public float minAlpha = 0.25f;        // wie “aus” soll es werden
-    public float maxAlpha = 1f;           // wie “an” soll es werden
-    public float fadeOutTime = 0.6f;      // Übergang in nächste Szene
+    public float inputDelay = 1f;         // 1 second lock
+    public float blinkSpeed = 1.2f;       // higher = faster blink (1.0–1.6 works well)
+    public float minAlpha = 0.25f;        // how “off” it should get
+    public float maxAlpha = 1f;           // how “on” it should get
+    public float fadeOutTime = 0.6f;      // transition to next scene
 
     bool canTap = false;
     Coroutine blinkRoutine;
 
     void Start()
     {
-        // Startzustand
+        // Initial state
         if (tapToStartGroup != null)
         {
             tapToStartGroup.alpha = 0f;

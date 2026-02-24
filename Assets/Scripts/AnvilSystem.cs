@@ -5,8 +5,8 @@ using UnityEngine;
 public class AnvilSystem : MonoBehaviour
 {
     [Header("Refs")]
-    public ItemDatabase itemDatabase; // <- ItemDatabase_Main hier reinziehen
-    public PlayerStats player;        // <- PlayerStats hier reinziehen (oder wird gefunden)
+    public ItemDatabase itemDatabase; // <- drag ItemDatabase_Main here
+    public PlayerStats player;        // <- drag PlayerStats here (or will be found automatically)
     [Header("Optional: Auto-add + Popup")]
     public InventorySystem inventory; // optional
     public ItemPopup itemPopup;       // optional
@@ -147,7 +147,7 @@ public class AnvilSystem : MonoBehaviour
 
         if (!HasEnoughEssence())
         {
-            Debug.Log("Nicht genug Essenz der Schatten!");
+            Debug.Log("Not enough Shadow Essence!");
             onCrafted?.Invoke(null);
             return;
         }
@@ -184,7 +184,7 @@ public class AnvilSystem : MonoBehaviour
         if (player == null) return false;
         if (player.shadowEssence < essenceCostPerCraft)
         {
-            Debug.Log("Nicht genug Essenz der Schatten!");
+            Debug.Log("Not enough Shadow Essence!");
             return false;
         }
         return true;
@@ -207,7 +207,7 @@ public class AnvilSystem : MonoBehaviour
         bool added = inventory.Add(item);
         if (!added)
         {
-            Debug.Log("Inventar voll → Item konnte nicht hinzugefügt werden.");
+            Debug.Log("Inventory full — item could not be added.");
             return;
         }
 
@@ -292,11 +292,11 @@ public class AnvilSystem : MonoBehaviour
     {
         if (seconds < 60f) return $"{seconds:F0}s";
         float minutes = seconds / 60f;
-        if (minutes < 60f) return $"{minutes:F1} Min";
+        if (minutes < 60f) return $"{minutes:F1} min";
         float hours = minutes / 60f;
-        if (hours < 24f) return $"{hours:F1} Std";
+        if (hours < 24f) return $"{hours:F1} hrs";
         float days = hours / 24f;
-        return $"{days:F1} Tage";
+        return $"{days:F1} days";
     }
 
     // ========= Drop Probability System =========
@@ -433,25 +433,25 @@ public class AnvilSystem : MonoBehaviour
     {
         if (itemDatabase == null)
         {
-            Debug.LogError("ItemDatabase fehlt! Zieh ItemDatabase_Main ins AnvilSystem.");
+            Debug.LogError("ItemDatabase missing! Drag ItemDatabase_Main into AnvilSystem.");
             return null;
         }
         if (player == null)
         {
-            Debug.LogError("PlayerStats fehlt!");
+            Debug.LogError("PlayerStats missing!");
             return null;
         }
 
         ItemRarity rarity = RollRarity();
         PlayerClass pc = player.playerClass;
 
-        // 1. Erst Quality rollen
+        // 1. Roll quality first
         ItemQuality quality = RollQuality(rarity);
 
-        // 2. Pool = Items die zur Klasse passen UND diese Quality haben
+        // 2. Pool = items matching class AND this quality
         List<ItemDefinition> pool = itemDatabase.GetFor(pc, quality);
 
-        // Fallback: wenn kein Epic/Legendary Item existiert → Normal
+        // Fallback: if no Epic/Legendary items exist → Normal
         if ((pool == null || pool.Count == 0) && quality != ItemQuality.Normal)
         {
             quality = ItemQuality.Normal;
@@ -460,11 +460,11 @@ public class AnvilSystem : MonoBehaviour
 
         if (pool == null || pool.Count == 0)
         {
-            Debug.LogError($"Keine Items in der Database für Klasse {pc} (Quality: {quality}). Items hinzufügen!");
+            Debug.LogError($"No items in database for class {pc} (Quality: {quality}). Add items!");
             return null;
         }
 
-        // 3. Zufälliges Item aus dem Quality-Pool wählen
+        // 3. Pick random item from quality pool
         ItemDefinition chosen = pool[UnityEngine.Random.Range(0, pool.Count)];
 
         ItemData item = new ItemData();
@@ -582,8 +582,8 @@ public class AnvilSystem : MonoBehaviour
             float sec = GetUpgradeDurationSeconds(i);
             totalSeconds += sec;
             if (i <= 10 || i % 10 == 0 || i == maxAnvilLevel - 1)
-                Debug.Log($"Level {i,2} -> {i + 1,3}: {FormatDuration(sec),10}   (kumuliert: {FormatDuration(totalSeconds)})");
+                Debug.Log($"Level {i,2} -> {i + 1,3}: {FormatDuration(sec),10}   (cumulative: {FormatDuration(totalSeconds)})");
         }
-        Debug.Log($"GESAMT Level 1 -> {maxAnvilLevel}: {FormatDuration(totalSeconds)}");
+        Debug.Log($"TOTAL Level 1 -> {maxAnvilLevel}: {FormatDuration(totalSeconds)}");
     }
 }

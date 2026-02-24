@@ -6,9 +6,9 @@ public class ItemDatabase : ScriptableObject
     public List<ItemDefinition> allItems = new List<ItemDefinition>();
 
     /// <summary>
-    /// Gibt alle Items zurück, die die Klasse tragen darf (alle Qualities).
-    /// Waffen/OffHand: nur wenn allowedClasses die Klasse enthält.
-    /// Alles andere: immer erlaubt (egal was in allowedClasses steht).
+    /// Returns all items the class is allowed to equip (all qualities).
+    /// Weapons/OffHand: only if allowedClasses contains the class.
+    /// Everything else: always allowed (regardless of allowedClasses).
     /// </summary>
     public List<ItemDefinition> GetFor(PlayerClass pc)
     {
@@ -23,8 +23,8 @@ public class ItemDatabase : ScriptableObject
     }
 
     /// <summary>
-    /// Gibt alle Items zurück, die die Klasse tragen darf UND die gewünschte Quality haben.
-    /// Ablauf: Erst Quality rollen, dann aus diesem Pool ein Item wählen.
+    /// Returns all items the class is allowed to equip AND that match the desired quality.
+    /// Flow: Roll quality first, then pick an item from this pool.
     /// </summary>
     public List<ItemDefinition> GetFor(PlayerClass pc, ItemQuality quality)
     {

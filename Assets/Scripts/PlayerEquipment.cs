@@ -32,7 +32,7 @@ public class PlayerEquipment : MonoBehaviour
         equippedItems[item.slot] = item;
         ApplyItemStats(item);
 
-        Debug.Log("Item ausgerüstet: " + item.itemName);
+        Debug.Log("Item equipped: " + item.itemName);
     }
 
     void UnequipItem(EquipmentSlot slot)

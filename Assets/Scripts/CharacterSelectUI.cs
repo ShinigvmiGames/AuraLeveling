@@ -8,11 +8,11 @@ public class CharacterSelectUI : MonoBehaviour
     [System.Serializable]
     public class SlotUI
     {
-        public Image imgCharacterPortrait; // Img_CharacterPortrait
-        public TMP_Text txtNameLvl;        // Txt_NameLvl
-        public GameObject imgAddPlus;      // Img_AddPlus (GameObject)
-        public Button btnClickArea;        // Btn_ClickArea
-        public Button btnDelete;           // Btn_Delete
+        public PortraitBuilder portraitBuilder;  // layered portrait (6 Images)
+        public TMP_Text txtNameLvl;              // Txt_NameLvl
+        public GameObject imgAddPlus;            // Img_AddPlus (GameObject)
+        public Button btnClickArea;              // Btn_ClickArea
+        public Button btnDelete;                 // Btn_Delete
     }
 
     [Header("Slots (size = 3)")]
@@ -76,36 +76,35 @@ public class CharacterSelectUI : MonoBehaviour
     }
 
     void RefreshSlot(int index)
-{
-    var pm = ProfileManager.Instance;
-    var data = (pm != null) ? pm.GetSlot(index) : null;
-
-    bool occupied = (data != null);
-
-    // 1) Plus: nur wenn leer
-    if (slots[index].imgAddPlus != null)
-        slots[index].imgAddPlus.SetActive(!occupied);
-
-    // 2) Portrait: nur wenn belegt
-    if (slots[index].imgCharacterPortrait != null)
     {
-        slots[index].imgCharacterPortrait.gameObject.SetActive(occupied);
+        var pm = ProfileManager.Instance;
+        var data = (pm != null) ? pm.GetSlot(index) : null;
 
-        // Optional: Sprite setzen (wenn du später Portraits lösen willst)
-        // slots[index].imgCharacterPortrait.sprite = occupied ? ... : null;
+        bool occupied = (data != null);
+
+        // 1) Plus: only when empty
+        if (slots[index].imgAddPlus != null)
+            slots[index].imgAddPlus.SetActive(!occupied);
+
+        // 2) Portrait: build from saved data when occupied
+        if (slots[index].portraitBuilder != null)
+        {
+            slots[index].portraitBuilder.gameObject.SetActive(occupied);
+            if (occupied)
+                slots[index].portraitBuilder.Build(data);
+        }
+
+        // 3) Delete button: only when occupied
+        if (slots[index].btnDelete != null)
+            slots[index].btnDelete.gameObject.SetActive(occupied);
+
+        // 4) Name (Level): only when occupied
+        if (slots[index].txtNameLvl != null)
+        {
+            slots[index].txtNameLvl.gameObject.SetActive(occupied);
+            slots[index].txtNameLvl.text = occupied ? $"{data.name} (Lv.{data.level})" : "";
+        }
     }
-
-    // 3) Delete-Button: nur wenn belegt
-    if (slots[index].btnDelete != null)
-        slots[index].btnDelete.gameObject.SetActive(occupied);
-
-    // 4) Name(Level): nur wenn belegt
-    if (slots[index].txtNameLvl != null)
-    {
-        slots[index].txtNameLvl.gameObject.SetActive(occupied);
-        slots[index].txtNameLvl.text = occupied ? $"{data.name} ({data.level})" : "";
-    }
-}
 
     void OnSlotClicked(int index)
     {

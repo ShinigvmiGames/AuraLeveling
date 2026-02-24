@@ -6,16 +6,16 @@ public class ItemData
     // ===== Equip =====
     public EquipmentSlot slot;
 
-    // ===== Basis =====
+    // ===== Base =====
     public string itemName;
     public ItemRarity rarity;
     public ItemQuality quality;
 
     // ===== Level =====
-    // Immer gleich dem Spielerlevel beim Craften
+    // Always equals the player level when crafted
     public int itemLevel;
 
-    // ===== Main Stat Boni =====
+    // ===== Main Stat Bonuses =====
     public int bonusSTR;
     public int bonusDEX;
     public int bonusINT;
@@ -37,10 +37,10 @@ public class ItemData
     public float speed;         // flat
 
     // ===== Aura =====
-    // Prozentualer Bonus auf ALLE Stats (z.B. +10%)
+    // Percentage bonus on ALL stats (e.g. +10%)
     public float auraBonusPercent;
 
-    // Gesamtstärke des Items (für Vergleich, Balance, Gates)
+    // Total item power (for comparison, balance, gates)
     public int itemAura;
 
     // ===== Economy =====
