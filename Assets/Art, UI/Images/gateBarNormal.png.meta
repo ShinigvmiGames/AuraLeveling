@@ -129,12 +129,12 @@ TextureImporter:
       name: gateBarNormal_0
       rect:
         serializedVersion: 2
-        x: 117
+        x: 116
         y: 454
-        width: 1313
-        height: 190
+        width: 1310
+        height: 146
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 25d5ef9764c0442298d671c698bc7d70
     internalID: 0
     vertices: []
     indices: 

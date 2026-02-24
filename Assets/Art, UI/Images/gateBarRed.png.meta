@@ -129,10 +129,10 @@ TextureImporter:
       name: gateBarRed_0
       rect:
         serializedVersion: 2
-        x: 55
-        y: 463
-        width: 1435
-        height: 226
+        x: 65
+        y: 466
+        width: 1416
+        height: 195
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}

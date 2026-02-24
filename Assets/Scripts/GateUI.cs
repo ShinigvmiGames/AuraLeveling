@@ -49,6 +49,9 @@ public class GateUI : MonoBehaviour
     public Sprite barBgSRank;             // S-Rank Bar Background Sprite (rot/schwarz)
     public Sprite barFillSRank;           // S-Rank Bar Fill Sprite (rot/schwarz)
 
+    [Header("S-Rank Video Background (Running Panel)")]
+    public GameObject sRankVideoBackground;  // RawImage + VideoPlayer, nur bei S-Rank sichtbar
+
     [Header("Gate Sprites (Running Panel)")]
     public Sprite gateNormalSprite;  // blaues Gate (A-E Rank)
     public Sprite gateSRankSprite;   // rotes Gate (S-Rank)
@@ -165,6 +168,10 @@ public class GateUI : MonoBehaviour
             Sprite rankSprite = rankSprites.Get(gateManager.activeGate.rank);
             if (rankSprite != null) runningRankImage.sprite = rankSprite;
         }
+
+        // S-Rank Video Background — nur bei S-Rank sichtbar
+        if (sRankVideoBackground != null)
+            sRankVideoBackground.SetActive(isSRank);
 
         // Gate Sprite + Rotation
         if (runningGateImage != null)

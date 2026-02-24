@@ -135,12 +135,12 @@ TextureImporter:
       name: gateBarNormalFill_0
       rect:
         serializedVersion: 2
-        x: 11
-        y: 0
-        width: 1525
-        height: 1024
+        x: 311
+        y: 466
+        width: 994
+        height: 105
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -153,55 +153,11 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
-    - serializedVersion: 2
-      name: gateBarNormalFill_1
-      rect:
-        serializedVersion: 2
-        x: 1041
-        y: 648
-        width: 6
-        height: 6
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 4d0b54ea1d6c1c890800000000000000
-      internalID: -7439446505565081388
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: gateBarNormalFill_2
-      rect:
-        serializedVersion: 2
-        x: 1398
-        y: 536
-        width: 6
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 1bec5f5a3741cca60800000000000000
-      internalID: 7695548350207479473
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 530048e79e49a4b4a9cd491ca5048397
     internalID: 0
     vertices: []
     indices: 
