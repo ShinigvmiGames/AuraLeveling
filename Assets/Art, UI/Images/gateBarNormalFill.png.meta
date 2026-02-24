@@ -1,10 +1,16 @@
 fileFormatVersion: 2
-guid: 24f20460a54fc47cc810c97ea824db1d
+guid: d6ce42d40bcb046ea99fa96458ce4000
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2582966400095704604
-    second: rarkRARE_0
+      213: -3791447102025579685
+    second: gateBarNormalFill_0
+  - first:
+      213: -7439446505565081388
+    second: gateBarNormalFill_1
+  - first:
+      213: 7695548350207479473
+    second: gateBarNormalFill_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,23 +132,67 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: rarkRARE_0
+      name: gateBarNormalFill_0
       rect:
         serializedVersion: 2
-        x: 201
-        y: 271
-        width: 876
-        height: 407
+        x: 11
+        y: 0
+        width: 1525
+        height: 1024
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4e9a6878eb5772cd0800000000000000
-      internalID: -2582966400095704604
+      spriteID: b53c41bd2f2126bc0800000000000000
+      internalID: -3791447102025579685
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gateBarNormalFill_1
+      rect:
+        serializedVersion: 2
+        x: 1041
+        y: 648
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4d0b54ea1d6c1c890800000000000000
+      internalID: -7439446505565081388
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gateBarNormalFill_2
+      rect:
+        serializedVersion: 2
+        x: 1398
+        y: 536
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1bec5f5a3741cca60800000000000000
+      internalID: 7695548350207479473
       vertices: []
       indices: 
       edges: []
@@ -151,7 +201,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 24e5bb7c101b74863925d79729d6eaf9
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +211,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      rarkRARE_0: -2582966400095704604
+      gateBarNormalFill_0: -3791447102025579685
+      gateBarNormalFill_1: -7439446505565081388
+      gateBarNormalFill_2: 7695548350207479473
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

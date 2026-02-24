@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 24f20460a54fc47cc810c97ea824db1d
+guid: 70b014e5b793b4e4b808a67bf173c38d
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2582966400095704604
-    second: rarkRARE_0
+      213: -5017399104615023658
+    second: xpBarFill_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,23 +126,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: rarkRARE_0
+      name: xpBarFill_0
       rect:
         serializedVersion: 2
-        x: 201
-        y: 271
-        width: 876
-        height: 407
+        x: 0
+        y: 0
+        width: 1080
+        height: 88
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4e9a6878eb5772cd0800000000000000
-      internalID: -2582966400095704604
+      spriteID: 6dbfe01091e9e5ab0800000000000000
+      internalID: -5017399104615023658
       vertices: []
       indices: 
       edges: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 24e5bb7c101b74863925d79729d6eaf9
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      rarkRARE_0: -2582966400095704604
+      xpBarFill_0: -5017399104615023658
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

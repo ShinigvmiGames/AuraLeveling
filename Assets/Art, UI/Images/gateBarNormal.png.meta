@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 24f20460a54fc47cc810c97ea824db1d
+guid: 5a206ac90a1d547e4b4e4f945f59a9a6
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2582966400095704604
-    second: rarkRARE_0
+      213: -3108756909484480951
+    second: gateBarNormal_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,23 +126,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: rarkRARE_0
+      name: gateBarNormal_0
       rect:
         serializedVersion: 2
-        x: 201
-        y: 271
-        width: 876
-        height: 407
+        x: 117
+        y: 454
+        width: 1313
+        height: 190
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4e9a6878eb5772cd0800000000000000
-      internalID: -2582966400095704604
+      spriteID: 946e22dcf0a7bd4d0800000000000000
+      internalID: -3108756909484480951
       vertices: []
       indices: 
       edges: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 24e5bb7c101b74863925d79729d6eaf9
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      rarkRARE_0: -2582966400095704604
+      gateBarNormal_0: -3108756909484480951
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

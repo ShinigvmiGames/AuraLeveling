@@ -42,7 +42,12 @@ public class GateUI : MonoBehaviour
     public Sprite[] runningGateBackgrounds;
 
     [Header("Gate Progress Bar (Running Panel)")]
-    public Image gateProgressBarFill;      // Image (Filled, Left-to-Right), zeigt Gate-Fortschritt
+    public Image gateProgressBarBg;        // Background-Image der Bar
+    public Image gateProgressBarFill;      // Fill-Image (Filled, Left-to-Right)
+    public Sprite barBgNormal;             // normale Bar Background Sprite
+    public Sprite barFillNormal;           // normale Bar Fill Sprite
+    public Sprite barBgSRank;             // S-Rank Bar Background Sprite (rot/schwarz)
+    public Sprite barFillSRank;           // S-Rank Bar Fill Sprite (rot/schwarz)
 
     [Header("Gate Sprites (Running Panel)")]
     public Sprite gateNormalSprite;  // blaues Gate (A-E Rank)
@@ -139,9 +144,20 @@ public class GateUI : MonoBehaviour
         int sec = Mathf.CeilToInt(remaining);
         if (countdownText != null) countdownText.text = FormatTime(sec);
 
-        // Progress Bar
+        bool isSRank = gateManager.activeGate != null && gateManager.activeGate.rank == GateRank.SRank;
+
+        // Progress Bar — Sprites tauschen je nach Rank
         if (gateProgressBarFill != null)
+        {
             gateProgressBarFill.fillAmount = gateManager.GetGateProgress01();
+            Sprite targetFill = isSRank ? barFillSRank : barFillNormal;
+            if (targetFill != null) gateProgressBarFill.sprite = targetFill;
+        }
+        if (gateProgressBarBg != null)
+        {
+            Sprite targetBg = isSRank ? barBgSRank : barBgNormal;
+            if (targetBg != null) gateProgressBarBg.sprite = targetBg;
+        }
 
         // Rank Image (statt Text)
         if (runningRankImage != null && rankSprites != null && gateManager.activeGate != null)
@@ -149,8 +165,6 @@ public class GateUI : MonoBehaviour
             Sprite rankSprite = rankSprites.Get(gateManager.activeGate.rank);
             if (rankSprite != null) runningRankImage.sprite = rankSprite;
         }
-
-        bool isSRank = gateManager.activeGate != null && gateManager.activeGate.rank == GateRank.SRank;
 
         // Gate Sprite + Rotation
         if (runningGateImage != null)
