@@ -282,6 +282,15 @@ public class PlayerStats : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// Returns XP progress as 0..1 for UI bars.
+    /// </summary>
+    public float GetXPProgress01()
+    {
+        if (xpToNextLevel <= 0) return 1f;
+        return Mathf.Clamp01((float)currentXP / xpToNextLevel);
+    }
+
     public void GainXP(int amount)
     {
         if (amount <= 0) return;

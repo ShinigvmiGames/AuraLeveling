@@ -35,11 +35,14 @@ public class GateUI : MonoBehaviour
 
     [Header("Running UI")]
     public TMP_Text countdownText;
-    public TMP_Text runningRankText;
-    public Image progressFill;
+    public Image runningRankImage;         // Rank als Bild (ersetzt runningRankText)
+    public RankSpriteSet rankSprites;      // gleiche ScriptableObject wie bei GateCardUI
     public Image runningGateImage;
     public Image runningBgImage;
     public Sprite[] runningGateBackgrounds;
+
+    [Header("Gate Progress Bar (Running Panel)")]
+    public Image gateProgressBarFill;      // Image (Filled, Left-to-Right), zeigt Gate-Fortschritt
 
     [Header("Gate Sprites (Running Panel)")]
     public Sprite gateNormalSprite;  // blaues Gate (A-E Rank)
@@ -135,10 +138,17 @@ public class GateUI : MonoBehaviour
         // --- Running Panel Updates ---
         int sec = Mathf.CeilToInt(remaining);
         if (countdownText != null) countdownText.text = FormatTime(sec);
-        if (progressFill != null) progressFill.fillAmount = gateManager.GetGateProgress01();
 
-        if (runningRankText != null && gateManager.activeGate != null)
-            runningRankText.text = $"{gateManager.activeGate.rank}";
+        // Progress Bar
+        if (gateProgressBarFill != null)
+            gateProgressBarFill.fillAmount = gateManager.GetGateProgress01();
+
+        // Rank Image (statt Text)
+        if (runningRankImage != null && rankSprites != null && gateManager.activeGate != null)
+        {
+            Sprite rankSprite = rankSprites.Get(gateManager.activeGate.rank);
+            if (rankSprite != null) runningRankImage.sprite = rankSprite;
+        }
 
         bool isSRank = gateManager.activeGate != null && gateManager.activeGate.rank == GateRank.SRank;
 

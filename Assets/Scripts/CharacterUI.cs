@@ -6,6 +6,11 @@ public class CharacterUI : MonoBehaviour
 {
     public PlayerStats player;
 
+    [Header("Level & XP Bar")]
+    public TMP_Text txtLevel;              // "Level 12"
+    public TMP_Text txtXP;                 // "350 / 1,200 XP"
+    public Image xpBarFill;                // Image (Filled, Left-to-Right)
+
     [Header("Stat Points")]
     public TMP_Text txtPoints;
 
@@ -56,6 +61,16 @@ public class CharacterUI : MonoBehaviour
     void Refresh()
     {
         if (player == null) return;
+
+        // Level & XP Bar
+        if (txtLevel != null)
+            txtLevel.text = $"Level {player.level}";
+
+        if (txtXP != null)
+            txtXP.text = $"{player.currentXP:N0} / {player.xpToNextLevel:N0} XP";
+
+        if (xpBarFill != null)
+            xpBarFill.fillAmount = player.GetXPProgress01();
 
         if (txtPoints != null)
         {
