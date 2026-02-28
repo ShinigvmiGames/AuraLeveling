@@ -13,7 +13,6 @@ public class CharacterData
     public string name;
     public int level;
 
-    public RaceType race;
     public GenderType gender;
 
     // Portrait feature variants (0-4 each)
@@ -25,13 +24,12 @@ public class CharacterData
 
     public PlayerClass playerClass;
 
-    public CharacterData(string name, int level, RaceType race, GenderType gender,
+    public CharacterData(string name, int level, GenderType gender,
         int eyeVariant, int hairVariant, int marksVariant, int mouthVariant, int headgearVariant,
         PlayerClass pc)
     {
         this.name = name;
         this.level = level;
-        this.race = race;
         this.gender = gender;
         this.eyeVariant = eyeVariant;
         this.hairVariant = hairVariant;

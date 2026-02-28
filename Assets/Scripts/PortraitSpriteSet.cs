@@ -1,16 +1,15 @@
 using UnityEngine;
 
 /// <summary>
-/// ScriptableObject holding all portrait sprites for all races/genders/features.
+/// ScriptableObject holding all portrait sprites for both genders and 5 features.
 /// Create via Assets > Create > AuraLeveling > Portrait Sprite Set.
 /// </summary>
 [CreateAssetMenu(menuName = "AuraLeveling/Portrait Sprite Set")]
 public class PortraitSpriteSet : ScriptableObject
 {
     [System.Serializable]
-    public class RaceGenderSprites
+    public class GenderSprites
     {
-        public RaceType race;
         public GenderType gender;
 
         [Header("Base (blank face)")]
@@ -32,18 +31,18 @@ public class PortraitSpriteSet : ScriptableObject
         public Sprite[] headgear = new Sprite[5];
     }
 
-    [Header("All Race/Gender Combinations (8 entries)")]
-    public RaceGenderSprites[] entries;
+    [Header("Gender Entries (2: Male, Female)")]
+    public GenderSprites[] entries;
 
-    public Sprite GetBase(RaceType race, GenderType gender)
+    public Sprite GetBase(GenderType gender)
     {
-        var entry = Find(race, gender);
+        var entry = Find(gender);
         return entry?.baseSprite;
     }
 
-    public Sprite GetFeature(RaceType race, GenderType gender, PortraitFeature feature, int variant)
+    public Sprite GetFeature(GenderType gender, PortraitFeature feature, int variant)
     {
-        var entry = Find(race, gender);
+        var entry = Find(gender);
         if (entry == null) return null;
 
         variant = Mathf.Clamp(variant, 0, 4);
@@ -62,12 +61,12 @@ public class PortraitSpriteSet : ScriptableObject
         return arr[variant];
     }
 
-    RaceGenderSprites Find(RaceType race, GenderType gender)
+    GenderSprites Find(GenderType gender)
     {
         if (entries == null) return null;
         for (int i = 0; i < entries.Length; i++)
         {
-            if (entries[i].race == race && entries[i].gender == gender)
+            if (entries[i].gender == gender)
                 return entries[i];
         }
         return null;

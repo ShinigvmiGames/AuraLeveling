@@ -7,7 +7,6 @@ using UnityEngine.UI;
 ///   0: Base, 1: Marks, 2: Mouth, 3: Eyes, 4: Hair, 5: Headgear
 ///
 /// Call Build() with a CharacterData or individual params to set all layers.
-/// Also used as a static utility via BuildInto() for external Image arrays.
 /// </summary>
 public class PortraitBuilder : MonoBehaviour
 {
@@ -25,30 +24,30 @@ public class PortraitBuilder : MonoBehaviour
     public void Build(CharacterData data)
     {
         if (data == null || spriteSet == null) return;
-        Build(data.race, data.gender, data.eyeVariant, data.hairVariant,
+        Build(data.gender, data.eyeVariant, data.hairVariant,
               data.marksVariant, data.mouthVariant, data.headgearVariant);
     }
 
-    public void Build(RaceType race, GenderType gender, int eyes, int hair, int marks, int mouth, int headgear)
+    public void Build(GenderType gender, int eyes, int hair, int marks, int mouth, int headgear)
     {
         if (spriteSet == null) return;
 
-        SetLayer(imgBase, spriteSet.GetBase(race, gender));
-        SetLayer(imgEyes, spriteSet.GetFeature(race, gender, PortraitFeature.Eyes, eyes));
-        SetLayer(imgHair, spriteSet.GetFeature(race, gender, PortraitFeature.Hair, hair));
-        SetLayer(imgMarks, spriteSet.GetFeature(race, gender, PortraitFeature.Marks, marks));
-        SetLayer(imgMouth, spriteSet.GetFeature(race, gender, PortraitFeature.Mouth, mouth));
-        SetLayer(imgHeadgear, spriteSet.GetFeature(race, gender, PortraitFeature.Headgear, headgear));
+        SetLayer(imgBase, spriteSet.GetBase(gender));
+        SetLayer(imgEyes, spriteSet.GetFeature(gender, PortraitFeature.Eyes, eyes));
+        SetLayer(imgHair, spriteSet.GetFeature(gender, PortraitFeature.Hair, hair));
+        SetLayer(imgMarks, spriteSet.GetFeature(gender, PortraitFeature.Marks, marks));
+        SetLayer(imgMouth, spriteSet.GetFeature(gender, PortraitFeature.Mouth, mouth));
+        SetLayer(imgHeadgear, spriteSet.GetFeature(gender, PortraitFeature.Headgear, headgear));
     }
 
     /// <summary>
     /// Update a single feature layer (used during creation when player picks variants).
     /// </summary>
-    public void SetFeature(PortraitFeature feature, RaceType race, GenderType gender, int variant)
+    public void SetFeature(PortraitFeature feature, GenderType gender, int variant)
     {
         if (spriteSet == null) return;
 
-        Sprite sprite = spriteSet.GetFeature(race, gender, feature, variant);
+        Sprite sprite = spriteSet.GetFeature(gender, feature, variant);
         switch (feature)
         {
             case PortraitFeature.Eyes:     SetLayer(imgEyes, sprite); break;
@@ -59,10 +58,10 @@ public class PortraitBuilder : MonoBehaviour
         }
     }
 
-    public void SetBase(RaceType race, GenderType gender)
+    public void SetBase(GenderType gender)
     {
         if (spriteSet == null) return;
-        SetLayer(imgBase, spriteSet.GetBase(race, gender));
+        SetLayer(imgBase, spriteSet.GetBase(gender));
     }
 
     static void SetLayer(Image img, Sprite sprite)

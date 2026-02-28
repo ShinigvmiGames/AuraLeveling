@@ -7,18 +7,12 @@ using UnityEngine.SceneManagement;
 public class CharacterCreationUI : MonoBehaviour
 {
     [Header("UI Steps")]
-    public GameObject CC_Header;     // Step 1: Race/Gender/Features
+    public GameObject CC_Header;     // Step 1: Gender/Features
     public GameObject CC_Portrait;   // Step 1: Portrait preview area
     public GameObject CC_Class;      // Step 2: Class + Name
 
     [Header("Portrait Builder")]
     public PortraitBuilder portraitBuilder;
-
-    [Header("Race Buttons")]
-    public Button btnRaceHuman;
-    public Button btnRaceOrc;
-    public Button btnRaceFrostelf;
-    public Button btnRaceGhost;
 
     [Header("Gender Buttons")]
     public Button btnMale;
@@ -73,12 +67,10 @@ public class CharacterCreationUI : MonoBehaviour
     public Button btnClassMage;
     public Button btnClassNecromancer;
 
-    [Header("Info Texts")]
+    [Header("Info Text")]
     public TMP_Text txtSelectedClassMainStat;
-    public TMP_Text txtRaceFlavor;
 
     // --- Selection State ---
-    RaceType selectedRace = RaceType.Human;
     GenderType selectedGender = GenderType.Male;
     int[] featureVariants = new int[5]; // Eyes, Hair, Marks, Mouth, Headgear (0-4)
     const int VARIANTS_PER_FEATURE = 5;
@@ -101,7 +93,6 @@ public class CharacterCreationUI : MonoBehaviour
         BindButtons();
         RefreshPortrait();
         ApplySelectedVisuals();
-        UpdateRaceFlavorText();
         RefreshFeatureLabels();
         OnNameChanged();
         UpdateConfirmState();
@@ -109,12 +100,6 @@ public class CharacterCreationUI : MonoBehaviour
 
     void BindButtons()
     {
-        // Race
-        if (btnRaceHuman) btnRaceHuman.onClick.AddListener(() => SetRace(RaceType.Human));
-        if (btnRaceOrc) btnRaceOrc.onClick.AddListener(() => SetRace(RaceType.Orc));
-        if (btnRaceFrostelf) btnRaceFrostelf.onClick.AddListener(() => SetRace(RaceType.Frostelf));
-        if (btnRaceGhost) btnRaceGhost.onClick.AddListener(() => SetRace(RaceType.Ghost));
-
         // Gender
         if (btnMale) btnMale.onClick.AddListener(() => SetGender(GenderType.Male));
         if (btnFemale) btnFemale.onClick.AddListener(() => SetGender(GenderType.Female));
@@ -194,17 +179,7 @@ public class CharacterCreationUI : MonoBehaviour
     void OnBackToStep1Pressed() => SetStep1Active();
     void OnBackToSelectPressed() => SceneManager.LoadScene(sceneCharacterSelect);
 
-    // ==================== Race / Gender ====================
-    void SetRace(RaceType race)
-    {
-        selectedRace = race;
-        ResetFeatures();
-        RefreshPortrait();
-        ApplySelectedVisuals();
-        UpdateRaceFlavorText();
-        RefreshFeatureLabels();
-    }
-
+    // ==================== Gender ====================
     void SetGender(GenderType gender)
     {
         selectedGender = gender;
@@ -230,7 +205,7 @@ public class CharacterCreationUI : MonoBehaviour
         // Update only the changed layer for performance
         PortraitFeature feature = (PortraitFeature)featureIndex;
         if (portraitBuilder != null)
-            portraitBuilder.SetFeature(feature, selectedRace, selectedGender, featureVariants[featureIndex]);
+            portraitBuilder.SetFeature(feature, selectedGender, featureVariants[featureIndex]);
 
         RefreshFeatureLabels();
     }
@@ -249,8 +224,8 @@ public class CharacterCreationUI : MonoBehaviour
     {
         if (portraitBuilder == null) return;
 
-        portraitBuilder.SetBase(selectedRace, selectedGender);
-        portraitBuilder.Build(selectedRace, selectedGender,
+        portraitBuilder.SetBase(selectedGender);
+        portraitBuilder.Build(selectedGender,
             featureVariants[0], featureVariants[1], featureVariants[2],
             featureVariants[3], featureVariants[4]);
     }
@@ -258,11 +233,6 @@ public class CharacterCreationUI : MonoBehaviour
     // ==================== Visual Highlights ====================
     void ApplySelectedVisuals()
     {
-        SetBtnSelected(btnRaceHuman, selectedRace == RaceType.Human);
-        SetBtnSelected(btnRaceOrc, selectedRace == RaceType.Orc);
-        SetBtnSelected(btnRaceFrostelf, selectedRace == RaceType.Frostelf);
-        SetBtnSelected(btnRaceGhost, selectedRace == RaceType.Ghost);
-
         SetBtnSelected(btnMale, selectedGender == GenderType.Male);
         SetBtnSelected(btnFemale, selectedGender == GenderType.Female);
     }
@@ -274,21 +244,6 @@ public class CharacterCreationUI : MonoBehaviour
         colors.normalColor = selected ? new Color(0.70f, 0.88f, 1f, 1f) : Color.white;
         colors.highlightedColor = colors.normalColor;
         b.colors = colors;
-    }
-
-    // ==================== Race Flavor Text ====================
-    void UpdateRaceFlavorText()
-    {
-        if (txtRaceFlavor == null) return;
-
-        txtRaceFlavor.text = selectedRace switch
-        {
-            RaceType.Human => "Humans: somehow always confident… even at level 1.",
-            RaceType.Orc => "Orcs: peace was never an option.",
-            RaceType.Frostelf => "Frost Elves: elegant, cold, and silently judging you.",
-            RaceType.Ghost => "Ghosts: already dead, nothing left to lose.",
-            _ => "Choose wisely."
-        };
     }
 
     // ==================== Class Selection ====================
@@ -453,7 +408,7 @@ public class CharacterCreationUI : MonoBehaviour
 
         CharacterData cd = new CharacterData(
             name, 1,
-            selectedRace, selectedGender,
+            selectedGender,
             featureVariants[0], featureVariants[1], featureVariants[2],
             featureVariants[3], featureVariants[4],
             selectedClass.Value
