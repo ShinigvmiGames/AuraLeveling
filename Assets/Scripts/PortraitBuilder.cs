@@ -12,11 +12,11 @@ public class PortraitBuilder : MonoBehaviour
 {
     [Header("Portrait Layers (assign 6 Images, bottom to top)")]
     public Image imgBase;
-    public Image imgMarks;
-    public Image imgMouth;
-    public Image imgEyes;
     public Image imgHair;
-    public Image imgHeadgear;
+    public Image imgEyes;
+    public Image imgMouth;
+    public Image imgClothing;
+    public Image imgSpecial;
 
     [Header("Sprite Data (assign in Inspector)")]
     public PortraitSpriteSet spriteSet;
@@ -24,20 +24,20 @@ public class PortraitBuilder : MonoBehaviour
     public void Build(CharacterData data)
     {
         if (data == null || spriteSet == null) return;
-        Build(data.gender, data.eyeVariant, data.hairVariant,
-              data.marksVariant, data.mouthVariant, data.headgearVariant);
+        Build(data.gender, data.hairVariant, data.eyeVariant,
+              data.mouthVariant, data.clothingVariant, data.specialVariant);
     }
 
-    public void Build(GenderType gender, int eyes, int hair, int marks, int mouth, int headgear)
+    public void Build(GenderType gender, int hair, int eyes, int mouth, int clothing, int special)
     {
         if (spriteSet == null) return;
 
         SetLayer(imgBase, spriteSet.GetBase(gender));
-        SetLayer(imgEyes, spriteSet.GetFeature(gender, PortraitFeature.Eyes, eyes));
         SetLayer(imgHair, spriteSet.GetFeature(gender, PortraitFeature.Hair, hair));
-        SetLayer(imgMarks, spriteSet.GetFeature(gender, PortraitFeature.Marks, marks));
+        SetLayer(imgEyes, spriteSet.GetFeature(gender, PortraitFeature.Eyes, eyes));
         SetLayer(imgMouth, spriteSet.GetFeature(gender, PortraitFeature.Mouth, mouth));
-        SetLayer(imgHeadgear, spriteSet.GetFeature(gender, PortraitFeature.Headgear, headgear));
+        SetLayer(imgClothing, spriteSet.GetFeature(gender, PortraitFeature.Clothing, clothing));
+        SetLayer(imgSpecial, spriteSet.GetFeature(gender, PortraitFeature.Special, special));
     }
 
     /// <summary>
@@ -50,11 +50,11 @@ public class PortraitBuilder : MonoBehaviour
         Sprite sprite = spriteSet.GetFeature(gender, feature, variant);
         switch (feature)
         {
-            case PortraitFeature.Eyes:     SetLayer(imgEyes, sprite); break;
             case PortraitFeature.Hair:     SetLayer(imgHair, sprite); break;
-            case PortraitFeature.Marks:    SetLayer(imgMarks, sprite); break;
+            case PortraitFeature.Eyes:     SetLayer(imgEyes, sprite); break;
             case PortraitFeature.Mouth:    SetLayer(imgMouth, sprite); break;
-            case PortraitFeature.Headgear: SetLayer(imgHeadgear, sprite); break;
+            case PortraitFeature.Clothing: SetLayer(imgClothing, sprite); break;
+            case PortraitFeature.Special:  SetLayer(imgSpecial, sprite); break;
         }
     }
 
@@ -75,9 +75,9 @@ public class PortraitBuilder : MonoBehaviour
 
 public enum PortraitFeature
 {
-    Eyes,
     Hair,
-    Marks,
+    Eyes,
     Mouth,
-    Headgear
+    Clothing,
+    Special
 }

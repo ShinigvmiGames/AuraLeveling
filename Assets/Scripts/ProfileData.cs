@@ -16,26 +16,26 @@ public class CharacterData
     public GenderType gender;
 
     // Portrait feature variants (0-4 each)
-    public int eyeVariant;
     public int hairVariant;
-    public int marksVariant;
+    public int eyeVariant;
     public int mouthVariant;
-    public int headgearVariant;
+    public int clothingVariant;
+    public int specialVariant;
 
     public PlayerClass playerClass;
 
     public CharacterData(string name, int level, GenderType gender,
-        int eyeVariant, int hairVariant, int marksVariant, int mouthVariant, int headgearVariant,
+        int hairVariant, int eyeVariant, int mouthVariant, int clothingVariant, int specialVariant,
         PlayerClass pc)
     {
         this.name = name;
         this.level = level;
         this.gender = gender;
-        this.eyeVariant = eyeVariant;
         this.hairVariant = hairVariant;
-        this.marksVariant = marksVariant;
+        this.eyeVariant = eyeVariant;
         this.mouthVariant = mouthVariant;
-        this.headgearVariant = headgearVariant;
+        this.clothingVariant = clothingVariant;
+        this.specialVariant = specialVariant;
         this.playerClass = pc;
     }
 }

@@ -19,25 +19,25 @@ public class CharacterCreationUI : MonoBehaviour
     public Button btnFemale;
 
     [Header("Feature Pickers (5 categories, each has Prev/Next + label)")]
-    public Button btnEyesPrev;
-    public Button btnEyesNext;
-    public TMP_Text txtEyesLabel;
-
     public Button btnHairPrev;
     public Button btnHairNext;
     public TMP_Text txtHairLabel;
 
-    public Button btnMarksPrev;
-    public Button btnMarksNext;
-    public TMP_Text txtMarksLabel;
+    public Button btnEyesPrev;
+    public Button btnEyesNext;
+    public TMP_Text txtEyesLabel;
 
     public Button btnMouthPrev;
     public Button btnMouthNext;
     public TMP_Text txtMouthLabel;
 
-    public Button btnHeadgearPrev;
-    public Button btnHeadgearNext;
-    public TMP_Text txtHeadgearLabel;
+    public Button btnClothingPrev;
+    public Button btnClothingNext;
+    public TMP_Text txtClothingLabel;
+
+    public Button btnSpecialPrev;
+    public Button btnSpecialNext;
+    public TMP_Text txtSpecialLabel;
 
     [Header("Continue / Back")]
     public Button btnContinue;       // Step1 -> Step2
@@ -72,7 +72,7 @@ public class CharacterCreationUI : MonoBehaviour
 
     // --- Selection State ---
     GenderType selectedGender = GenderType.Male;
-    int[] featureVariants = new int[5]; // Eyes, Hair, Marks, Mouth, Headgear (0-4)
+    int[] featureVariants = new int[5]; // Hair, Eyes, Mouth, Clothing, Special (0-4)
     const int VARIANTS_PER_FEATURE = 5;
 
     // --- Name check ---
@@ -105,16 +105,16 @@ public class CharacterCreationUI : MonoBehaviour
         if (btnFemale) btnFemale.onClick.AddListener(() => SetGender(GenderType.Female));
 
         // Feature pickers
-        if (btnEyesPrev) btnEyesPrev.onClick.AddListener(() => CycleFeature(0, -1));
-        if (btnEyesNext) btnEyesNext.onClick.AddListener(() => CycleFeature(0, 1));
-        if (btnHairPrev) btnHairPrev.onClick.AddListener(() => CycleFeature(1, -1));
-        if (btnHairNext) btnHairNext.onClick.AddListener(() => CycleFeature(1, 1));
-        if (btnMarksPrev) btnMarksPrev.onClick.AddListener(() => CycleFeature(2, -1));
-        if (btnMarksNext) btnMarksNext.onClick.AddListener(() => CycleFeature(2, 1));
-        if (btnMouthPrev) btnMouthPrev.onClick.AddListener(() => CycleFeature(3, -1));
-        if (btnMouthNext) btnMouthNext.onClick.AddListener(() => CycleFeature(3, 1));
-        if (btnHeadgearPrev) btnHeadgearPrev.onClick.AddListener(() => CycleFeature(4, -1));
-        if (btnHeadgearNext) btnHeadgearNext.onClick.AddListener(() => CycleFeature(4, 1));
+        if (btnHairPrev) btnHairPrev.onClick.AddListener(() => CycleFeature(0, -1));
+        if (btnHairNext) btnHairNext.onClick.AddListener(() => CycleFeature(0, 1));
+        if (btnEyesPrev) btnEyesPrev.onClick.AddListener(() => CycleFeature(1, -1));
+        if (btnEyesNext) btnEyesNext.onClick.AddListener(() => CycleFeature(1, 1));
+        if (btnMouthPrev) btnMouthPrev.onClick.AddListener(() => CycleFeature(2, -1));
+        if (btnMouthNext) btnMouthNext.onClick.AddListener(() => CycleFeature(2, 1));
+        if (btnClothingPrev) btnClothingPrev.onClick.AddListener(() => CycleFeature(3, -1));
+        if (btnClothingNext) btnClothingNext.onClick.AddListener(() => CycleFeature(3, 1));
+        if (btnSpecialPrev) btnSpecialPrev.onClick.AddListener(() => CycleFeature(4, -1));
+        if (btnSpecialNext) btnSpecialNext.onClick.AddListener(() => CycleFeature(4, 1));
 
         // Continue / Back
         if (btnContinue)
@@ -212,11 +212,11 @@ public class CharacterCreationUI : MonoBehaviour
 
     void RefreshFeatureLabels()
     {
-        if (txtEyesLabel) txtEyesLabel.text = $"Eyes {featureVariants[0] + 1}/{VARIANTS_PER_FEATURE}";
-        if (txtHairLabel) txtHairLabel.text = $"Hair {featureVariants[1] + 1}/{VARIANTS_PER_FEATURE}";
-        if (txtMarksLabel) txtMarksLabel.text = $"Marks {featureVariants[2] + 1}/{VARIANTS_PER_FEATURE}";
-        if (txtMouthLabel) txtMouthLabel.text = $"Mouth {featureVariants[3] + 1}/{VARIANTS_PER_FEATURE}";
-        if (txtHeadgearLabel) txtHeadgearLabel.text = $"Headgear {featureVariants[4] + 1}/{VARIANTS_PER_FEATURE}";
+        if (txtHairLabel) txtHairLabel.text = $"Hair {featureVariants[0] + 1}/{VARIANTS_PER_FEATURE}";
+        if (txtEyesLabel) txtEyesLabel.text = $"Eyes {featureVariants[1] + 1}/{VARIANTS_PER_FEATURE}";
+        if (txtMouthLabel) txtMouthLabel.text = $"Mouth {featureVariants[2] + 1}/{VARIANTS_PER_FEATURE}";
+        if (txtClothingLabel) txtClothingLabel.text = $"Clothing {featureVariants[3] + 1}/{VARIANTS_PER_FEATURE}";
+        if (txtSpecialLabel) txtSpecialLabel.text = $"Special {featureVariants[4] + 1}/{VARIANTS_PER_FEATURE}";
     }
 
     // ==================== Portrait ====================

@@ -15,20 +15,20 @@ public class PortraitSpriteSet : ScriptableObject
         [Header("Base (blank face)")]
         public Sprite baseSprite;
 
-        [Header("Eyes (5 variants)")]
-        public Sprite[] eyes = new Sprite[5];
-
         [Header("Hair (5 variants)")]
         public Sprite[] hair = new Sprite[5];
 
-        [Header("Marks / Scars (5 variants)")]
-        public Sprite[] marks = new Sprite[5];
+        [Header("Eyes (5 variants)")]
+        public Sprite[] eyes = new Sprite[5];
 
         [Header("Mouth (5 variants)")]
         public Sprite[] mouth = new Sprite[5];
 
-        [Header("Headgear (5 variants)")]
-        public Sprite[] headgear = new Sprite[5];
+        [Header("Clothing (5 variants)")]
+        public Sprite[] clothing = new Sprite[5];
+
+        [Header("Special (5 variants)")]
+        public Sprite[] special = new Sprite[5];
     }
 
     [Header("Gender Entries (2: Male, Female)")]
@@ -49,11 +49,11 @@ public class PortraitSpriteSet : ScriptableObject
 
         Sprite[] arr = feature switch
         {
-            PortraitFeature.Eyes     => entry.eyes,
             PortraitFeature.Hair     => entry.hair,
-            PortraitFeature.Marks    => entry.marks,
+            PortraitFeature.Eyes     => entry.eyes,
             PortraitFeature.Mouth    => entry.mouth,
-            PortraitFeature.Headgear => entry.headgear,
+            PortraitFeature.Clothing => entry.clothing,
+            PortraitFeature.Special  => entry.special,
             _ => null
         };
 
