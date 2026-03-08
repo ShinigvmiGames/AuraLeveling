@@ -6,6 +6,9 @@ public class CharacterUI : MonoBehaviour
 {
     public PlayerStats player;
 
+    [Header("Portrait")]
+    public PortraitBuilder portraitBuilder;
+
     [Header("Level & XP Bar")]
     public TMP_Text txtLevel;              // "Level 12"
     public TMP_Text txtXP;                 // "350 / 1,200 XP"
@@ -43,7 +46,20 @@ public class CharacterUI : MonoBehaviour
         if (btnINT != null) btnINT.onClick.AddListener(() => Spend("INT"));
         if (btnVIT != null) btnVIT.onClick.AddListener(() => Spend("VIT"));
 
+        BuildPortrait();
         Refresh();
+    }
+
+    void BuildPortrait()
+    {
+        if (portraitBuilder == null) return;
+
+        var data = (ProfileManager.Instance != null)
+            ? ProfileManager.Instance.GetActiveCharacter()
+            : null;
+
+        if (data != null)
+            portraitBuilder.Build(data);
     }
 
     void Update()
