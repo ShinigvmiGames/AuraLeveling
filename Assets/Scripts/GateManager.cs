@@ -196,9 +196,7 @@ void Awake()
     {
         if (player == null) player = FindObjectOfType<PlayerStats>();
 
-        int baseAura = player != null ? player.GetAura() : 10;
-
-        // Enemy gear scaling (placeholder): higher rank means better "equipment"
+        // Rank difficulty multiplier
         float mult = 1f;
         switch (gate.rank)
         {
@@ -210,13 +208,44 @@ void Awake()
             case GateRank.SRank: mult = Random.Range(1.65f, 2.05f); break;
         }
 
-        gate.enemyAura = Mathf.RoundToInt(baseAura * mult);
+        // Random enemy class
+        var classes = System.Enum.GetValues(typeof(PlayerClass));
+        gate.enemyClass = (PlayerClass)classes.GetValue(Random.Range(0, classes.Length));
 
-        int points = Mathf.Max(4, gate.enemyAura / 2);
-        gate.enemySTR = Random.Range(points / 5, points / 3);
-        gate.enemyVIT = Random.Range(points / 5, points / 3);
-        gate.enemyDEX = Random.Range(points / 5, points / 3);
-        gate.enemyINT = Mathf.Max(0, points - (gate.enemySTR + gate.enemyVIT + gate.enemyDEX));
+        if (player != null)
+        {
+            // Mirror player stats with rank multiplier
+            gate.enemyHP = System.Math.Max(1L, (long)(player.maxHP * mult));
+            gate.enemyDamage = System.Math.Max(1L, (long)(player.damage * mult));
+            gate.enemyArmor = Mathf.Max(0, Mathf.RoundToInt(player.armor * mult));
+            gate.enemyCritRate = Mathf.Clamp(player.critRate * mult * 0.8f, 0f, 100f);
+            gate.enemyCritDamage = Mathf.Max(30f, player.critDamage * mult * 0.85f);
+            gate.enemySpeed = Mathf.Max(50f, player.speed * mult * 0.95f);
+
+            // Main stats for cross-stat reduction
+            long baseAura = player.GetAura();
+            gate.enemyAura = (int)Mathf.Min(baseAura * mult, int.MaxValue);
+            int points = Mathf.Max(4, Mathf.RoundToInt(gate.enemyAura * 0.005f));
+            gate.enemySTR = Random.Range(points / 5, Mathf.Max(points / 5 + 1, points / 3));
+            gate.enemyVIT = Random.Range(points / 5, Mathf.Max(points / 5 + 1, points / 3));
+            gate.enemyDEX = Random.Range(points / 5, Mathf.Max(points / 5 + 1, points / 3));
+            gate.enemyINT = Mathf.Max(0, points - (gate.enemySTR + gate.enemyVIT + gate.enemyDEX));
+        }
+        else
+        {
+            // Fallback for when player not found
+            gate.enemyHP = 76;
+            gate.enemyDamage = 5;
+            gate.enemyArmor = 0;
+            gate.enemyCritRate = 15f;
+            gate.enemyCritDamage = 50f;
+            gate.enemySpeed = 100f;
+            gate.enemyAura = 10;
+            gate.enemySTR = 5;
+            gate.enemyVIT = 5;
+            gate.enemyDEX = 5;
+            gate.enemyINT = 5;
+        }
     }
 
     // ---------- Accept / Run / Resolve ----------
@@ -233,7 +262,7 @@ void Awake()
 
         if (energy != null && !energy.UseEnergy(selected.energyCost))
         {
-            Debug.Log("Nicht genug Energie!");
+            Debug.Log("Not enough energy!");
             return;
         }
 
@@ -256,6 +285,26 @@ void Awake()
         OnGateAccepted?.Invoke(activeGate);
         OnGateStateChanged?.Invoke();
 // let UI switch panels immediately
+    }
+
+    /// <summary>
+    /// Skip the active gate for 1 MC. Instantly resolves combat.
+    /// </summary>
+    public bool SkipGate(PlayerStats playerRef)
+    {
+        if (activeGate == null) return false;
+        if (playerRef == null) return false;
+
+        if (!playerRef.SpendManaCrystals(1))
+        {
+            Debug.Log("Not enough Mana Crystals to skip!");
+            return false;
+        }
+
+        activeGateEndTime = Time.time - 1f;
+        gateReadyToResolve = true;
+        ResolveGateInternal();
+        return true;
     }
 
     /// <summary>
@@ -294,7 +343,7 @@ void Awake()
         }
         else
         {
-            Debug.Log("Gate verloren → keine Belohnung.");
+            Debug.Log("Gate lost — no rewards.");
         }
 
         // Clear state
@@ -323,7 +372,7 @@ void Awake()
         float rollEpic = UnityEngine.Random.Range(0f, 100f);
         if (rollEpic <= gate.epicItemChance)
         {
-            // Epic drop -> at least Hero rarity, guaranteed Epic+ quality
+            // Epic drop -> at least Hero rarity, guaranteed Epic quality
             var rarity = RollDropRarity(forceMinimum: ItemRarity.Hero);
             TryGrantDropItem(rarity, ItemQuality.Epic, source: "Gate(Epic)");
             return;
@@ -333,7 +382,7 @@ void Awake()
         if (rollRandom <= gate.randomItemChance)
         {
             var rarity = RollDropRarity(forceMinimum: ItemRarity.ERank);
-            TryGrantDropItem(rarity, ItemQuality.Normal, source: "Gate");
+            TryGrantDropItem(rarity, source: "Gate");
         }
     }
 
@@ -351,25 +400,44 @@ void Awake()
         return r;
     }
 
-    void TryGrantDropItem(ItemRarity rarity, ItemQuality minQuality, string source)
+    /// <summary>
+    /// Normal gate drop: roll quality first, then pick item from quality pool.
+    /// </summary>
+    void TryGrantDropItem(ItemRarity rarity, string source)
     {
         EnsureRefs();
-
-        if (anvil != null && anvil.itemDatabase != null)
+        if (anvil == null || anvil.itemDatabase == null)
         {
-            // Roll quality first, guarantee at least minQuality
-            ItemQuality rolled = AnvilSystem.RollQuality(rarity);
-            ItemQuality quality = rolled > minQuality ? rolled : minQuality;
-
-            var item = GenerateItemFromDatabaseForcedRarity(anvil.itemDatabase, player, rarity, quality);
-            if (item != null)
-            {
-                GrantItem(item, source);
-                return;
-            }
+            Debug.LogWarning("Gate drop failed: ItemDatabase not found.");
+            return;
         }
 
-        Debug.LogWarning("Gate drop failed: ItemDatabase not found or no item matched.");
+        PlayerClass pc = player.playerClass;
+        ItemQuality quality = AnvilSystem.RollQuality(rarity);
+
+        var item = GenerateItemFromDatabase(anvil.itemDatabase, pc, rarity, quality, player.level);
+        if (item != null)
+            GrantItem(item, source);
+    }
+
+    /// <summary>
+    /// Forced quality gate drop (e.g. epic drop guarantee).
+    /// Picks item from the forced quality pool directly.
+    /// </summary>
+    void TryGrantDropItem(ItemRarity rarity, ItemQuality forcedQuality, string source)
+    {
+        EnsureRefs();
+        if (anvil == null || anvil.itemDatabase == null)
+        {
+            Debug.LogWarning("Gate drop failed: ItemDatabase not found.");
+            return;
+        }
+
+        PlayerClass pc = player.playerClass;
+
+        var item = GenerateItemFromDatabase(anvil.itemDatabase, pc, rarity, forcedQuality, player.level);
+        if (item != null)
+            GrantItem(item, source);
     }
 
     void GrantItem(ItemData item, string source)
@@ -389,12 +457,29 @@ void Awake()
         Debug.LogWarning("Item granted but no Inventory/Inbox to store it.");
     }
 
-    static ItemData GenerateItemFromDatabaseForcedRarity(ItemDatabase db, PlayerStats player, ItemRarity rarity, ItemQuality quality)
+    /// <summary>
+    /// Quality-first item generation: quality is already decided, pick item from that pool.
+    /// Fallback to Normal if no items exist for the rolled quality.
+    /// </summary>
+    static ItemData GenerateItemFromDatabase(ItemDatabase db, PlayerClass pc, ItemRarity rarity, ItemQuality quality, int playerLevel)
     {
-        if (db == null || player == null) return null;
+        if (db == null) return null;
 
-        var pool = db.GetFor(player.playerClass);
-        if (pool == null || pool.Count == 0) return null;
+        // Pool = items for this class AND quality
+        var pool = db.GetFor(pc, quality);
+
+        // Fallback: if no Epic/Legendary item exists → Normal
+        if ((pool == null || pool.Count == 0) && quality != ItemQuality.Normal)
+        {
+            quality = ItemQuality.Normal;
+            pool = db.GetFor(pc, quality);
+        }
+
+        if (pool == null || pool.Count == 0)
+        {
+            Debug.LogWarning($"Gate drop: no items for {pc} (Quality: {quality})");
+            return null;
+        }
 
         var chosen = pool[UnityEngine.Random.Range(0, pool.Count)];
 
@@ -403,11 +488,11 @@ void Awake()
         item.icon = chosen.icon;
         item.slot = chosen.slot;
         item.itemName = chosen.itemName;
-        item.itemLevel = Mathf.Max(1, player.level);
+        item.itemLevel = Mathf.Max(1, playerLevel);
         item.rarity = rarity;
         item.quality = quality;
 
-        ItemStatGenerator.GenerateStats(item, player.level, player.playerClass);
+        ItemStatGenerator.GenerateStats(item, playerLevel, pc);
 
         return item;
     }

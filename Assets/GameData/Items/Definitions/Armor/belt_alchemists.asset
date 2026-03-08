@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: belt_alchemists
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Alchemist's Belt
-  icon: {fileID: 21300000, guid: 8df4452e6a50402ba2eb8e8f8b21f573, type: 3}
+  icon: {fileID: 3837710251437637575, guid: 3def6b577c326467d9dfe37860876752, type: 3}
   slot: 9
   allowedClasses: 
   wSTR: 0

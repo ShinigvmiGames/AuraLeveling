@@ -1,4 +1,5 @@
 using UnityEngine;
+
 public class PlayerStats : MonoBehaviour
 {
     [Header("Class")]
@@ -17,19 +18,21 @@ public class PlayerStats : MonoBehaviour
     public int VIT = 5;
 
     [Header("Unspent Stat Points")]
-public int unspentPoints = 0;
+    public int unspentPoints = 0;
 
     [Header("Derived Stats")]
-    public int maxHP;
-    public int maxMana;
-    public int attack;
-    public int defense;
+    public long maxHP;
+    public long damage;
+    public int armor;
+    public float critRate;
+    public float critDamage;
+    public float speed;
 
     [Header("Aura")]
     public float auraBonusPercent = 0f;
 
     [Header("Money")]
-    public int gold = 0; // Gold / Mana-Kristalle
+    public int gold = 0;
 
     [Header("Crafting Currency")]
     public int shadowEssence = 10;
@@ -37,136 +40,197 @@ public int unspentPoints = 0;
     [Header("Premium Currency")]
     public int manaCrystals = 0;
 
-[Header("Equipment Bonuses")]
-public int bonusSTR;
-public int bonusDEX;
-public int bonusINT;
-public int bonusVIT;
-public float bonusAuraPercent;
+    [Header("Equipment Bonuses — Main Stats")]
+    public int bonusSTR;
+    public int bonusDEX;
+    public int bonusINT;
+    public int bonusVIT;
+    public float bonusAuraPercent;
+
+    [Header("Equipment Bonuses — Weapon Damage")]
+    // Sum of all equipped weapon min/max damage
+    public int bonusWeaponDmgMin;
+    public int bonusWeaponDmgMax;
+
+    [Header("Equipment Bonuses — Combat Substats")]
+    public int bonusArmor;
+    public float bonusCritRate;
+    public float bonusCritDamage;
+    public float bonusSpeed;
 
     public bool TrySpendPoint(string statName)
-{
-    if (unspentPoints <= 0) return false;
-
-    switch (statName)
     {
-        case "STR": STR++; break;
-        case "DEX": DEX++; break;
-        case "INT": INT++; break;
-        case "VIT": VIT++; break;
-        default: return false;
+        if (unspentPoints <= 0) return false;
+
+        switch (statName)
+        {
+            case "STR": STR++; break;
+            case "DEX": DEX++; break;
+            case "INT": INT++; break;
+            case "VIT": VIT++; break;
+            default: return false;
+        }
+
+        unspentPoints--;
+        RecalculateStats();
+        return true;
     }
 
-    unspentPoints--;
-    RecalculateStats();
-    return true;
-}
-
-    // Berechnet die Aura des Spielers (Stats + Items + Boni) mit x100 Skalierung
-    public int GetAura()
+    /// <summary>
+    /// Returns the player's total Aura as a long (big numbers!).
+    /// statBase + damageContrib + hpContrib + combatContrib, scaled by aura bonus%.
+    /// </summary>
+    public long GetAura()
     {
         int effSTR = STR + bonusSTR;
         int effDEX = DEX + bonusDEX;
         int effINT = INT + bonusINT;
         int effVIT = VIT + bonusVIT;
 
-        int baseAura = effSTR + effDEX + effINT + effVIT;
+        long statBase = (long)(effSTR + effDEX + effINT + effVIT) * 100L;
+        long damageContrib = damage * 2L;
+        long hpContrib = maxHP;
+        long combatContrib = (long)(armor * 50f + critRate * 100f + critDamage * 50f + speed * 30f);
+
+        long rawAura = statBase + damageContrib + hpContrib + combatContrib;
 
         float totalAuraBonus = (auraBonusPercent + bonusAuraPercent) / 100f;
-        int finalAura = Mathf.RoundToInt(baseAura * 100f * (1f + totalAuraBonus));
+        long finalAura = (long)(rawAura * (1f + totalAuraBonus));
 
-        return finalAura;
+        return System.Math.Max(0L, finalAura);
     }
-
 
     void Start()
     {
         RecalculateStats();
-        Debug.Log("Player Stats initialisiert");
+        Debug.Log("Player Stats initialized");
     }
 
+    /// <summary>
+    /// Recalculates all derived stats from base + equipment bonuses + class passives.
+    ///
+    /// Class Passives:
+    ///   Assassine:      +20% Speed, +15% Crit Rate
+    ///   Warrior:        +15% Max HP, Armor cap raised from 50% to 60%
+    ///   Bogenschuetze:  +25% Crit Damage, +10% Speed
+    ///   Magier:         +25% Damage
+    ///   Nekromant:      +15% Max HP (lifesteal 15% handled in CombatResolver)
+    /// </summary>
     public void RecalculateStats()
-{
-    // Base derived stats from main stats
-    int effSTR = STR + bonusSTR;
-int effDEX = DEX + bonusDEX;
-int effINT = INT + bonusINT;
-int effVIT = VIT + bonusVIT;
-
-maxHP = effVIT * 10;
-maxMana = effINT * 10;
-attack = effSTR * 2;
-defense = effVIT * 2;
-
-    ApplyClassBonus();
-
-    // Aura-Bonus aus Level (wie du es schon hattest)
-    auraBonusPercent = (level - 1) * 1.5f;
-
-    // Equipment Boni auf Mainstats addieren
-    int totalSTR = STR + bonusSTR;
-    int totalDEX = DEX + bonusDEX;
-    int totalINT = INT + bonusINT;
-    int totalVIT = VIT + bonusVIT;
-
-    // Derived Stats nochmal mit total stats neu berechnen
-    maxHP = totalVIT * 10;
-    maxMana = totalINT * 10;
-    attack = totalSTR * 2;
-    defense = totalVIT * 2;
-
-    ApplyClassBonus(); // Klassenbonus nochmal auf neue derived stats
-
-    // Aura Bonus: Level + Equipment-AuraBonus%
-    float totalAuraBonusPercent = auraBonusPercent + bonusAuraPercent;
-
-    ApplyAuraBonus(totalAuraBonusPercent);
-    onStatsChanged?.Invoke();
-}
-    void ApplyClassBonus()
     {
-    switch (playerClass)
+        // Effective main stats (base + equipment)
+        int effSTR = STR + bonusSTR;
+        int effDEX = DEX + bonusDEX;
+        int effINT = INT + bonusINT;
+        int effVIT = VIT + bonusVIT;
+
+        // Aura bonus from level
+        auraBonusPercent = (level - 1) * 1.5f;
+        float auraMultiplier = 1f + (auraBonusPercent + bonusAuraPercent) / 100f;
+
+        // ===== HP = VIT * 15 * (1 + level * 0.02) * auraMultiplier =====
+        float rawHP = effVIT * 15f * (1f + level * 0.02f) * auraMultiplier;
+
+        // Class HP bonuses
+        switch (playerClass)
         {
-        case PlayerClass.Assassine:
-            attack += Mathf.RoundToInt(DEX * 0.5f);
-            break;
+            case PlayerClass.Warrior:   rawHP *= 1.15f; break; // +15% HP
+            case PlayerClass.Nekromant:  rawHP *= 1.15f; break; // +15% HP
+        }
+        maxHP = System.Math.Max(1L, (long)rawHP);
 
-        case PlayerClass.Tank:
-            maxHP += VIT * 20;
-            defense += VIT;
-            break;
+        // ===== Damage = mainStat * weaponDmg * (1 + level*0.03) * auraMultiplier =====
+        // Weapon damage: average of min/max for the derived stat display
+        // Actual combat uses per-attack rolls (see CombatResolver)
+        int classMainStat = GetClassMainStatValue(effSTR, effDEX, effINT, effVIT);
+        float avgWeaponDmg = Mathf.Max(1f, (bonusWeaponDmgMin + bonusWeaponDmgMax) / 2f);
+        float rawDamage = classMainStat * avgWeaponDmg * (1f + level * 0.03f) * auraMultiplier;
 
-        case PlayerClass.Bogenschuetze:
-            attack += Mathf.RoundToInt(DEX * 0.7f);
-            break;
+        // Class damage bonuses
+        if (playerClass == PlayerClass.Magier)
+            rawDamage *= 1.25f; // +25% Damage
+        damage = System.Math.Max(1L, (long)rawDamage);
 
-        case PlayerClass.Krieger:
-            attack += STR;
-            defense += STR / 2;
-            break;
+        // ===== Armor = directly from equipped armor items =====
+        armor = bonusArmor;
 
-        case PlayerClass.Magier:
-            maxMana += INT * 20;
-            break;
+        // ===== Crit Rate = 15% base + bonusCritRate, HARD CAP 100% =====
+        float rawCritRate = 15f + bonusCritRate;
+        // Class crit rate bonus
+        if (playerClass == PlayerClass.Assassine)
+            rawCritRate += 15f; // +15% Crit Rate
+        critRate = Mathf.Clamp(rawCritRate, 0f, 100f);
 
-        case PlayerClass.Nekromant:
-            maxMana += INT * 15;
-            defense += INT / 3;
-            break;
+        // ===== Crit Damage = 50% base + bonusCritDamage =====
+        // Crit DMG is ADDITIONAL to normal damage (50% = 1.5x total)
+        float rawCritDamage = 50f + bonusCritDamage;
+        // Class crit damage bonus
+        if (playerClass == PlayerClass.Bogenschuetze)
+            rawCritDamage += 25f; // +25% Crit Damage (additive to base 50%)
+        critDamage = rawCritDamage;
+
+        // ===== Speed = 100 + DEX*0.5 + bonusSpeed =====
+        float rawSpeed = 100f + effDEX * 0.5f + bonusSpeed;
+        // Class speed bonuses
+        switch (playerClass)
+        {
+            case PlayerClass.Assassine:     rawSpeed *= 1.20f; break; // +20% Speed
+            case PlayerClass.Bogenschuetze: rawSpeed *= 1.10f; break; // +10% Speed
+        }
+        speed = rawSpeed;
+
+        onStatsChanged?.Invoke();
+    }
+
+    /// <summary>
+    /// Returns the class's primary damage stat value.
+    /// </summary>
+    int GetClassMainStatValue(int effSTR, int effDEX, int effINT, int effVIT)
+    {
+        switch (playerClass)
+        {
+            case PlayerClass.Assassine:     return effDEX;
+            case PlayerClass.Warrior:       return effSTR;
+            case PlayerClass.Bogenschuetze: return effDEX;
+            case PlayerClass.Magier:        return effINT;
+            case PlayerClass.Nekromant:     return effINT;
+            default:                        return effSTR;
         }
     }
 
+    /// <summary>
+    /// Returns the class's primary stat type for cross-stat damage reduction.
+    /// </summary>
+    public StatType GetClassMainStatType()
+    {
+        switch (playerClass)
+        {
+            case PlayerClass.Assassine:     return StatType.DEX;
+            case PlayerClass.Warrior:       return StatType.STR;
+            case PlayerClass.Bogenschuetze: return StatType.DEX;
+            case PlayerClass.Magier:        return StatType.INT;
+            case PlayerClass.Nekromant:     return StatType.INT;
+            default:                        return StatType.STR;
+        }
+    }
 
+    /// <summary>
+    /// Returns the effective value of the class's primary damage stat.
+    /// Used for cross-stat damage reduction calculations.
+    /// </summary>
+    public int GetEffectiveMainStat()
+    {
+        return GetClassMainStatValue(STR + bonusSTR, DEX + bonusDEX, INT + bonusINT, VIT + bonusVIT);
+    }
 
-    void ApplyAuraBonus(float totalAuraBonusPercent)
-{
-    float multiplier = 1f + totalAuraBonusPercent / 100f;
-
-    maxHP = Mathf.RoundToInt(maxHP * multiplier);
-    maxMana = Mathf.RoundToInt(maxMana * multiplier);
-    attack = Mathf.RoundToInt(attack * multiplier);
-    defense = Mathf.RoundToInt(defense * multiplier);
-}
+    /// <summary>
+    /// Returns the armor damage reduction cap for this class.
+    /// Tank has 60% cap (passive), all others 50%.
+    /// </summary>
+    public float GetArmorCap()
+    {
+        return playerClass == PlayerClass.Warrior ? 0.60f : 0.50f;
+    }
 
     // ========= Economy helpers =========
     public void AddGold(int amount)
@@ -218,6 +282,15 @@ defense = effVIT * 2;
         return true;
     }
 
+    /// <summary>
+    /// Returns XP progress as 0..1 for UI bars.
+    /// </summary>
+    public float GetXPProgress01()
+    {
+        if (xpToNextLevel <= 0) return 1f;
+        return Mathf.Clamp01((float)currentXP / xpToNextLevel);
+    }
+
     public void GainXP(int amount)
     {
         if (amount <= 0) return;
@@ -237,9 +310,20 @@ defense = effVIT * 2;
         xpToNextLevel = Mathf.RoundToInt(xpToNextLevel * 1.25f);
         unspentPoints += 3;
 
-        Debug.Log("LEVEL UP! Neues Level: " + level);
-        Debug.Log("Du hast 3 Statuspunkte zu vergeben!");
+        Debug.Log("LEVEL UP! New level: " + level);
+        Debug.Log("You have 3 stat points to spend!");
 
         RecalculateStats();
     }
+}
+
+/// <summary>
+/// Stat type enum for cross-stat damage reduction system.
+/// </summary>
+public enum StatType
+{
+    STR,
+    DEX,
+    INT,
+    VIT
 }

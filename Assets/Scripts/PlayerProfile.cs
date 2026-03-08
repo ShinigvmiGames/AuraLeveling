@@ -4,7 +4,6 @@ using UnityEngine;
 public class PlayerProfile
 {
     public string playerName;
-    public RaceType race;
     public PlayerClass playerClass;
 
     // Look

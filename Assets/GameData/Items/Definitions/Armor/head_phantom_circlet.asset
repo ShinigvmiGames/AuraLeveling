@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: head_phantom_circlet
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Phantom Circlet
-  icon: {fileID: 21300000, guid: aa071b2062534de789c3818c6f78e566, type: 3}
+  icon: {fileID: -8095051731846292059, guid: 624e5f2bc136c473badcb6e7701b79e3, type: 3}
   slot: 2
   allowedClasses: 
   wSTR: 0

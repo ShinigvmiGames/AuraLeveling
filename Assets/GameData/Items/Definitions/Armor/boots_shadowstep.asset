@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: boots_shadowstep
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Shadowstep Boots
-  icon: {fileID: 21300000, guid: bc59cba7f15745fd940ae4345c9e40e4, type: 3}
+  icon: {fileID: -7073928965905865070, guid: 6aaa95f334316487291782af251fdcc8, type: 3}
   slot: 5
   allowedClasses: 
   wSTR: 0

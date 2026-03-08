@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: head_abyssal_helm
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Abyssal Helm
-  icon: {fileID: 21300000, guid: efb8557e2f494a80aa23814f56d95c4e, type: 3}
+  icon: {fileID: -8901932708099080856, guid: 0f16e4b172acb4fac8e348543e623004, type: 3}
   slot: 2
   allowedClasses: 
   wSTR: 1

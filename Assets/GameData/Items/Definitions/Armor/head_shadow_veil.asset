@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: head_shadow_veil
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Shadow Veil
-  icon: {fileID: 21300000, guid: e62f14f375784209b66213c3202020e6, type: 3}
+  icon: {fileID: 3330657651854524195, guid: 633cfbba5aef148c9949bde429116129, type: 3}
   slot: 2
   allowedClasses: 
   wSTR: 0

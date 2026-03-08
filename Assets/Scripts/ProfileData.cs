@@ -3,8 +3,8 @@ using UnityEngine;
 
 //
 // ProfileData.cs
-// Enthält nur Datenklassen (Serializable) für Saves.
-// KEINE MonoBehaviours hier rein.
+// Contains only data classes (Serializable) for saves.
+// NO MonoBehaviours in here.
 //
 
 [Serializable]
@@ -13,19 +13,27 @@ public class CharacterData
     public string name;
     public int level;
 
-    public RaceType race;
     public GenderType gender;
-    public int modelIndex;
+
+    // Portrait feature variants (0-4 each)
+    public int skinColorVariant;
+    public int faceVariant;
+    public int hairVariant;
+    public int clothingVariant;
 
     public PlayerClass playerClass;
 
-    public CharacterData(string name, int level, RaceType race, GenderType gender, int modelIndex, PlayerClass pc)
+    public CharacterData(string name, int level, GenderType gender,
+        int skinColorVariant, int faceVariant, int hairVariant, int clothingVariant,
+        PlayerClass pc)
     {
         this.name = name;
         this.level = level;
-        this.race = race;
         this.gender = gender;
-        this.modelIndex = modelIndex;
+        this.skinColorVariant = skinColorVariant;
+        this.faceVariant = faceVariant;
+        this.hairVariant = hairVariant;
+        this.clothingVariant = clothingVariant;
         this.playerClass = pc;
     }
 }
@@ -33,14 +41,14 @@ public class CharacterData
 [Serializable]
 public class AccountSaveData
 {
-    // email oder "GUEST"
+    // email or "GUEST"
     public string accountId = "";
     public bool isGuest = false;
 
-    // Welcher Slot ist aktuell aktiv/eingeloggt
+    // Which slot is currently active/logged in
     public int activeSlotIndex = -1;
 
-    // Genau 3 Slots (JsonUtility freundlich)
+    // Exactly 3 slots (JsonUtility friendly)
     public CharacterData slot1;
     public CharacterData slot2;
     public CharacterData slot3;
@@ -70,7 +78,7 @@ public class AccountSaveData
     {
         SetSlot(index, null);
 
-        // Wenn aktiver Slot gelöscht wurde -> reset
+        // If active slot was deleted -> reset
         if (activeSlotIndex == index)
             activeSlotIndex = -1;
     }

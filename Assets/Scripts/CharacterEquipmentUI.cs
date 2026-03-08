@@ -10,9 +10,9 @@ public class CharacterEquipmentUI : MonoBehaviour
         public EquipmentSlot slot;
         public Button button;
         public TMP_Text label;
-        public Image icon;        // shows equipped item icon (auto-created if null)
+        public Image icon;        // shows equipped item icon (assign in Inspector)
         public Image placeholder;  // shows slot placeholder (e.g. sword silhouette)
-        public Image glowEffect;  // quality glow behind icon (auto-created if null)
+        public Image glowEffect;  // quality glow behind icon (assign in Inspector)
     }
 
     public EquipmentSystem equipment;
@@ -28,7 +28,6 @@ public class CharacterEquipmentUI : MonoBehaviour
         if (equipment != null) equipment.onChanged += Refresh;
         if (inventory != null) inventory.onChanged += Refresh;
 
-        EnsureSlotImages();
         SetupDragDrop();
         SetupClickHandlers();
         Refresh();
@@ -38,35 +37,6 @@ public class CharacterEquipmentUI : MonoBehaviour
     {
         if (equipment != null) equipment.onChanged -= Refresh;
         if (inventory != null) inventory.onChanged -= Refresh;
-    }
-
-    /// <summary>
-    /// Auto-create icon and glow Images for slots that don't have them wired in Inspector.
-    /// Also auto-find placeholder images (Img_Item children in the scene).
-    /// </summary>
-    void EnsureSlotImages()
-    {
-        if (slotUIs == null) return;
-        foreach (var ui in slotUIs)
-        {
-            if (ui == null || ui.button == null) continue;
-
-            // Auto-find placeholder image (Img_Item child) if not wired in Inspector
-            if (ui.placeholder == null)
-            {
-                var phTF = ui.button.transform.Find("Img_Item");
-                if (phTF != null)
-                    ui.placeholder = phTF.GetComponent<Image>();
-            }
-
-            // Auto-create icon Image if not assigned
-            if (ui.icon == null)
-                ui.icon = CreateChildImage(ui.button.transform, "ItemIcon", false);
-
-            // Auto-create glow Image if not assigned
-            if (ui.glowEffect == null)
-                ui.glowEffect = CreateGlowImage(ui.button.transform);
-        }
     }
 
     void SetupDragDrop()
@@ -182,43 +152,4 @@ public class CharacterEquipmentUI : MonoBehaviour
         }
     }
 
-    Image CreateChildImage(Transform parent, string name, bool behindSiblings)
-    {
-        var go = new GameObject(name);
-        go.transform.SetParent(parent, false);
-        if (behindSiblings)
-            go.transform.SetAsFirstSibling();
-        else
-            go.transform.SetAsLastSibling();
-
-        var rt = go.AddComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0.1f, 0.1f);
-        rt.anchorMax = new Vector2(0.9f, 0.9f);
-        rt.offsetMin = Vector2.zero;
-        rt.offsetMax = Vector2.zero;
-
-        var img = go.AddComponent<Image>();
-        img.raycastTarget = false;
-        img.preserveAspect = true;
-        img.enabled = false;
-        return img;
-    }
-
-    Image CreateGlowImage(Transform parent)
-    {
-        var go = new GameObject("QualityGlow");
-        go.transform.SetParent(parent, false);
-        go.transform.SetAsFirstSibling();
-
-        var rt = go.AddComponent<RectTransform>();
-        rt.anchorMin = Vector2.zero;
-        rt.anchorMax = Vector2.one;
-        rt.offsetMin = new Vector2(-10, -10);
-        rt.offsetMax = new Vector2(10, 10);
-
-        var img = go.AddComponent<Image>();
-        img.raycastTarget = false;
-        img.enabled = false;
-        return img;
-    }
 }

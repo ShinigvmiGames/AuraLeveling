@@ -6,6 +6,11 @@ public class CharacterUI : MonoBehaviour
 {
     public PlayerStats player;
 
+    [Header("Level & XP Bar")]
+    public TMP_Text txtLevel;              // "Level 12"
+    public TMP_Text txtXP;                 // "350 / 1,200 XP"
+    public Image xpBarFill;                // Image (Filled, Left-to-Right)
+
     [Header("Stat Points")]
     public TMP_Text txtPoints;
 
@@ -21,17 +26,17 @@ public class CharacterUI : MonoBehaviour
     public Button btnINT;
     public Button btnVIT;
 
-    [Header("Derived Stats (auto-wired from scene if null)")]
+    [Header("Derived Stats")]
     public TMP_Text txtMaxHP;
-    public TMP_Text txtAttack;
-    public TMP_Text txtMaxMana;
-    public TMP_Text txtDefense;
+    public TMP_Text txtDamage;
+    public TMP_Text txtArmor;
+    public TMP_Text txtCritRate;
+    public TMP_Text txtCritDamage;
+    public TMP_Text txtSpeed;
 
     void Start()
     {
         if (player == null) player = FindObjectOfType<PlayerStats>();
-
-        AutoWireAll();
 
         if (btnSTR != null) btnSTR.onClick.AddListener(() => Spend("STR"));
         if (btnDEX != null) btnDEX.onClick.AddListener(() => Spend("DEX"));
@@ -46,134 +51,73 @@ public class CharacterUI : MonoBehaviour
         Refresh();
     }
 
-    /// <summary>
-    /// Auto-find all UI fields from scene GameObjects if not wired in Inspector.
-    /// </summary>
-    void AutoWireAll()
-    {
-        // Stat points text
-        if (txtPoints == null)
-        {
-            var go = GameObject.Find("Txt_Points");
-            if (go != null) txtPoints = go.GetComponent<TMP_Text>();
-        }
-
-        // Main stat texts
-        if (txtSTR == null)
-        {
-            var go = GameObject.Find("Txt_STR");
-            if (go != null) txtSTR = go.GetComponent<TMP_Text>();
-        }
-        if (txtDEX == null)
-        {
-            var go = GameObject.Find("Txt_DEX");
-            if (go != null) txtDEX = go.GetComponent<TMP_Text>();
-        }
-        if (txtINT == null)
-        {
-            var go = GameObject.Find("Txt_INT");
-            if (go != null) txtINT = go.GetComponent<TMP_Text>();
-        }
-        if (txtVIT == null)
-        {
-            var go = GameObject.Find("Txt_VIT");
-            if (go != null) txtVIT = go.GetComponent<TMP_Text>();
-        }
-
-        // Stat plus buttons
-        if (btnSTR == null)
-        {
-            var go = GameObject.Find("Btn_STR_Plus");
-            if (go != null) btnSTR = go.GetComponent<Button>();
-        }
-        if (btnDEX == null)
-        {
-            var go = GameObject.Find("Btn_DEX_Plus");
-            if (go != null) btnDEX = go.GetComponent<Button>();
-        }
-        if (btnINT == null)
-        {
-            var go = GameObject.Find("Btn_INT_Plus");
-            if (go != null) btnINT = go.GetComponent<Button>();
-        }
-        if (btnVIT == null)
-        {
-            var go = GameObject.Find("Btn_VIT_Plus");
-            if (go != null) btnVIT = go.GetComponent<Button>();
-        }
-
-        // Derived stats
-        if (txtMaxHP == null)
-        {
-            var go = GameObject.Find("Txt_MaxHP");
-            if (go != null) txtMaxHP = go.GetComponent<TMP_Text>();
-        }
-        if (txtAttack == null)
-        {
-            var go = GameObject.Find("Txt_Attack");
-            if (go != null) txtAttack = go.GetComponent<TMP_Text>();
-        }
-        if (txtMaxMana == null)
-        {
-            var go = GameObject.Find("Txt_MaxMana");
-            if (go != null) txtMaxMana = go.GetComponent<TMP_Text>();
-        }
-        if (txtDefense == null)
-        {
-            var go = GameObject.Find("Txt_Defense");
-            if (go != null) txtDefense = go.GetComponent<TMP_Text>();
-        }
-    }
-
     void Spend(string stat)
     {
         if (player == null) return;
         player.TrySpendPoint(stat);
-        Refresh(); // immediate visual feedback
+        Refresh();
     }
 
     void Refresh()
     {
         if (player == null) return;
 
-        // Remaining stat points
+        // Level & XP Bar
+        if (txtLevel != null)
+            txtLevel.text = $"Level {player.level}";
+
+        if (txtXP != null)
+            txtXP.text = $"{player.currentXP:N0} / {player.xpToNextLevel:N0} XP";
+
+        if (xpBarFill != null)
+            xpBarFill.fillAmount = player.GetXPProgress01();
+
         if (txtPoints != null)
         {
             if (player.unspentPoints > 0)
-                txtPoints.text = $"Verfügbare Punkte: <color=#FFD700>{player.unspentPoints}</color>";
+                txtPoints.text = $"Available Points: <color=#FFD700>{player.unspentPoints}</color>";
             else
-                txtPoints.text = "Verfügbare Punkte: 0";
+                txtPoints.text = "Available Points: 0";
         }
 
-        // Main stats: show base + equipment bonus in green parentheses if bonus > 0
         if (txtSTR != null) txtSTR.text = FormatStat("STR", player.STR, player.bonusSTR);
         if (txtDEX != null) txtDEX.text = FormatStat("DEX", player.DEX, player.bonusDEX);
         if (txtINT != null) txtINT.text = FormatStat("INT", player.INT, player.bonusINT);
         if (txtVIT != null) txtVIT.text = FormatStat("VIT", player.VIT, player.bonusVIT);
 
-        // Derived stats (include totals from equipment)
-        if (txtMaxHP != null) txtMaxHP.text = $"HP: {player.maxHP}";
-        if (txtAttack != null) txtAttack.text = $"ATK: {player.attack}";
-        if (txtMaxMana != null) txtMaxMana.text = $"Mana: {player.maxMana}";
-        if (txtDefense != null) txtDefense.text = $"DEF: {player.defense}";
+        // Derived Stats with big number formatting
+        if (txtMaxHP != null) txtMaxHP.text = $"HP: {FormatNumber(player.maxHP)}";
+        if (txtDamage != null) txtDamage.text = $"DMG: {FormatNumber(player.damage)}";
+        if (txtArmor != null) txtArmor.text = $"Armor: {FormatNumber(player.armor)}";
+        if (txtCritRate != null) txtCritRate.text = $"Crit: {player.critRate:0.0}%";
+        if (txtCritDamage != null) txtCritDamage.text = $"CritDMG: {player.critDamage:0.0}%";
+        if (txtSpeed != null) txtSpeed.text = $"SPD: {player.speed:0.0}";
 
-        // Enable/disable plus buttons based on available points
         bool canSpend = player.unspentPoints > 0;
-
         if (btnSTR != null) btnSTR.interactable = canSpend;
         if (btnDEX != null) btnDEX.interactable = canSpend;
         if (btnINT != null) btnINT.interactable = canSpend;
         if (btnVIT != null) btnVIT.interactable = canSpend;
     }
 
-    /// <summary>
-    /// Format a main stat line. Shows equipment bonus in green parentheses if > 0.
-    /// e.g. "STR: 5" or "STR: 5 <color=#4CFF4C>(+3)</color>"
-    /// </summary>
     string FormatStat(string name, int baseVal, int bonus)
     {
         if (bonus > 0)
             return $"{name}: {baseVal} <color=#4CFF4C>(+{bonus})</color>";
         return $"{name}: {baseVal}";
+    }
+
+    /// <summary>
+    /// Formats large numbers with K, M, B suffixes.
+    /// </summary>
+    static string FormatNumber(long value)
+    {
+        if (value >= 1_000_000_000L)
+            return $"{value / 1_000_000_000f:0.0}B";
+        if (value >= 1_000_000L)
+            return $"{value / 1_000_000f:0.0}M";
+        if (value >= 10_000L)
+            return $"{value / 1_000f:0.0}K";
+        return value.ToString("N0");
     }
 }

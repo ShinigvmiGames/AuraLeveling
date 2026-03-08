@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: amulet_whispering_talisman
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Whispering Talisman
-  icon: {fileID: 21300000, guid: 7a5fb4e6afca41919b5e2950c91195df, type: 3}
+  icon: {fileID: -1227880408554404553, guid: b672acac87bd44d18ade725948e86699, type: 3}
   slot: 7
   allowedClasses: 
   wSTR: 0

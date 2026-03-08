@@ -11,7 +11,7 @@ public class EnergySystem : MonoBehaviour
     {
         if (currentEnergy < amount)
         {
-            Debug.Log("Nicht genug Energie!");
+            Debug.Log("Not enough energy!");
             return false;
         }
 
@@ -19,18 +19,49 @@ public class EnergySystem : MonoBehaviour
         return true;
     }
 
-    public void BuyEnergyWithGold()
+    public int maxRechargesPerDay = 10;
+    public int energyPerRecharge = 20;
+
+    /// <summary>
+    /// Buy 20 energy for 1 MC. Max 10x per day.
+    /// </summary>
+    public bool BuyEnergyWithMC(PlayerStats player)
     {
-        if (premiumEnergyBoughtToday >= 10)
+        if (player == null) return false;
+
+        if (premiumEnergyBoughtToday >= maxRechargesPerDay)
         {
-            Debug.Log("Tageslimit erreicht!");
-            return;
+            Debug.Log("Daily recharge limit reached! (10/10)");
+            return false;
+        }
+
+        if (!player.SpendManaCrystals(1))
+        {
+            Debug.Log("Not enough Mana Crystals!");
+            return false;
         }
 
         premiumEnergyBoughtToday++;
-        currentEnergy += 20;
-        currentEnergy = Mathf.Min(currentEnergy, maxEnergy + 200);
+        currentEnergy += energyPerRecharge;
+        // Energy can exceed maxEnergy (no hard cap)
 
-        Debug.Log("20 Energie gekauft");
+        Debug.Log($"Energy +{energyPerRecharge} ({premiumEnergyBoughtToday}/{maxRechargesPerDay})");
+        return true;
+    }
+
+    public int GetRemainingRecharges()
+    {
+        return Mathf.Max(0, maxRechargesPerDay - premiumEnergyBoughtToday);
+    }
+
+    /// <summary>
+    /// Daily Reset: Energy back to maxEnergy (100), recharges reset to 0.
+    /// Call on day change (e.g. via DailyResetManager).
+    /// </summary>
+    public void DailyReset()
+    {
+        currentEnergy = maxEnergy;
+        premiumEnergyBoughtToday = 0;
+        Debug.Log("Energy Daily Reset: back to " + maxEnergy);
     }
 }

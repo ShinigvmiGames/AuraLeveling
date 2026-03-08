@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ring_band_of_shadows
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Band of Shadows
-  icon: {fileID: 21300000, guid: 39e131ea5bc2478fabb4c792e599a670, type: 3}
+  icon: {fileID: 4811045607808171, guid: 55fccf8aac2d2457b94062688fa2e17c, type: 3}
   slot: 6
   allowedClasses: 
   wSTR: 0

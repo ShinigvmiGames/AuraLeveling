@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ring_crimson_signet
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Crimson Signet
-  icon: {fileID: 21300000, guid: befa6606e97a41c58e9deb75275d49d7, type: 3}
+  icon: {fileID: 5782409674275711444, guid: d051adfd4b87a43bb9a06d8a7e9c7f3c, type: 3}
   slot: 6
   allowedClasses: 
   wSTR: 1

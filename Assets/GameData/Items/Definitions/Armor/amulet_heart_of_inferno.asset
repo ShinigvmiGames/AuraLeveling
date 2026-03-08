@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: amulet_heart_of_inferno
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Heart of the Inferno
-  icon: {fileID: 21300000, guid: 5f0b9b3ae5b747a29b3dd6e3282bd626, type: 3}
+  icon: {fileID: 3341448330559746364, guid: 55f3449c1b10b422da49c373544f00e2, type: 3}
   slot: 7
   allowedClasses: 
   wSTR: 1

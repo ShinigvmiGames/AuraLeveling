@@ -5,8 +5,8 @@ using UnityEngine;
 public class AnvilSystem : MonoBehaviour
 {
     [Header("Refs")]
-    public ItemDatabase itemDatabase; // <- ItemDatabase_Main hier reinziehen
-    public PlayerStats player;        // <- PlayerStats hier reinziehen (oder wird gefunden)
+    public ItemDatabase itemDatabase; // <- drag ItemDatabase_Main here
+    public PlayerStats player;        // <- drag PlayerStats here (or will be found automatically)
     [Header("Optional: Auto-add + Popup")]
     public InventorySystem inventory; // optional
     public ItemPopup itemPopup;       // optional
@@ -99,12 +99,13 @@ public class AnvilSystem : MonoBehaviour
     }
 
     /// <summary>
-    /// Skip cost in ManaCrystals: 1 MC per 10 minutes remaining, minimum 1.
+    /// Skip cost in ManaCrystals: 1 MC per 5 minutes remaining.
+    /// 5:00 = 1 MC, 5:01 = 2 MC, 10:00 = 2 MC, 55:00 = 11 MC.
     /// </summary>
     public int GetSkipCostMC()
     {
         float remaining = GetUpgradeRemainingSeconds();
-        return Mathf.Max(1, Mathf.CeilToInt(remaining / 600f));
+        return Mathf.Max(1, Mathf.CeilToInt(remaining / 300f));
     }
 
     public bool TrySkipUpgrade()
@@ -146,7 +147,7 @@ public class AnvilSystem : MonoBehaviour
 
         if (!HasEnoughEssence())
         {
-            Debug.Log("Nicht genug Essenz der Schatten!");
+            Debug.Log("Not enough Shadow Essence!");
             onCrafted?.Invoke(null);
             return;
         }
@@ -183,7 +184,7 @@ public class AnvilSystem : MonoBehaviour
         if (player == null) return false;
         if (player.shadowEssence < essenceCostPerCraft)
         {
-            Debug.Log("Nicht genug Essenz der Schatten!");
+            Debug.Log("Not enough Shadow Essence!");
             return false;
         }
         return true;
@@ -206,7 +207,7 @@ public class AnvilSystem : MonoBehaviour
         bool added = inventory.Add(item);
         if (!added)
         {
-            Debug.Log("Inventar voll → Item konnte nicht hinzugefügt werden.");
+            Debug.Log("Inventory full — item could not be added.");
             return;
         }
 
@@ -291,11 +292,11 @@ public class AnvilSystem : MonoBehaviour
     {
         if (seconds < 60f) return $"{seconds:F0}s";
         float minutes = seconds / 60f;
-        if (minutes < 60f) return $"{minutes:F1} Min";
+        if (minutes < 60f) return $"{minutes:F1} min";
         float hours = minutes / 60f;
-        if (hours < 24f) return $"{hours:F1} Std";
+        if (hours < 24f) return $"{hours:F1} hrs";
         float days = hours / 24f;
-        return $"{days:F1} Tage";
+        return $"{days:F1} days";
     }
 
     // ========= Drop Probability System =========
@@ -432,27 +433,38 @@ public class AnvilSystem : MonoBehaviour
     {
         if (itemDatabase == null)
         {
-            Debug.LogError("ItemDatabase fehlt! Zieh ItemDatabase_Main ins AnvilSystem.");
+            Debug.LogError("ItemDatabase missing! Drag ItemDatabase_Main into AnvilSystem.");
             return null;
         }
         if (player == null)
         {
-            Debug.LogError("PlayerStats fehlt!");
+            Debug.LogError("PlayerStats missing!");
             return null;
         }
 
         ItemRarity rarity = RollRarity();
         PlayerClass pc = player.playerClass;
 
-        // ✅ Pool = alle Items die zur Klasse passen (Rarity spielt keine Rolle mehr)
-        List<ItemDefinition> pool = itemDatabase.GetFor(pc);
+        // 1. Roll quality first
+        ItemQuality quality = RollQuality(rarity);
+
+        // 2. Pool = items matching class AND this quality
+        List<ItemDefinition> pool = itemDatabase.GetFor(pc, quality);
+
+        // Fallback: if no Epic/Legendary items exist → Normal
+        if ((pool == null || pool.Count == 0) && quality != ItemQuality.Normal)
+        {
+            quality = ItemQuality.Normal;
+            pool = itemDatabase.GetFor(pc, quality);
+        }
 
         if (pool == null || pool.Count == 0)
         {
-            Debug.LogError($"Keine Items in der Database für Klasse {pc}. Items hinzufügen!");
+            Debug.LogError($"No items in database for class {pc} (Quality: {quality}). Add items!");
             return null;
         }
 
+        // 3. Pick random item from quality pool
         ItemDefinition chosen = pool[UnityEngine.Random.Range(0, pool.Count)];
 
         ItemData item = new ItemData();
@@ -462,44 +474,21 @@ public class AnvilSystem : MonoBehaviour
         item.itemName = chosen.itemName;
         item.itemLevel = player.level;
         item.rarity = rarity;
-        item.quality = RollQuality(rarity);
+        item.quality = quality;
 
         ItemStatGenerator.GenerateStats(item, player.level, player.playerClass);
 
         return item;
     }
 
-bool IsClassAllowed(ItemDefinition def, PlayerClass pc)
-{
-    if (def == null) return false;
-    // Nur Waffen / Offhand bleiben class-locked
-    bool isWeaponSlot = (def.slot == EquipmentSlot.MainHand ||
-                         def.slot == EquipmentSlot.OffHand);
-
-    // Für Rüstung/Accessories: jede Klasse darf es bekommen
-    if (!isWeaponSlot)
-        return true;
-
-    // Ab hier: Waffen/Offhand brauchen allowedClasses
-    if (def.allowedClasses == null || def.allowedClasses.Length == 0)
-        return false;
-
-    for (int i = 0; i < def.allowedClasses.Length; i++)
-        if (def.allowedClasses[i] == pc)
-            return true;
-
-    return false;
-}
     /// <summary>
-    /// Roll item quality based on rarity. Higher rarities have better chances
-    /// for Epic/Legendary. Anvil crafts are mostly Normal.
+    /// Roll item quality based on rarity.
+    /// Quality wird ZUERST gerollt, dann wird das Item aus dem passenden Pool gewählt.
     /// </summary>
     public static ItemQuality RollQuality(ItemRarity rarity)
     {
         float roll = UnityEngine.Random.Range(0f, 100f);
 
-        // Legendary chance: only from SRank+ (1-3%)
-        // Epic chance: from Rare+ (3-15%)
         switch (rarity)
         {
             case ItemRarity.ERank:
@@ -509,20 +498,16 @@ bool IsClassAllowed(ItemDefinition def, PlayerClass pc)
                 return ItemQuality.Normal;
 
             case ItemRarity.Rare:
-                if (roll < 3f) return ItemQuality.Epic;
-                return ItemQuality.Normal;
+                return (roll < 3f) ? ItemQuality.Epic : ItemQuality.Normal;
 
             case ItemRarity.BRank:
-                if (roll < 5f) return ItemQuality.Epic;
-                return ItemQuality.Normal;
+                return (roll < 5f) ? ItemQuality.Epic : ItemQuality.Normal;
 
             case ItemRarity.Hero:
-                if (roll < 8f) return ItemQuality.Epic;
-                return ItemQuality.Normal;
+                return (roll < 8f) ? ItemQuality.Epic : ItemQuality.Normal;
 
             case ItemRarity.ARank:
-                if (roll < 12f) return ItemQuality.Epic;
-                return ItemQuality.Normal;
+                return (roll < 12f) ? ItemQuality.Epic : ItemQuality.Normal;
 
             case ItemRarity.SRank:
                 if (roll < 1f) return ItemQuality.Legendary;
@@ -530,16 +515,19 @@ bool IsClassAllowed(ItemDefinition def, PlayerClass pc)
                 return ItemQuality.Normal;
 
             case ItemRarity.Monarch:
+                if (roll < 0.1f) return ItemQuality.Mythic;
                 if (roll < 2f) return ItemQuality.Legendary;
                 if (roll < 15f) return ItemQuality.Epic;
                 return ItemQuality.Normal;
 
             case ItemRarity.Godlike:
+                if (roll < 0.3f) return ItemQuality.Mythic;
                 if (roll < 3f) return ItemQuality.Legendary;
                 if (roll < 18f) return ItemQuality.Epic;
                 return ItemQuality.Normal;
 
             case ItemRarity.AURAFARMING:
+                if (roll < 0.5f) return ItemQuality.Mythic;
                 if (roll < 5f) return ItemQuality.Legendary;
                 if (roll < 25f) return ItemQuality.Epic;
                 return ItemQuality.Normal;
@@ -594,8 +582,8 @@ bool IsClassAllowed(ItemDefinition def, PlayerClass pc)
             float sec = GetUpgradeDurationSeconds(i);
             totalSeconds += sec;
             if (i <= 10 || i % 10 == 0 || i == maxAnvilLevel - 1)
-                Debug.Log($"Level {i,2} -> {i + 1,3}: {FormatDuration(sec),10}   (kumuliert: {FormatDuration(totalSeconds)})");
+                Debug.Log($"Level {i,2} -> {i + 1,3}: {FormatDuration(sec),10}   (cumulative: {FormatDuration(totalSeconds)})");
         }
-        Debug.Log($"GESAMT Level 1 -> {maxAnvilLevel}: {FormatDuration(totalSeconds)}");
+        Debug.Log($"TOTAL Level 1 -> {maxAnvilLevel}: {FormatDuration(totalSeconds)}");
     }
 }

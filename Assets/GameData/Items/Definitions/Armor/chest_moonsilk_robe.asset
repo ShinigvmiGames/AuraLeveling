@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: chest_moonsilk_robe
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemName: Moonsilk Robe
-  icon: {fileID: 21300000, guid: 84c10169233445c9a3ac3111cccac0f9, type: 3}
+  icon: {fileID: -3759961204119153480, guid: 761f86df98db145b58f963ed499ad34e, type: 3}
   slot: 3
   allowedClasses: 
   wSTR: 0

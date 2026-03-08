@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 858a295db3eb8448192da6a3bff8d58e, type: 3}
+  m_Name: talisman_of_the_fallen
+  m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  itemName: Talisman of the Fallen
+  icon: {fileID: 1478068515652389481, guid: 77b15ba6c5c8f4b168727b23105b13a2, type: 3}
+  slot: 7
+  allowedClasses: 
+  quality: 1

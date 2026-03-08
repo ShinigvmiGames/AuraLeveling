@@ -12,9 +12,6 @@ public class ItemDefinition : ScriptableObject
     public EquipmentSlot slot;
     public PlayerClass[] allowedClasses; // leer = alle Klassen, gesetzt = nur diese
 
-    [Header("Stat Style (weights)")]
-    [Range(0f, 2f)] public float wSTR = 1f;
-    [Range(0f, 2f)] public float wDEX = 1f;
-    [Range(0f, 2f)] public float wINT = 1f;
-    [Range(0f, 2f)] public float wVIT = 1f;
+    [Header("Quality")]
+    public ItemQuality quality; // die EINE Quality die dieses Item hat (Normal, Epic oder Legendary)
 }

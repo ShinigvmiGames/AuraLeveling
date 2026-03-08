@@ -11,6 +11,24 @@ public class ItemPopup : MonoBehaviour
     public Button sellButton;
     public Button closeButton;
 
+    [Header("Sell Amount (own TMP + Coin Icon as Children)")]
+    public TMP_Text amountText; // shows only the numeric value, e.g. "123"
+
+    [Header("Rarity Image")]
+    public Image rarityImage;   // shows the rarity icon (ERank, Common, Rare, etc.)
+
+    [Header("Rarity Sprites (Inspector: ERank..AURAFARMING, 12 entries)")]
+    public Sprite[] raritySprites; // Index = (int)ItemRarity
+
+    [Header("Quality Window Backgrounds (Inspector: Normal, Epic, Legendary, Mythic — 4 entries)")]
+    public Sprite[] qualitySprites; // Index = (int)ItemQuality — popup window changes by quality
+
+    [Header("Popup Window Background")]
+    public Image windowBackground; // the popup window Image — sprite changes by quality
+
+    [Header("Glow Effect (per Quality, same as Equipment/Inventory)")]
+    public Image glowImage;
+
     [Header("Systems")]
     public PlayerStats player;
     public EquipmentSystem equipment;
@@ -23,22 +41,19 @@ public class ItemPopup : MonoBehaviour
     bool bound = false;
     bool actionInProgress = false; // prevents double-tap duplication
 
-    // Auto-created sell price icon
-    Image sellGoldIcon;
-
     void Awake()
     {
         EnsureRefs();
         BindButtonsOnce();
 
-        // WICHTIG:
-        // NICHT hier oder in Start deaktivieren, wenn du später per Code öffnen willst.
-        // Lass den Default-State im Inspector entscheiden (meist: disabled).
+        // IMPORTANT:
+        // Do NOT disable here or in Start if you want to open via code later.
+        // Let the default state be decided in the Inspector (usually: disabled).
     }
 
     void OnEnable()
     {
-        // falls Scene-Wechsel / Objects neu geladen werden
+        // in case scene switch / objects are reloaded
         EnsureRefs();
         BindButtonsOnce();
     }
@@ -48,61 +63,6 @@ public class ItemPopup : MonoBehaviour
         if (player == null) player = FindObjectOfType<PlayerStats>();
         if (equipment == null) equipment = FindObjectOfType<EquipmentSystem>();
         if (inventory == null) inventory = FindObjectOfType<InventorySystem>();
-
-        // Auto-create itemIcon if not wired in Inspector
-        // Large centered icon in the popup (positioned towards center, bigger)
-        if (itemIcon == null && titleText != null)
-        {
-            var go = new GameObject("ItemIcon_Auto");
-            go.transform.SetParent(titleText.transform.parent, false);
-            go.transform.SetAsFirstSibling();
-
-            var rt = go.AddComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0.5f, 0.5f);
-            rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.anchoredPosition = new Vector2(0, 20); // more centered (lower)
-            rt.sizeDelta = new Vector2(260, 260); // bigger icon
-
-            itemIcon = go.AddComponent<Image>();
-            itemIcon.raycastTarget = false;
-            itemIcon.preserveAspect = true;
-            itemIcon.enabled = false;
-
-            // Apply MAT_AdditiveGlow material for better visuals
-            var mats = Resources.FindObjectsOfTypeAll<Material>();
-            foreach (var m in mats)
-            {
-                if (m.name == "MAT_AdditiveGlow")
-                {
-                    itemIcon.material = m;
-                    break;
-                }
-            }
-        }
-
-        // Auto-create sell price gold icon next to statsText
-        if (sellGoldIcon == null && statsText != null)
-        {
-            Sprite goldSprite = CurrencyIcons.Gold;
-            if (goldSprite != null)
-            {
-                var go = new GameObject("SellGoldIcon");
-                go.transform.SetParent(statsText.transform, false);
-                go.layer = 5;
-
-                var rt = go.AddComponent<RectTransform>();
-                rt.anchorMin = new Vector2(0f, 0f);
-                rt.anchorMax = new Vector2(0f, 0f);
-                rt.anchoredPosition = new Vector2(30, 12);
-                rt.sizeDelta = new Vector2(28, 28);
-
-                sellGoldIcon = go.AddComponent<Image>();
-                sellGoldIcon.sprite = goldSprite;
-                sellGoldIcon.preserveAspect = true;
-                sellGoldIcon.raycastTarget = false;
-                sellGoldIcon.enabled = false;
-            }
-        }
     }
 
     void BindButtonsOnce()
@@ -204,36 +164,79 @@ public class ItemPopup : MonoBehaviour
                 itemIcon.sprite = item.icon;
         }
 
-        // Title: "Shadowfang" or fallback to slot name
-        // Subtitle line: Quality + Rarity + Slot + Level
+        // Title: only item name + slot + level (rarity/quality are now shown as images)
         if (titleText != null)
         {
             string name = !string.IsNullOrEmpty(item.itemName) ? item.itemName : item.slot.ToString();
-            string qualityTag = item.quality != ItemQuality.Normal ? $"[{item.quality}] " : "";
-            titleText.text = $"{qualityTag}{name}\n<size=70%>{item.rarity} {item.slot}  Lv {item.itemLevel}</size>";
+            titleText.text = $"{name}\n<size=70%>{item.slot}  Lv {item.itemLevel}</size>";
         }
+
+        // Rarity Image
+        if (rarityImage != null)
+        {
+            int rarityIdx = (int)item.rarity;
+            if (raritySprites != null && rarityIdx >= 0 && rarityIdx < raritySprites.Length && raritySprites[rarityIdx] != null)
+            {
+                rarityImage.sprite = raritySprites[rarityIdx];
+                rarityImage.enabled = true;
+            }
+            else
+            {
+                rarityImage.enabled = false;
+            }
+        }
+
+        // Window background changes by quality
+        if (windowBackground != null && qualitySprites != null)
+        {
+            int qualityIdx = (int)item.quality;
+            if (qualityIdx >= 0 && qualityIdx < qualitySprites.Length && qualitySprites[qualityIdx] != null)
+                windowBackground.sprite = qualitySprites[qualityIdx];
+        }
+
+        // Glow effect per quality (same colors as Equipment/Inventory)
+        QualityGlow.Apply(glowImage, item.quality);
 
         // Stats
         if (statsText != null)
         {
             string stats = "";
 
+            // Main stats
             if (item.bonusSTR > 0) stats += $"STR +{item.bonusSTR}\n";
             if (item.bonusDEX > 0) stats += $"DEX +{item.bonusDEX}\n";
             if (item.bonusINT > 0) stats += $"INT +{item.bonusINT}\n";
             if (item.bonusVIT > 0) stats += $"VIT +{item.bonusVIT}\n";
 
+            // Weapon Damage (colored red)
+            if (item.weaponDamageMin > 0 || item.weaponDamageMax > 0)
+            {
+                if (item.weaponDamageMin == item.weaponDamageMax)
+                    stats += $"<color=#FF6B6B>DMG +{item.weaponDamageMin}</color>\n";
+                else
+                    stats += $"<color=#FF6B6B>DMG +{item.weaponDamageMin}-{item.weaponDamageMax}</color>\n";
+            }
+            if (item.armor > 0)
+                stats += $"<color=#6BAFFF>Armor +{item.armor}</color>\n";
+            if (item.critRate > 0f)
+                stats += $"<color=#FFD700>Crit Rate +{item.critRate:0.0}%</color>\n";
+            if (item.critDamage > 0f)
+                stats += $"<color=#FF9500>Crit DMG +{item.critDamage:0.0}%</color>\n";
+            if (item.speed > 0f)
+                stats += $"<color=#4CFF4C>Speed +{item.speed:0.0}</color>\n";
+
             if (item.auraBonusPercent > 0f)
                 stats += $"Aura Bonus: +{item.auraBonusPercent:0.0}%\n";
 
             stats += $"\nItem Aura: {item.itemAura}";
-            stats += $"\nSell:       {item.sellPrice}";
 
             statsText.text = stats;
+        }
 
-            // Show gold icon next to sell price
-            if (sellGoldIcon != null)
-                sellGoldIcon.enabled = true;
+        // Sell amount (number only, coin icon as child next to it)
+        if (amountText != null)
+        {
+            amountText.text = $"{item.sellPrice}";
         }
     }
 
