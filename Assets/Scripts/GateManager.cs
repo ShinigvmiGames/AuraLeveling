@@ -22,6 +22,10 @@ public class GateManager : MonoBehaviour
     [Header("Running Screen (optional - GateUI panels can handle this too)")]
     public GameObject gateRunningPanel; // optional
 
+    [Header("Battle System")]
+    public BattleManager battleManager;
+    public EnemyDatabase enemyDatabase;
+
     PlayerStats player;
     EnergySystem energy;
     AnvilSystem anvil;
@@ -328,9 +332,75 @@ void Awake()
 
         var gate = activeGate;
 
-        // Deterministic combat (seeded)
-        var combat = CombatResolver.Resolve(player, gate, activeGateEndUnix);
+        // Try to use BattleManager for visual combat
+        if (battleManager == null)
+            battleManager = FindObjectOfType<BattleManager>();
 
+        if (battleManager != null)
+        {
+            // Build battle setup
+            var setup = new BattleSetupData
+            {
+                playerStats = player,
+                playerCharData = GetPlayerCharacterData(),
+                enemyDefinition = GetEnemyForGate(gate),
+                gateData = gate,
+                context = BattleContext.Gate,
+                seed = activeGateEndUnix,
+                rewards = new BattleRewards
+                {
+                    xp = gate.rewardXP,
+                    gold = gate.rewardGold,
+                    essence = gate.rewardEssence,
+                    droppedItem = RollDropItem(gate)
+                }
+            };
+
+            // Subscribe to battle completion (one-shot)
+            battleManager.OnBattleFinished -= OnBattleComplete;
+            battleManager.OnBattleFinished += OnBattleComplete;
+
+            // Hide running panel, battle screen takes over
+            if (gateRunningPanel != null)
+                gateRunningPanel.SetActive(false);
+
+            battleManager.StartBattle(setup);
+        }
+        else
+        {
+            // Fallback: instant resolve (no BattleManager in scene)
+            ResolveGateInstant(gate);
+        }
+    }
+
+    /// <summary>
+    /// Called when BattleManager finishes (player pressed Continue).
+    /// </summary>
+    void OnBattleComplete(bool won, BattleSetupData setup)
+    {
+        if (battleManager != null)
+            battleManager.OnBattleFinished -= OnBattleComplete;
+
+        // Grant dropped item on win (BattleManager already gave XP/Gold/Essence)
+        if (won && setup.rewards != null && setup.rewards.droppedItem != null)
+            GrantItem(setup.rewards.droppedItem, "Gate");
+
+        // Clear gate state
+        ClearActiveGate();
+        OnGateResolved?.Invoke(won, setup.gateData);
+        OnGateStateChanged?.Invoke();
+
+        // Generate new gates
+        EnsureGates();
+    }
+
+    /// <summary>
+    /// Fallback: resolve gate instantly without battle screen.
+    /// Used when BattleManager is not present in the scene.
+    /// </summary>
+    void ResolveGateInstant(GateData gate)
+    {
+        var combat = CombatResolver.Resolve(player, gate, activeGateEndUnix);
         bool win = combat.win;
 
         if (win)
@@ -338,15 +408,20 @@ void Awake()
             player.GainXP(gate.rewardXP);
             player.AddGold(gate.rewardGold);
             player.AddEssence(gate.rewardEssence);
-
             HandleDrops(gate);
         }
-        else
-        {
-            Debug.Log("Gate lost — no rewards.");
-        }
 
-        // Clear state
+        ClearActiveGate();
+
+        if (gateRunningPanel != null)
+            gateRunningPanel.SetActive(false);
+
+        OnGateResolved?.Invoke(win, gate);
+        OnGateStateChanged?.Invoke();
+    }
+
+    void ClearActiveGate()
+    {
         activeGate = null;
         gateReadyToResolve = false;
         readyEventFired = false;
@@ -354,12 +429,60 @@ void Awake()
         activeGateEndTime = 0f;
         activeGateStartUnix = 0;
         activeGateEndUnix = 0;
+    }
 
-        if (gateRunningPanel != null)
-            gateRunningPanel.SetActive(false);
+    /// <summary>
+    /// Get the player's CharacterData for portrait display.
+    /// </summary>
+    CharacterData GetPlayerCharacterData()
+    {
+        var pm = ProfileManager.Instance;
+        if (pm != null) return pm.GetActiveCharacter();
+        return null;
+    }
 
-        OnGateResolved?.Invoke(win, gate);
-        OnGateStateChanged?.Invoke();
+    /// <summary>
+    /// Get an enemy definition for the gate rank from the database.
+    /// </summary>
+    EnemyDefinition GetEnemyForGate(GateData gate)
+    {
+        if (enemyDatabase == null) return null;
+        return enemyDatabase.GetRandomEnemy(EnemyPool.Gate, gate.rank);
+    }
+
+    /// <summary>
+    /// Pre-roll the item drop for battle reward display.
+    /// Returns null if no drop.
+    /// </summary>
+    ItemData RollDropItem(GateData gate)
+    {
+        EnsureRefs();
+        if (gate == null) return null;
+
+        // Epic has priority
+        float rollEpic = UnityEngine.Random.Range(0f, 100f);
+        if (rollEpic <= gate.epicItemChance)
+        {
+            var rarity = RollDropRarity(forceMinimum: ItemRarity.Hero);
+            return GenerateDropItem(rarity, ItemQuality.Epic);
+        }
+
+        float rollRandom = UnityEngine.Random.Range(0f, 100f);
+        if (rollRandom <= gate.randomItemChance)
+        {
+            var rarity = RollDropRarity(forceMinimum: ItemRarity.ERank);
+            ItemQuality quality = AnvilSystem.RollQuality(rarity);
+            return GenerateDropItem(rarity, quality);
+        }
+
+        return null;
+    }
+
+    ItemData GenerateDropItem(ItemRarity rarity, ItemQuality quality)
+    {
+        EnsureRefs();
+        if (anvil == null || anvil.itemDatabase == null) return null;
+        return GenerateItemFromDatabase(anvil.itemDatabase, player.playerClass, rarity, quality, player.level);
     }
 
     

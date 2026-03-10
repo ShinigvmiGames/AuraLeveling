@@ -7,6 +7,9 @@ public class ScreenManager : MonoBehaviour
     public GameObject screenAnvil;
     public GameObject screenCharacter;
 
+    [Header("Battle Screen (full-screen overlay)")]
+    public GameObject battlePanel;
+
     [Header("Optional Popups")]
     public GameObject itemPopup; // Root vom ItemPopup
 
@@ -53,6 +56,28 @@ public class ScreenManager : MonoBehaviour
         if (screenGates != null) screenGates.SetActive(target == screenGates);
         if (screenAnvil != null) screenAnvil.SetActive(target == screenAnvil);
         if (screenCharacter != null) screenCharacter.SetActive(target == screenCharacter);
+    }
+
+    /// <summary>
+    /// Show battle screen as full-screen overlay (does not hide other screens).
+    /// </summary>
+    public void ShowBattle()
+    {
+        if (battlePanel != null)
+        {
+            battlePanel.SetActive(true);
+            battlePanel.transform.SetAsLastSibling();
+        }
+        ClosePopups();
+    }
+
+    /// <summary>
+    /// Hide battle screen overlay.
+    /// </summary>
+    public void HideBattle()
+    {
+        if (battlePanel != null)
+            battlePanel.SetActive(false);
     }
 
     void ClosePopups()
