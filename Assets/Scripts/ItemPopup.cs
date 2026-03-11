@@ -222,8 +222,6 @@ public class ItemPopup : MonoBehaviour
                 stats += $"<color=#FFD700>Crit Rate +{item.critRate:0.0}%</color>\n";
             if (item.critDamage > 0f)
                 stats += $"<color=#FF9500>Crit DMG +{item.critDamage:0.0}%</color>\n";
-            if (item.speed > 0f)
-                stats += $"<color=#4CFF4C>Speed +{item.speed:0.0}</color>\n";
 
             if (item.auraBonusPercent > 0f)
                 stats += $"Aura Bonus: +{item.auraBonusPercent:0.0}%\n";

@@ -31,10 +31,9 @@ public class ItemData
     // ===== Combat Substats =====
     // Armor: only from Head, Chest, Legs, Boots
     public int armor;
-    // Crit Rate, Crit Damage, Speed: from ALL item slots
+    // Crit Rate, Crit Damage: from ALL item slots
     public float critRate;      // %, hard cap 100% total
     public float critDamage;    // %
-    public float speed;         // flat
 
     // ===== Aura =====
     // Percentage bonus on ALL stats (e.g. +10%)

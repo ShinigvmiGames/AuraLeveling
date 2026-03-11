@@ -107,7 +107,6 @@ public class CharacterUI : MonoBehaviour
         if (txtArmor != null) txtArmor.text = $"Armor: {FormatNumber(player.armor)}";
         if (txtCritRate != null) txtCritRate.text = $"Crit: {player.critRate:0.0}%";
         if (txtCritDamage != null) txtCritDamage.text = $"CritDMG: {player.critDamage:0.0}%";
-        if (txtSpeed != null) txtSpeed.text = $"SPD: {player.speed:0.0}";
 
         bool canSpend = player.unspentPoints > 0;
         if (btnSTR != null) btnSTR.interactable = canSpend;

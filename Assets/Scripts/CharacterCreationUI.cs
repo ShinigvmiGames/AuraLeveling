@@ -296,11 +296,11 @@ public class CharacterCreationUI : MonoBehaviour
         return pc switch
         {
             PlayerClass.Assassin =>
-                "+20% Speed, +15% Crit Rate\nStrike fast, strike deadly. Your enemies won't see it coming.",
+                "+15% Crit Rate\nStrike fast, strike deadly. Your enemies won't see it coming.",
             PlayerClass.Warrior =>
                 "+15% Max HP, Armor cap raised to 60%\nBorn for the battlefield. Shield up, fight on.",
             PlayerClass.Archer =>
-                "+25% Crit Damage, +10% Speed\nPrecision over power. One perfect shot is all you need.",
+                "+25% Crit Damage\nPrecision over power. One perfect shot is all you need.",
             PlayerClass.Mage =>
                 "+25% Damage\nPure arcane destruction. The strongest burst in the game.",
             PlayerClass.Necromancer =>

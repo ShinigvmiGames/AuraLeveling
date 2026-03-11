@@ -25,7 +25,6 @@ public class GateData
     public int enemyArmor;
     public float enemyCritRate;
     public float enemyCritDamage;
-    public float enemySpeed;
 
     // Drop Chances
     public float randomItemChance;

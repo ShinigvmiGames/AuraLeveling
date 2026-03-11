@@ -9,7 +9,7 @@ using UnityEngine;
 /// Combat substats rules:
 ///   - Weapon Damage: ONLY MainHand (range min-max) and OffHand (flat)
 ///   - Armor: ONLY Head, Chest, Legs, Boots
-///   - Crit Rate, Crit Damage, Speed: ALL slots
+///   - Crit Rate, Crit Damage: ALL slots
 /// </summary>
 public static class ItemStatGenerator
 {
@@ -111,7 +111,7 @@ public static class ItemStatGenerator
         int statSum = item.bonusSTR + item.bonusDEX + item.bonusINT + item.bonusVIT;
         float avgWeaponDmg = (item.weaponDamageMin + item.weaponDamageMax) / 2f;
         float combatValue = avgWeaponDmg * 2f + item.armor * 0.5f
-                          + item.critRate * 100f + item.critDamage * 50f + item.speed * 30f;
+                          + item.critRate * 100f + item.critDamage * 50f;
         item.itemAura = Mathf.RoundToInt((statSum * 100f + combatValue) * (1f + item.auraBonusPercent / 100f));
 
         // Sell price: based on itemAura, scaled down so gold doesn't explode
@@ -122,7 +122,7 @@ public static class ItemStatGenerator
     /// Generate combat substats based on the item's equipment slot.
     /// Weapon Damage: ONLY MainHand (range) and OffHand (flat).
     /// Armor: ONLY Head, Chest, Legs, Boots.
-    /// Crit Rate, Crit Damage, Speed: ALL slots.
+    /// Crit Rate, Crit Damage: ALL slots.
     /// </summary>
     static void GenerateCombatSubstats(ItemData item, int budget)
     {
@@ -132,7 +132,6 @@ public static class ItemStatGenerator
         item.armor = 0;
         item.critRate = 0f;
         item.critDamage = 0f;
-        item.speed = 0f;
 
         float cb = budget; // combat budget
 
@@ -146,10 +145,9 @@ public static class ItemStatGenerator
                 int spread = Mathf.Max(1, Mathf.RoundToInt(baseDmg * Random.Range(0.15f, 0.30f)));
                 item.weaponDamageMin = Mathf.Max(1, baseDmg - spread + Random.Range(-2, 3));
                 item.weaponDamageMax = Mathf.Max(item.weaponDamageMin + 1, baseDmg + spread + Random.Range(-2, 3));
-                // Crit/speed possible on weapons too
+                // Crit possible on weapons too
                 if (Random.value < 0.30f) item.critRate = RollCritRate(cb, 0.4f);
                 if (Random.value < 0.25f) item.critDamage = RollCritDamage(cb, 0.4f);
-                if (Random.value < 0.15f) item.speed = RollSpeed(cb, 0.3f);
                 break;
             }
 
@@ -162,7 +160,6 @@ public static class ItemStatGenerator
                 // More substats than MainHand
                 if (Random.value < 0.35f) item.critRate = RollCritRate(cb, 0.5f);
                 if (Random.value < 0.30f) item.critDamage = RollCritDamage(cb, 0.5f);
-                if (Random.value < 0.20f) item.speed = RollSpeed(cb, 0.3f);
                 break;
             }
 
@@ -170,7 +167,6 @@ public static class ItemStatGenerator
             case EquipmentSlot.Chest:
                 item.armor = Mathf.Max(1, Mathf.RoundToInt(cb * 1.2f) + Random.Range(-2, 5));
                 if (Random.value < 0.25f) item.critDamage = RollCritDamage(cb, 0.3f);
-                if (Random.value < 0.15f) item.speed = RollSpeed(cb, 0.2f);
                 break;
 
             case EquipmentSlot.Head:
@@ -182,42 +178,37 @@ public static class ItemStatGenerator
             case EquipmentSlot.Legs:
                 item.armor = Mathf.Max(1, Mathf.RoundToInt(cb * 1.0f) + Random.Range(-2, 4));
                 if (Random.value < 0.20f) item.critRate = RollCritRate(cb, 0.3f);
-                if (Random.value < 0.20f) item.speed = RollSpeed(cb, 0.3f);
                 break;
 
             case EquipmentSlot.Boots:
                 item.armor = Mathf.Max(1, Mathf.RoundToInt(cb * 0.7f) + Random.Range(-2, 3));
-                if (Random.value < 0.80f) item.speed = RollSpeed(cb, 0.7f);
-                if (Random.value < 0.15f) item.critRate = RollCritRate(cb, 0.3f);
+                if (Random.value < 0.30f) item.critRate = RollCritRate(cb, 0.4f);
+                if (Random.value < 0.25f) item.critDamage = RollCritDamage(cb, 0.3f);
                 break;
 
             // ====== ACCESSORIES (no weapon damage, no armor) ======
             case EquipmentSlot.Belt:
-                // Belt: no armor, no weapon damage — purely crit/speed
+                // Belt: no armor, no weapon damage — purely crit
                 if (Random.value < 0.40f) item.critRate = RollCritRate(cb, 0.5f);
                 if (Random.value < 0.40f) item.critDamage = RollCritDamage(cb, 0.4f);
-                if (Random.value < 0.30f) item.speed = RollSpeed(cb, 0.3f);
                 break;
 
             case EquipmentSlot.Ring:
                 // Crit-focused
                 if (Random.value < 0.60f) item.critRate = RollCritRate(cb, 0.8f);
                 if (Random.value < 0.60f) item.critDamage = RollCritDamage(cb, 0.8f);
-                if (Random.value < 0.25f) item.speed = RollSpeed(cb, 0.3f);
                 break;
 
             case EquipmentSlot.Amulet:
-                // Crit-focused + speed
+                // Crit-focused
                 if (Random.value < 0.50f) item.critRate = RollCritRate(cb, 0.7f);
                 if (Random.value < 0.60f) item.critDamage = RollCritDamage(cb, 0.8f);
-                if (Random.value < 0.35f) item.speed = RollSpeed(cb, 0.4f);
                 break;
 
             case EquipmentSlot.Artifact:
                 // All non-weapon, non-armor substats
                 if (Random.value < 0.45f) item.critRate = RollCritRate(cb, 0.6f);
                 if (Random.value < 0.45f) item.critDamage = RollCritDamage(cb, 0.6f);
-                if (Random.value < 0.40f) item.speed = RollSpeed(cb, 0.5f);
                 break;
         }
     }
@@ -237,15 +228,6 @@ public static class ItemStatGenerator
         float raw = budget * 0.05f * intensity + Random.Range(0f, 2f);
         // Cap scales with budget: low items ~15%, high items ~35%
         float cap = Mathf.Clamp(15f + budget * 0.03f, 15f, 35f);
-        return Mathf.Clamp(Mathf.Round(raw * 10f) / 10f, 0.5f, cap);
-    }
-
-    /// <summary>Roll flat speed. Budget already includes rarity scaling.</summary>
-    static float RollSpeed(float budget, float intensity)
-    {
-        float raw = budget * 0.035f * intensity + Random.Range(0f, 1.5f);
-        // Cap scales with budget: low items ~10, high items ~25
-        float cap = Mathf.Clamp(10f + budget * 0.02f, 10f, 25f);
         return Mathf.Clamp(Mathf.Round(raw * 10f) / 10f, 0.5f, cap);
     }
 

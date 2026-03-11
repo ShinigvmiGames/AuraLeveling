@@ -294,14 +294,6 @@ void Awake()
         float rawCritDmg = baseCritDmg + lvl * 0.3f * rankPower;
         gate.enemyCritDamage = Mathf.Max(30f, rawCritDmg * enemyAuraMultiplier);
 
-        // --- Speed: base 100 + DEX*0.5 + class bonus, boosted by aura ---
-        int speedDEX = (gate.enemyClass == PlayerClass.Assassin || gate.enemyClass == PlayerClass.Archer)
-            ? rawPrimary : rawOther;
-        float rawSpeed = 100f + speedDEX * 0.5f;
-        if (gate.enemyClass == PlayerClass.Assassin) rawSpeed *= 1.20f;
-        else if (gate.enemyClass == PlayerClass.Archer) rawSpeed *= 1.10f;
-        gate.enemySpeed = Mathf.Max(50f, rawSpeed * enemyAuraMultiplier);
-
         // Aura display value
         gate.enemyAura = (int)Mathf.Min(
             (gate.enemySTR + gate.enemyDEX + gate.enemyINT + gate.enemyVIT) * 100f, int.MaxValue);

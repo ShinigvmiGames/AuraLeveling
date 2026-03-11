@@ -71,7 +71,6 @@ public class EquipmentSystem : MonoBehaviour
         player.bonusArmor = 0;
         player.bonusCritRate = 0f;
         player.bonusCritDamage = 0f;
-        player.bonusSpeed = 0f;
 
         foreach (var kv in equipped)
         {
@@ -92,7 +91,6 @@ public class EquipmentSystem : MonoBehaviour
             player.bonusArmor += it.armor;
             player.bonusCritRate += it.critRate;
             player.bonusCritDamage += it.critDamage;
-            player.bonusSpeed += it.speed;
         }
 
         player.RecalculateStats();

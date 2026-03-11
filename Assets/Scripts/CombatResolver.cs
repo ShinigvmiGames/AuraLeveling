@@ -5,9 +5,10 @@ using UnityEngine;
 /// Turn-based combat resolver for Gates.
 ///
 /// Key mechanics:
+///   - Each fighter attacks exactly ONCE per round (no multi-attacks)
+///   - Turn order: whoever has more main stat points goes first
 ///   - Damage uses sqrt compression: sqrt(mainStat * weaponRoll) * 3.0 * levelDmgMult
 ///     This keeps damage/HP ratio stable across all levels (~6 turns to kill)
-///   - Speed determines turn order AND multi-turns (2x speed = 2 attacks per round)
 ///   - Armor reduces damage: armor / (armor + 500), cap 50% (Warrior passive: 60%)
 ///   - Crit Rate capped at 100%, determines chance of critical hit
 ///   - Crit Damage multiplier applied on critical hits
@@ -39,9 +40,8 @@ public static class CombatResolver
         public float armorCap;
         public float critRate;
         public float critDamage;
-        public float speed;
         public StatType mainStatType;
-        public int crossStatValue;     // Effective main stat WITH aura (for cross-stat defense)
+        public int crossStatValue;     // Effective main stat WITH aura (for cross-stat defense + turn order)
         public PlayerClass fighterClass;
         public float lifestealRate;
     }
@@ -59,19 +59,16 @@ public static class CombatResolver
         int maxTurns = 200;
         bool combatOver = false;
 
+        // Turn order: whoever has higher effective main stat goes first
+        bool playerFirst = pFighter.crossStatValue >= eFighter.crossStatValue;
+
         for (int turn = 0; turn < maxTurns && !combatOver; turn++)
         {
             result.turnsPlayed = turn + 1;
 
-            float minSpeed = Mathf.Max(1f, Mathf.Min(pFighter.speed, eFighter.speed));
-            int pAttacks = Mathf.Clamp(Mathf.FloorToInt(pFighter.speed / minSpeed), 1, 5);
-            int eAttacks = Mathf.Clamp(Mathf.FloorToInt(eFighter.speed / minSpeed), 1, 5);
-
-            bool playerFirst = pFighter.speed >= eFighter.speed;
-
+            // Each fighter attacks exactly ONCE per round
             if (playerFirst)
             {
-                for (int a = 0; a < pAttacks && !combatOver; a++)
                 {
                     long dmg = CalculateDamage(pFighter, eFighter);
                     eFighter.hp -= dmg;
@@ -80,18 +77,14 @@ public static class CombatResolver
                 }
                 if (!combatOver)
                 {
-                    for (int a = 0; a < eAttacks && !combatOver; a++)
-                    {
-                        long dmg = CalculateDamage(eFighter, pFighter);
-                        pFighter.hp -= dmg;
-                        ApplyLifesteal(ref eFighter, dmg);
-                        if (pFighter.hp <= 0) { result.win = false; combatOver = true; }
-                    }
+                    long dmg = CalculateDamage(eFighter, pFighter);
+                    pFighter.hp -= dmg;
+                    ApplyLifesteal(ref eFighter, dmg);
+                    if (pFighter.hp <= 0) { result.win = false; combatOver = true; }
                 }
             }
             else
             {
-                for (int a = 0; a < eAttacks && !combatOver; a++)
                 {
                     long dmg = CalculateDamage(eFighter, pFighter);
                     pFighter.hp -= dmg;
@@ -100,13 +93,10 @@ public static class CombatResolver
                 }
                 if (!combatOver)
                 {
-                    for (int a = 0; a < pAttacks && !combatOver; a++)
-                    {
-                        long dmg = CalculateDamage(pFighter, eFighter);
-                        eFighter.hp -= dmg;
-                        ApplyLifesteal(ref pFighter, dmg);
-                        if (eFighter.hp <= 0) { result.win = true; combatOver = true; }
-                    }
+                    long dmg = CalculateDamage(pFighter, eFighter);
+                    eFighter.hp -= dmg;
+                    ApplyLifesteal(ref pFighter, dmg);
+                    if (eFighter.hp <= 0) { result.win = true; combatOver = true; }
                 }
             }
 
@@ -144,30 +134,25 @@ public static class CombatResolver
         int maxTurns = 200;
         bool combatOver = false;
 
+        // Turn order: whoever has higher effective main stat goes first
+        bool playerFirst = pFighter.crossStatValue >= eFighter.crossStatValue;
+
         for (int turn = 0; turn < maxTurns && !combatOver; turn++)
         {
             battleResult.turnsPlayed = turn + 1;
 
-            float minSpeed = Mathf.Max(1f, Mathf.Min(pFighter.speed, eFighter.speed));
-            int pAttacks = Mathf.Clamp(Mathf.FloorToInt(pFighter.speed / minSpeed), 1, 5);
-            int eAttacks = Mathf.Clamp(Mathf.FloorToInt(eFighter.speed / minSpeed), 1, 5);
-            bool playerFirst = pFighter.speed >= eFighter.speed;
-
+            // Each fighter attacks exactly ONCE per round
             if (playerFirst)
             {
-                for (int a = 0; a < pAttacks && !combatOver; a++)
-                    combatOver = LogAttack(ref pFighter, ref eFighter, true, battleResult);
+                combatOver = LogAttack(ref pFighter, ref eFighter, true, battleResult);
                 if (!combatOver)
-                    for (int a = 0; a < eAttacks && !combatOver; a++)
-                        combatOver = LogAttack(ref eFighter, ref pFighter, false, battleResult);
+                    combatOver = LogAttack(ref eFighter, ref pFighter, false, battleResult);
             }
             else
             {
-                for (int a = 0; a < eAttacks && !combatOver; a++)
-                    combatOver = LogAttack(ref eFighter, ref pFighter, false, battleResult);
+                combatOver = LogAttack(ref eFighter, ref pFighter, false, battleResult);
                 if (!combatOver)
-                    for (int a = 0; a < pAttacks && !combatOver; a++)
-                        combatOver = LogAttack(ref pFighter, ref eFighter, true, battleResult);
+                    combatOver = LogAttack(ref pFighter, ref eFighter, true, battleResult);
             }
 
             if (!combatOver && turn == maxTurns - 1)
@@ -218,9 +203,6 @@ public static class CombatResolver
 
     static Fighter BuildPlayerFighter(PlayerStats player)
     {
-        // Raw main stat (NO aura) — aura goes into levelDmgMult instead.
-        // This ensures sqrt(rawStat * weaponRoll) * 3.0 * levelDmgMult matches
-        // the PlayerStats formula: sqrt(rawStat * weaponAvg) * 3.0 * levelMult * aura.
         int rawMainStat = player.GetRawMainStat();
         float classDmgMult = player.playerClass == PlayerClass.Mage ? 1.25f : 1f;
         float auraMultiplier = player.GetAuraMultiplier();
@@ -239,9 +221,8 @@ public static class CombatResolver
             armorCap = player.GetArmorCap(),
             critRate = player.critRate,
             critDamage = player.critDamage,
-            speed = player.speed,
             mainStatType = player.GetClassMainStatType(),
-            crossStatValue = player.GetEffectiveMainStat(), // WITH aura for defense
+            crossStatValue = player.GetEffectiveMainStat(),
             fighterClass = player.playerClass,
             lifestealRate = player.playerClass == PlayerClass.Necromancer ? 0.15f : 0f
         };
@@ -258,14 +239,13 @@ public static class CombatResolver
             weaponDmgMax = 0,
             mainStatValue = 0,
             levelDmgMult = 0f,
-            flatDamage = gate.enemyDamage,  // Already includes sqrt + aura from GateManager
+            flatDamage = gate.enemyDamage,
             armor = gate.enemyArmor,
             armorCap = gate.enemyClass == PlayerClass.Warrior ? 0.60f : 0.50f,
             critRate = gate.enemyCritRate,
             critDamage = gate.enemyCritDamage,
-            speed = gate.enemySpeed,
             mainStatType = GetClassMainStatType(gate.enemyClass),
-            crossStatValue = GetEnemyMainStatValue(gate), // Aura-boosted stats from GateManager
+            crossStatValue = GetEnemyMainStatValue(gate),
             fighterClass = gate.enemyClass,
             lifestealRate = gate.enemyClass == PlayerClass.Necromancer ? 0.15f : 0f
         };
@@ -289,22 +269,17 @@ public static class CombatResolver
 
         if (attacker.isPlayer)
         {
-            // Sqrt compression: sqrt(rawMainStat * weaponRoll) * 3.0 * levelDmgMult
-            // levelDmgMult = (1 + level*0.025) * classMult * auraMultiplier
             int weaponRoll = Random.Range(attacker.weaponDmgMin, attacker.weaponDmgMax + 1);
             baseDamage = Mathf.Sqrt(attacker.mainStatValue * weaponRoll) * 3.0f * attacker.levelDmgMult;
         }
         else
         {
-            // Enemy: pre-computed flat damage (already sqrt-compressed + aura from GateManager)
             baseDamage = attacker.flatDamage;
         }
 
-        // Armor reduction: armor / (armor + 500), capped at armorCap
         float armorRed = defender.armor / (defender.armor + 500f);
         armorRed = Mathf.Min(armorRed, defender.armorCap);
 
-        // Cross-stat reduction: different main stat types get defensive bonus
         float crossStatRed = 0f;
         if (attacker.mainStatType != defender.mainStatType)
         {
@@ -312,16 +287,13 @@ public static class CombatResolver
             crossStatRed = Mathf.Min(crossStatRed, 0.35f);
         }
 
-        // Total damage reduction capped at 70%
         float totalReduction = Mathf.Min(0.70f, armorRed + crossStatRed);
         float dmgAfterArmor = baseDamage * (1f - totalReduction);
 
-        // Crit check
         isCrit = Random.value * 100f < attacker.critRate;
         if (isCrit)
             dmgAfterArmor *= (1f + attacker.critDamage / 100f);
 
-        // ±5% damage variance
         dmgAfterArmor *= Random.Range(0.95f, 1.05f);
 
         return System.Math.Max(1L, (long)dmgAfterArmor);

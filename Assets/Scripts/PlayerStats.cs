@@ -26,8 +26,6 @@ public class PlayerStats : MonoBehaviour
     public int armor;
     public float critRate;
     public float critDamage;
-    public float speed;
-
     [Header("Aura")]
     public float auraBonusPercent = 0f;
 
@@ -56,8 +54,6 @@ public class PlayerStats : MonoBehaviour
     public int bonusArmor;
     public float bonusCritRate;
     public float bonusCritDamage;
-    public float bonusSpeed;
-
     public bool TrySpendPoint(string statName)
     {
         if (unspentPoints <= 0) return false;
@@ -90,7 +86,7 @@ public class PlayerStats : MonoBehaviour
         long statBase = (long)(effSTR + effDEX + effINT + effVIT) * 100L;
         long damageContrib = damage * 2L;
         long hpContrib = maxHP;
-        long combatContrib = (long)(armor * 50f + critRate * 100f + critDamage * 50f + speed * 30f);
+        long combatContrib = (long)(armor * 50f + critRate * 100f + critDamage * 50f);
 
         long rawAura = statBase + damageContrib + hpContrib + combatContrib;
 
@@ -125,9 +121,9 @@ public class PlayerStats : MonoBehaviour
     /// HP uses VIT floor (+ level*2) to prevent HP starvation.
     ///
     /// Class Passives:
-    ///   Assassin:     +20% Speed, +15% Crit Rate
+    ///   Assassin:     +15% Crit Rate
     ///   Warrior:      +15% Max HP, Armor cap raised from 50% to 60%
-    ///   Archer:       +25% Crit Damage, +10% Speed
+    ///   Archer:       +25% Crit Damage
     ///   Mage:         +25% Damage
     ///   Necromancer:  +15% Max HP (lifesteal 15% handled in CombatResolver)
     /// </summary>
@@ -175,21 +171,12 @@ public class PlayerStats : MonoBehaviour
         if (playerClass == PlayerClass.Archer)
             rawCritDamage += 25f;
 
-        // ===== Speed = 100 + DEX*0.5 + bonusSpeed =====
-        float rawSpeed = 100f + effDEX * 0.5f + bonusSpeed;
-        switch (playerClass)
-        {
-            case PlayerClass.Assassin: rawSpeed *= 1.20f; break;
-            case PlayerClass.Archer:   rawSpeed *= 1.10f; break;
-        }
-
         // ===== Apply Aura Bonus to ALL stats =====
         maxHP = System.Math.Max(1L, (long)(rawHP * auraMultiplier));
         damage = System.Math.Max(1L, (long)(rawDamage * auraMultiplier));
         armor = Mathf.Max(0, Mathf.RoundToInt(rawArmor * auraMultiplier));
         critRate = Mathf.Clamp(rawCritRate * auraMultiplier, 0f, 100f);
         critDamage = rawCritDamage * auraMultiplier;
-        speed = rawSpeed * auraMultiplier;
 
         onStatsChanged?.Invoke();
     }
