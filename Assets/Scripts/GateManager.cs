@@ -198,10 +198,15 @@ void Awake()
 
     /// <summary>
     /// Generate enemy stats based on player level and gate rank.
-    /// Enemies are always the same level as the player, with a random class.
-    /// Stats are derived from what a player at this level would roughly have,
-    /// scaled by rank difficulty (E-C: easy, B-A: challenging, S: very hard).
-    /// Enemies are intentionally slightly weaker to keep the game fun.
+    /// Uses the SAME formulas as PlayerStats (sqrt damage compression, VIT floor HP)
+    /// so damage/HP ratio is balanced for multi-turn fights at all levels.
+    ///
+    /// Enemies get real aura (same formula as player) and class passives.
+    ///
+    /// Rank difficulty (rankPower):
+    ///   E: 0.70-0.85 (farmable)     D: 0.85-1.00 (easy-medium)
+    ///   C: 1.00-1.10 (fair fight)   B: 1.10-1.25 (needs gear)
+    ///   A: 1.25-1.45 (hard)         S: 1.50-1.80 (wall — grind required)
     /// </summary>
     void GenerateEnemyStats(GateData gate)
     {
@@ -213,103 +218,126 @@ void Awake()
         var classes = System.Enum.GetValues(typeof(PlayerClass));
         gate.enemyClass = (PlayerClass)classes.GetValue(Random.Range(0, classes.Length));
 
-        // Rank power scaling:
-        //   E-C rank: below average gear → easy for well-geared players
-        //   B-A rank: average to strong → need decent gear
-        //   S rank: strong → need near-best gear, but still beatable
+        // --- Rank power: clear difficulty curve with S-rank gap ---
         float rankPower;
         switch (gate.rank)
         {
-            case GateRank.ERank: rankPower = Random.Range(0.40f, 0.55f); break;
-            case GateRank.DRank: rankPower = Random.Range(0.55f, 0.70f); break;
-            case GateRank.CRank: rankPower = Random.Range(0.70f, 0.85f); break;
-            case GateRank.BRank: rankPower = Random.Range(0.85f, 1.00f); break;
-            case GateRank.ARank: rankPower = Random.Range(1.00f, 1.15f); break;
-            case GateRank.SRank: rankPower = Random.Range(1.10f, 1.25f); break;
-            default: rankPower = 0.5f; break;
+            case GateRank.ERank: rankPower = Random.Range(0.70f, 0.85f); break;
+            case GateRank.DRank: rankPower = Random.Range(0.85f, 1.00f); break;
+            case GateRank.CRank: rankPower = Random.Range(1.00f, 1.10f); break;
+            case GateRank.BRank: rankPower = Random.Range(1.10f, 1.25f); break;
+            case GateRank.ARank: rankPower = Random.Range(1.25f, 1.45f); break;
+            case GateRank.SRank: rankPower = Random.Range(1.50f, 1.80f); break;
+            default: rankPower = 1.0f; break;
         }
 
-        // === Base stats from level (simulates stat point allocation) ===
+        // --- Base stats from level (simulates stat point allocation) ---
         // A character gets 3 points per level, distributed:
-        //   ~55% primary, ~25% VIT, ~10% each to two others
-        int totalPoints = 5 + (lvl - 1) * 3;
-        int basePrimary = 5 + Mathf.RoundToInt((lvl - 1) * 3f * 0.55f);
+        //   ~50% primary, ~25% VIT, ~12.5% each to two others
+        int basePrimary = 5 + Mathf.RoundToInt((lvl - 1) * 3f * 0.50f);
         int baseVIT = 5 + Mathf.RoundToInt((lvl - 1) * 3f * 0.25f);
-        int baseOther = 5 + Mathf.RoundToInt((lvl - 1) * 3f * 0.10f);
+        int baseOther = 5 + Mathf.RoundToInt((lvl - 1) * 3f * 0.125f);
 
         // Virtual gear bonus: scales with level and rank
-        // Represents equipment bonuses an enemy of this difficulty would have
         float gearScale = lvl * 2f * rankPower;
         int gearPrimary = Mathf.RoundToInt(gearScale * 0.5f);
         int gearVIT = Mathf.RoundToInt(gearScale * 0.3f);
         int gearOther = Mathf.RoundToInt(gearScale * 0.2f);
 
-        int effPrimary = basePrimary + gearPrimary;
-        int effVIT = baseVIT + gearVIT;
-        int effOther = baseOther + gearOther;
+        int rawPrimary = basePrimary + gearPrimary;
+        int rawVIT = baseVIT + gearVIT;
+        int rawOther = baseOther + gearOther;
 
-        // Assign stats based on class
+        // Assign raw stats based on class (before aura)
+        AssignEnemyRawStats(gate, rawPrimary, rawVIT, rawOther);
+
+        // --- Enemy Aura (SAME formula as player) ---
+        // Base: (level-1) * 1.5%, scaled by rankPower
+        float enemyAuraPercent = (lvl - 1) * 1.5f * rankPower;
+        float enemyAuraMultiplier = 1f + enemyAuraPercent / 100f;
+
+        // Apply aura to raw stat values in GateData (for cross-stat defense consistency)
+        gate.enemySTR = Mathf.RoundToInt(gate.enemySTR * enemyAuraMultiplier);
+        gate.enemyDEX = Mathf.RoundToInt(gate.enemyDEX * enemyAuraMultiplier);
+        gate.enemyINT = Mathf.RoundToInt(gate.enemyINT * enemyAuraMultiplier);
+        gate.enemyVIT = Mathf.RoundToInt(gate.enemyVIT * enemyAuraMultiplier);
+
+        // --- HP: (VIT + level*2) * 20 * (1 + level * 0.025) * aura ---
+        // Same formula as PlayerStats with VIT floor
+        int effectiveVIT = rawVIT + lvl * 2;
+        float rawHP = effectiveVIT * 20f * (1f + lvl * 0.025f);
+        if (gate.enemyClass == PlayerClass.Warrior || gate.enemyClass == PlayerClass.Necromancer)
+            rawHP *= 1.15f;
+        gate.enemyHP = System.Math.Max(1L, (long)(rawHP * enemyAuraMultiplier));
+
+        // --- Damage: sqrt(primary * virtualWeaponAvg) * 3.0 * (1 + level * 0.025) * classMult * aura ---
+        // Virtual weapon: level-appropriate weapon for this rank
+        float virtualWeaponAvg = Mathf.Max(1f, lvl * 2.2f * 2.5f * rankPower + Random.Range(-2f, 2f));
+        float compressedBase = Mathf.Sqrt(rawPrimary * virtualWeaponAvg) * 3.0f;
+        float rawDmg = compressedBase * (1f + lvl * 0.025f);
+        if (gate.enemyClass == PlayerClass.Mage) rawDmg *= 1.25f;
+        gate.enemyDamage = System.Math.Max(1L, (long)(rawDmg * enemyAuraMultiplier));
+
+        // --- Armor: level-scaled, boosted by aura ---
+        float rawArmor = lvl * 3.5f * rankPower;
+        gate.enemyArmor = Mathf.Max(0, Mathf.RoundToInt(rawArmor * enemyAuraMultiplier));
+
+        // --- Crit Rate: base 15% + class bonus + level scaling, boosted by aura ---
+        float baseCritRate = 15f;
+        if (gate.enemyClass == PlayerClass.Assassin) baseCritRate += 15f;
+        float rawCritRate = baseCritRate + lvl * 0.15f * rankPower;
+        gate.enemyCritRate = Mathf.Clamp(rawCritRate * enemyAuraMultiplier, 0f, 100f);
+
+        // --- Crit Damage: base 50% + class bonus + level scaling, boosted by aura ---
+        float baseCritDmg = 50f;
+        if (gate.enemyClass == PlayerClass.Archer) baseCritDmg += 25f;
+        float rawCritDmg = baseCritDmg + lvl * 0.3f * rankPower;
+        gate.enemyCritDamage = Mathf.Max(30f, rawCritDmg * enemyAuraMultiplier);
+
+        // --- Speed: base 100 + DEX*0.5 + class bonus, boosted by aura ---
+        int speedDEX = (gate.enemyClass == PlayerClass.Assassin || gate.enemyClass == PlayerClass.Archer)
+            ? rawPrimary : rawOther;
+        float rawSpeed = 100f + speedDEX * 0.5f;
+        if (gate.enemyClass == PlayerClass.Assassin) rawSpeed *= 1.20f;
+        else if (gate.enemyClass == PlayerClass.Archer) rawSpeed *= 1.10f;
+        gate.enemySpeed = Mathf.Max(50f, rawSpeed * enemyAuraMultiplier);
+
+        // Aura display value
+        gate.enemyAura = (int)Mathf.Min(
+            (gate.enemySTR + gate.enemyDEX + gate.enemyINT + gate.enemyVIT) * 100f, int.MaxValue);
+    }
+
+    /// <summary>
+    /// Assign raw stat values to GateData based on enemy class (before aura).
+    /// </summary>
+    void AssignEnemyRawStats(GateData gate, int primary, int vit, int other)
+    {
+        gate.enemyVIT = vit;
         switch (gate.enemyClass)
         {
             case PlayerClass.Assassin:
             case PlayerClass.Archer:
-                gate.enemyDEX = effPrimary;
-                gate.enemySTR = effOther;
-                gate.enemyINT = effOther;
+                gate.enemyDEX = primary;
+                gate.enemySTR = other;
+                gate.enemyINT = other;
                 break;
             case PlayerClass.Warrior:
-                gate.enemySTR = effPrimary;
-                gate.enemyDEX = effOther;
-                gate.enemyINT = effOther;
+                gate.enemySTR = primary;
+                gate.enemyDEX = other;
+                gate.enemyINT = other;
                 break;
             case PlayerClass.Mage:
             case PlayerClass.Necromancer:
-                gate.enemyINT = effPrimary;
-                gate.enemySTR = effOther;
-                gate.enemyDEX = effOther;
+                gate.enemyINT = primary;
+                gate.enemySTR = other;
+                gate.enemyDEX = other;
+                break;
+            default:
+                gate.enemySTR = primary;
+                gate.enemyDEX = other;
+                gate.enemyINT = other;
                 break;
         }
-        gate.enemyVIT = effVIT;
-
-        // === Derived stats (same formulas as PlayerStats) ===
-
-        // HP: VIT * 15 * (1 + level * 0.02)
-        float rawHP = effVIT * 15f * (1f + lvl * 0.02f);
-        if (gate.enemyClass == PlayerClass.Warrior || gate.enemyClass == PlayerClass.Necromancer)
-            rawHP *= 1.15f; // class HP passive
-        gate.enemyHP = System.Math.Max(1L, (long)rawHP);
-
-        // Damage: mainStat * virtualWeaponAvg * (1 + level * 0.03)
-        // Virtual weapon damage simulates what an enemy at this gear level would deal
-        float virtualWeaponAvg = Mathf.Max(1f, lvl * 4.5f * rankPower + Random.Range(-2f, 2f));
-        float rawDmg = effPrimary * virtualWeaponAvg * (1f + lvl * 0.03f);
-        if (gate.enemyClass == PlayerClass.Mage) rawDmg *= 1.25f; // class damage passive
-        gate.enemyDamage = System.Math.Max(1L, (long)rawDmg);
-
-        // Armor: scales with level and rank
-        gate.enemyArmor = Mathf.Max(0, Mathf.RoundToInt(lvl * 3.5f * rankPower));
-
-        // Crit Rate: base 15% + class bonus + level scaling
-        float baseCritRate = 15f;
-        if (gate.enemyClass == PlayerClass.Assassin) baseCritRate += 15f;
-        gate.enemyCritRate = Mathf.Clamp(baseCritRate + lvl * 0.15f * rankPower, 0f, 100f);
-
-        // Crit Damage: base 50% + class bonus + level scaling
-        float baseCritDmg = 50f;
-        if (gate.enemyClass == PlayerClass.Archer) baseCritDmg += 25f;
-        gate.enemyCritDamage = Mathf.Max(30f, baseCritDmg + lvl * 0.3f * rankPower);
-
-        // Speed: base 100 + DEX*0.5 + class bonus
-        int speedDEX = (gate.enemyClass == PlayerClass.Assassin || gate.enemyClass == PlayerClass.Archer)
-            ? effPrimary : effOther;
-        float rawSpeed = 100f + speedDEX * 0.5f;
-        if (gate.enemyClass == PlayerClass.Assassin) rawSpeed *= 1.20f;
-        else if (gate.enemyClass == PlayerClass.Archer) rawSpeed *= 1.10f;
-        gate.enemySpeed = Mathf.Max(50f, rawSpeed);
-
-        // Aura for display/cross-stat
-        gate.enemyAura = (int)Mathf.Min(
-            (gate.enemySTR + gate.enemyDEX + gate.enemyINT + gate.enemyVIT) * 100f, int.MaxValue);
     }
 
     // ---------- Accept / Run / Resolve ----------

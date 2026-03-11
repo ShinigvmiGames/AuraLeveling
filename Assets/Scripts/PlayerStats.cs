@@ -119,6 +119,11 @@ public class PlayerStats : MonoBehaviour
     /// Recalculates all derived stats from base + equipment bonuses + class passives.
     /// Aura Bonus is applied as a final multiplier to ALL stats (no double-dipping).
     ///
+    /// Damage uses sqrt compression: sqrt(mainStat * weaponAvg) * 3.0
+    /// This keeps damage/HP ratio stable across all levels (~6 turns to kill).
+    ///
+    /// HP uses VIT floor (+ level*2) to prevent HP starvation.
+    ///
     /// Class Passives:
     ///   Assassin:     +20% Speed, +15% Crit Rate
     ///   Warrior:      +15% Max HP, Armor cap raised from 50% to 60%
@@ -138,18 +143,22 @@ public class PlayerStats : MonoBehaviour
         auraBonusPercent = (level - 1) * 1.5f;
         float auraMultiplier = GetAuraMultiplier();
 
-        // ===== HP = VIT * 15 * (1 + level * 0.02) =====
-        float rawHP = effVIT * 15f * (1f + level * 0.02f);
+        // ===== HP = (VIT + level*2) * 20 * (1 + level * 0.025) =====
+        // VIT floor (+ level*2) prevents HP starvation when player dumps points into damage
+        int effectiveVIT = effVIT + level * 2;
+        float rawHP = effectiveVIT * 20f * (1f + level * 0.025f);
         switch (playerClass)
         {
             case PlayerClass.Warrior:     rawHP *= 1.15f; break;
             case PlayerClass.Necromancer: rawHP *= 1.15f; break;
         }
 
-        // ===== Damage = mainStat * weaponDmg * (1 + level*0.03) =====
+        // ===== Damage = sqrt(mainStat * weaponAvg) * 3.0 * (1 + level * 0.025) =====
+        // sqrt compresses quadratic growth → linear, keeping TTK stable across levels
         int classMainStat = GetClassMainStatValue(effSTR, effDEX, effINT, effVIT);
         float avgWeaponDmg = Mathf.Max(1f, (bonusWeaponDmgMin + bonusWeaponDmgMax) / 2f);
-        float rawDamage = classMainStat * avgWeaponDmg * (1f + level * 0.03f);
+        float compressedBase = Mathf.Sqrt(classMainStat * avgWeaponDmg) * 3.0f;
+        float rawDamage = compressedBase * (1f + level * 0.025f);
         if (playerClass == PlayerClass.Mage)
             rawDamage *= 1.25f;
 
@@ -186,9 +195,9 @@ public class PlayerStats : MonoBehaviour
     }
 
     /// <summary>
-    /// Returns the class's primary damage stat value.
+    /// Returns the class's primary damage stat value (raw, without aura).
     /// </summary>
-    int GetClassMainStatValue(int effSTR, int effDEX, int effINT, int effVIT)
+    public int GetClassMainStatValue(int effSTR, int effDEX, int effINT, int effVIT)
     {
         switch (playerClass)
         {
@@ -218,8 +227,17 @@ public class PlayerStats : MonoBehaviour
     }
 
     /// <summary>
+    /// Returns the raw value of the class's primary damage stat (base + equipment, NO aura).
+    /// Used by CombatResolver for the sqrt damage formula.
+    /// </summary>
+    public int GetRawMainStat()
+    {
+        return GetClassMainStatValue(STR + bonusSTR, DEX + bonusDEX, INT + bonusINT, VIT + bonusVIT);
+    }
+
+    /// <summary>
     /// Returns the effective value of the class's primary damage stat,
-    /// including aura bonus (so CombatResolver can use it directly).
+    /// including aura bonus (used for cross-stat defense).
     /// </summary>
     public int GetEffectiveMainStat()
     {
