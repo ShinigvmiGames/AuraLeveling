@@ -8,5 +8,11 @@ public class EnemyDefinition : ScriptableObject
     public PlayerClass enemyClass;
     public WeaponType weaponType;
     public EnemyPool pool;
-    public GateRank minRank;
+
+    [Header("Gate Rank Range (inclusive)")]
+    [Tooltip("Lowest rank this enemy can appear in")]
+    public GateRank minRank = GateRank.ERank;
+
+    [Tooltip("Highest rank this enemy can appear in")]
+    public GateRank maxRank = GateRank.SRank;
 }

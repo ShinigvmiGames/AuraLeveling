@@ -12,7 +12,7 @@ public class EnemyDatabase : ScriptableObject
         foreach (var e in allEnemies)
         {
             if (e == null) continue;
-            if (e.pool == pool && rank >= e.minRank)
+            if (e.pool == pool && rank >= e.minRank && rank <= e.maxRank)
                 result.Add(e);
         }
         return result;
