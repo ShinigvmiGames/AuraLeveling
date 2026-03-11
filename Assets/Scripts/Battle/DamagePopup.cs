@@ -2,10 +2,15 @@ using TMPro;
 using UnityEngine;
 
 /// <summary>
-/// Floating damage/heal number that rises and fades out.
-/// Normal: white 36pt "-1.423.213"
-/// Crit: red 48pt "-1.423.213!"
-/// Heal: green 36pt "+500"
+/// Floating damage/heal/skill number that rises and fades out.
+/// Normal:       white 36pt  "-1.423.213"
+/// Crit:         red 48pt    "-1.423.213!"
+/// Heal:         green 36pt  "+500"
+/// Dodge:        cyan 42pt   "DODGE!"
+/// Stun:         yellow 42pt "STUNNED!"
+/// Berserk:      orange 42pt "BERSERK!"
+/// DoubleDamage: purple 48pt "-2.846.426 ×2"
+/// Revive:       green 48pt  "UNDYING!"
 /// Numbers always show full value with dot separators.
 /// </summary>
 public class DamagePopup : MonoBehaviour
@@ -19,11 +24,18 @@ public class DamagePopup : MonoBehaviour
     public Color normalColor = Color.white;
     public Color critColor = Color.red;
     public Color healColor = new Color(0.3f, 1f, 0.3f);
+    public Color dodgeColor = new Color(0.4f, 0.9f, 1f);         // cyan
+    public Color stunColor = new Color(1f, 0.85f, 0.2f);         // yellow-orange
+    public Color berserkColor = new Color(1f, 0.55f, 0.1f);      // orange
+    public Color doubleDamageColor = new Color(0.8f, 0.3f, 1f);  // purple
+    public Color reviveColor = new Color(0.2f, 1f, 0.4f);        // bright green
 
     [Header("Sizes")]
     public float normalFontSize = 36f;
     public float critFontSize = 48f;
     public float healFontSize = 36f;
+    public float skillFontSize = 42f;
+    public float bigSkillFontSize = 48f;
 
     TMP_Text label;
     RectTransform rt;
@@ -58,6 +70,31 @@ public class DamagePopup : MonoBehaviour
                 label.text = "+" + FormatNumber(amount);
                 label.color = healColor;
                 label.fontSize = healFontSize;
+                break;
+            case PopupType.Dodge:
+                label.text = "DODGE!";
+                label.color = dodgeColor;
+                label.fontSize = skillFontSize;
+                break;
+            case PopupType.Stun:
+                label.text = "STUNNED!";
+                label.color = stunColor;
+                label.fontSize = skillFontSize;
+                break;
+            case PopupType.Berserk:
+                label.text = "BERSERK!";
+                label.color = berserkColor;
+                label.fontSize = skillFontSize;
+                break;
+            case PopupType.DoubleDamage:
+                label.text = "-" + FormatNumber(amount) + " ×2";
+                label.color = doubleDamageColor;
+                label.fontSize = bigSkillFontSize;
+                break;
+            case PopupType.Revive:
+                label.text = "UNDYING!";
+                label.color = reviveColor;
+                label.fontSize = bigSkillFontSize;
                 break;
         }
 
@@ -108,5 +145,10 @@ public enum PopupType
 {
     Normal,
     Crit,
-    Heal
+    Heal,
+    Dodge,
+    Stun,
+    Berserk,
+    DoubleDamage,
+    Revive
 }

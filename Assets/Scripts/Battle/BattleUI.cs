@@ -254,18 +254,40 @@ public class BattleUI : MonoBehaviour
             RectTransform defenderRT = isPlayerAttack ? enemyPortraitRT : playerPortraitRT;
             Image defenderImg = isPlayerAttack ? enemyPortraitBg : playerPortraitBg;
             WeaponType weapon = isPlayerAttack ? playerWeaponType : enemyWeaponType;
-            DamagePopup popup = isPlayerAttack ? enemyDamagePopup : playerDamagePopup;
+            DamagePopup defenderPopup = isPlayerAttack ? enemyDamagePopup : playerDamagePopup;
+            DamagePopup attackerPopup = isPlayerAttack ? playerDamagePopup : enemyDamagePopup;
+
+            // Show "BERSERK!" on attacker before extra attack animation
+            if (action.isExtraAttack && attackerPopup != null)
+            {
+                attackerPopup.Show(0, PopupType.Berserk);
+                yield return new WaitForSeconds(0.3f);
+            }
 
             // Play attack animation
             if (animator != null)
                 yield return StartCoroutine(animator.PlayAttack(
                     attackerRT, defenderRT, defenderImg, weapon, isPlayerAttack));
 
-            // Show damage popup
-            if (popup != null)
+            // === DODGE: show "DODGE!" instead of damage ===
+            if (action.isDodge)
             {
-                PopupType popupType = action.isCrit ? PopupType.Crit : PopupType.Normal;
-                popup.Show(action.damage, popupType);
+                if (defenderPopup != null)
+                    defenderPopup.Show(0, PopupType.Dodge);
+
+                yield return new WaitForSeconds(delayBetweenActions);
+                continue;
+            }
+
+            // === DAMAGE POPUP ===
+            if (defenderPopup != null)
+            {
+                if (action.isDoubleDamage)
+                    defenderPopup.Show(action.damage, PopupType.DoubleDamage);
+                else if (action.isCrit)
+                    defenderPopup.Show(action.damage, PopupType.Crit);
+                else
+                    defenderPopup.Show(action.damage, PopupType.Normal);
             }
 
             // Animate HP smoothly toward target
@@ -274,17 +296,27 @@ public class BattleUI : MonoBehaviour
             else
                 AnimatePlayerHP(action.defenderHPAfter);
 
-            // Show lifesteal heal popup
-            if (action.lifestealAmount > 0)
+            // === STUN: show "STUNNED!" on defender ===
+            if (action.isStun && defenderPopup != null)
             {
-                DamagePopup healPopup = isPlayerAttack ? playerDamagePopup : enemyDamagePopup;
-                if (healPopup != null)
-                    healPopup.Show(action.lifestealAmount, PopupType.Heal);
+                yield return new WaitForSeconds(0.3f);
+                defenderPopup.Show(0, PopupType.Stun);
+            }
 
+            // === REVIVE: show "UNDYING!" and animate HP back up ===
+            if (action.isRevive)
+            {
+                yield return new WaitForSeconds(0.4f);
+
+                // Show revive popup on the defender (who just revived)
+                if (defenderPopup != null)
+                    defenderPopup.Show(0, PopupType.Revive);
+
+                // Animate HP bar back up from 0 to revive HP
                 if (isPlayerAttack)
-                    AnimatePlayerHP(action.attackerHPAfter);
+                    AnimateEnemyHP(action.reviveHP);
                 else
-                    AnimateEnemyHP(action.attackerHPAfter);
+                    AnimatePlayerHP(action.reviveHP);
             }
 
             yield return new WaitForSeconds(delayBetweenActions);
@@ -327,6 +359,16 @@ public class BattleUI : MonoBehaviour
             {
                 displayedEnemyHP = lastAction.attackerHPAfter;
                 displayedPlayerHP = lastAction.defenderHPAfter;
+            }
+
+            // Handle revive: if the last action triggered a revive,
+            // the defender's HP should show the revive amount
+            if (lastAction.isRevive)
+            {
+                if (lastAction.isPlayerAttack)
+                    displayedEnemyHP = lastAction.reviveHP;
+                else
+                    displayedPlayerHP = lastAction.reviveHP;
             }
         }
 

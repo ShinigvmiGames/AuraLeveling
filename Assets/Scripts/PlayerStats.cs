@@ -112,7 +112,7 @@ public class PlayerStats : MonoBehaviour
     }
 
     /// <summary>
-    /// Recalculates all derived stats from base + equipment bonuses + class passives.
+    /// Recalculates all derived stats from base + equipment bonuses.
     /// Aura Bonus is applied as a final multiplier to ALL stats (no double-dipping).
     ///
     /// Damage uses sqrt compression: sqrt(mainStat * weaponAvg) * 3.0
@@ -120,12 +120,12 @@ public class PlayerStats : MonoBehaviour
     ///
     /// HP uses VIT floor (+ level*2) to prevent HP starvation.
     ///
-    /// Class Passives:
-    ///   Assassin:     +15% Crit Rate
-    ///   Warrior:      +15% Max HP, Armor cap raised from 50% to 60%
-    ///   Archer:       +25% Crit Damage
-    ///   Mage:         +25% Damage
-    ///   Necromancer:  +15% Max HP (lifesteal 15% handled in CombatResolver)
+    /// Class Skills (handled in CombatResolver, NOT here):
+    ///   Assassin:     Shadow — 20% dodge chance
+    ///   Warrior:      Berserk — 20% extra attack (chainable)
+    ///   Archer:       Stun — 15% stun for 1 round
+    ///   Mage:         Arcane Surge — 25% double damage
+    ///   Necromancer:  Undying — revive once at 30% HP
     /// </summary>
     public void RecalculateStats()
     {
@@ -143,11 +143,6 @@ public class PlayerStats : MonoBehaviour
         // VIT floor (+ level*2) prevents HP starvation when player dumps points into damage
         int effectiveVIT = effVIT + level * 2;
         float rawHP = effectiveVIT * 20f * (1f + level * 0.025f);
-        switch (playerClass)
-        {
-            case PlayerClass.Warrior:     rawHP *= 1.15f; break;
-            case PlayerClass.Necromancer: rawHP *= 1.15f; break;
-        }
 
         // ===== Damage = sqrt(mainStat * weaponAvg) * 3.0 * (1 + level * 0.025) =====
         // sqrt compresses quadratic growth → linear, keeping TTK stable across levels
@@ -155,21 +150,15 @@ public class PlayerStats : MonoBehaviour
         float avgWeaponDmg = Mathf.Max(1f, (bonusWeaponDmgMin + bonusWeaponDmgMax) / 2f);
         float compressedBase = Mathf.Sqrt(classMainStat * avgWeaponDmg) * 3.0f;
         float rawDamage = compressedBase * (1f + level * 0.025f);
-        if (playerClass == PlayerClass.Mage)
-            rawDamage *= 1.25f;
 
         // ===== Armor = directly from equipped armor items =====
         int rawArmor = bonusArmor;
 
         // ===== Crit Rate = 15% base + bonusCritRate =====
         float rawCritRate = 15f + bonusCritRate;
-        if (playerClass == PlayerClass.Assassin)
-            rawCritRate += 15f;
 
         // ===== Crit Damage = 50% base + bonusCritDamage =====
         float rawCritDamage = 50f + bonusCritDamage;
-        if (playerClass == PlayerClass.Archer)
-            rawCritDamage += 25f;
 
         // ===== Apply Aura Bonus to ALL stats =====
         maxHP = System.Math.Max(1L, (long)(rawHP * auraMultiplier));
@@ -233,12 +222,11 @@ public class PlayerStats : MonoBehaviour
     }
 
     /// <summary>
-    /// Returns the armor damage reduction cap for this class.
-    /// Warrior has 60% cap (passive), all others 50%.
+    /// Returns the armor damage reduction cap (50% for all classes).
     /// </summary>
     public float GetArmorCap()
     {
-        return playerClass == PlayerClass.Warrior ? 0.60f : 0.50f;
+        return 0.50f;
     }
 
     // ========= Economy helpers =========

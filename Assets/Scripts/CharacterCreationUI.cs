@@ -256,13 +256,13 @@ public class CharacterCreationUI : MonoBehaviour
 
         PlayerClass pc = selectedClass.Value;
         string mainStat = GetMainStatForClass(pc);
-        string passiveName = GetPassiveName(pc);
-        string passiveDesc = GetPassiveDescription(pc);
+        string skillName = GetSkillName(pc);
+        string skillDesc = GetSkillDescription(pc);
 
         txtSelectedClassMainStat.text =
             $"<b>Main Stat:</b> {mainStat}\n" +
-            $"<b>{passiveName}</b>\n" +
-            $"<size=85%>{passiveDesc}</size>";
+            $"<b>{skillName}</b>\n" +
+            $"<size=85%>{skillDesc}</size>";
     }
 
     string GetMainStatForClass(PlayerClass pc)
@@ -278,33 +278,33 @@ public class CharacterCreationUI : MonoBehaviour
         };
     }
 
-    string GetPassiveName(PlayerClass pc)
+    string GetSkillName(PlayerClass pc)
     {
         return pc switch
         {
-            PlayerClass.Assassin => "Shadow Step",
-            PlayerClass.Warrior => "Iron Fury",
-            PlayerClass.Archer => "Eagle Eye",
-            PlayerClass.Mage => "Arcane Power",
-            PlayerClass.Necromancer => "Soul Drain",
+            PlayerClass.Assassin => "Shadow",
+            PlayerClass.Warrior => "Berserk",
+            PlayerClass.Archer => "Stun",
+            PlayerClass.Mage => "Arcane Surge",
+            PlayerClass.Necromancer => "Undying",
             _ => "Unknown"
         };
     }
 
-    string GetPassiveDescription(PlayerClass pc)
+    string GetSkillDescription(PlayerClass pc)
     {
         return pc switch
         {
             PlayerClass.Assassin =>
-                "+15% Crit Rate\nStrike fast, strike deadly. Your enemies won't see it coming.",
+                "20% Dodge Chance\nSilent as a shadow — no blade can touch you.",
             PlayerClass.Warrior =>
-                "+15% Max HP, Armor cap raised to 60%\nBorn for the battlefield. Shield up, fight on.",
+                "20% Extra Attack Chance\nPure rage. Every strike can chain into another.",
             PlayerClass.Archer =>
-                "+25% Crit Damage\nPrecision over power. One perfect shot is all you need.",
+                "15% Stun Chance\nA precise shot paralyzes the enemy for one round.",
             PlayerClass.Mage =>
-                "+25% Damage\nPure arcane destruction. The strongest burst in the game.",
+                "25% Double Damage Chance\nRaw arcane power — uncontrollable, devastating.",
             PlayerClass.Necromancer =>
-                "+15% Max HP, 15% Lifesteal\nDrains the life force of your enemies to sustain yourself.",
+                "Revive once at 30% HP\nDeath is only the beginning.",
             _ => ""
         };
     }

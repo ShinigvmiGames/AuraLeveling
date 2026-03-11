@@ -201,7 +201,8 @@ void Awake()
     /// Uses the SAME formulas as PlayerStats (sqrt damage compression, VIT floor HP)
     /// so damage/HP ratio is balanced for multi-turn fights at all levels.
     ///
-    /// Enemies get real aura (same formula as player) and class passives.
+    /// Enemies get real aura (same formula as player). No class passives —
+    /// class skills (Shadow, Berserk, Stun, Arcane Surge, Undying) are handled in CombatResolver.
     ///
     /// Rank difficulty (rankPower):
     ///   E: 0.70-0.85 (farmable)     D: 0.85-1.00 (easy-medium)
@@ -266,37 +267,35 @@ void Awake()
         // Same formula as PlayerStats with VIT floor
         int effectiveVIT = rawVIT + lvl * 2;
         float rawHP = effectiveVIT * 20f * (1f + lvl * 0.025f);
-        if (gate.enemyClass == PlayerClass.Warrior || gate.enemyClass == PlayerClass.Necromancer)
-            rawHP *= 1.15f;
         gate.enemyHP = System.Math.Max(1L, (long)(rawHP * enemyAuraMultiplier));
 
-        // --- Damage: sqrt(primary * virtualWeaponAvg) * 3.0 * (1 + level * 0.025) * classMult * aura ---
+        // --- Damage: sqrt(primary * virtualWeaponAvg) * 3.0 * (1 + level * 0.025) * aura ---
         // Virtual weapon: level-appropriate weapon for this rank
         float virtualWeaponAvg = Mathf.Max(1f, lvl * 2.2f * 2.5f * rankPower + Random.Range(-2f, 2f));
         float compressedBase = Mathf.Sqrt(rawPrimary * virtualWeaponAvg) * 3.0f;
         float rawDmg = compressedBase * (1f + lvl * 0.025f);
-        if (gate.enemyClass == PlayerClass.Mage) rawDmg *= 1.25f;
         gate.enemyDamage = System.Math.Max(1L, (long)(rawDmg * enemyAuraMultiplier));
 
         // --- Armor: level-scaled, boosted by aura ---
         float rawArmor = lvl * 3.5f * rankPower;
         gate.enemyArmor = Mathf.Max(0, Mathf.RoundToInt(rawArmor * enemyAuraMultiplier));
 
-        // --- Crit Rate: base 15% + class bonus + level scaling, boosted by aura ---
+        // --- Crit Rate: base 15% + level scaling, boosted by aura ---
         float baseCritRate = 15f;
-        if (gate.enemyClass == PlayerClass.Assassin) baseCritRate += 15f;
         float rawCritRate = baseCritRate + lvl * 0.15f * rankPower;
         gate.enemyCritRate = Mathf.Clamp(rawCritRate * enemyAuraMultiplier, 0f, 100f);
 
-        // --- Crit Damage: base 50% + class bonus + level scaling, boosted by aura ---
+        // --- Crit Damage: base 50% + level scaling, boosted by aura ---
         float baseCritDmg = 50f;
-        if (gate.enemyClass == PlayerClass.Archer) baseCritDmg += 25f;
         float rawCritDmg = baseCritDmg + lvl * 0.3f * rankPower;
         gate.enemyCritDamage = Mathf.Max(30f, rawCritDmg * enemyAuraMultiplier);
 
-        // Aura display value
-        gate.enemyAura = (int)Mathf.Min(
-            (gate.enemySTR + gate.enemyDEX + gate.enemyINT + gate.enemyVIT) * 100f, int.MaxValue);
+        // Aura display value — same formula as PlayerStats.GetAura()
+        long statBase = (long)(gate.enemySTR + gate.enemyDEX + gate.enemyINT + gate.enemyVIT) * 100L;
+        long dmgContrib = gate.enemyDamage * 2L;
+        long hpContrib = gate.enemyHP;
+        long combatContrib = (long)(gate.enemyArmor * 50f + gate.enemyCritRate * 100f + gate.enemyCritDamage * 50f);
+        gate.enemyAura = (int)System.Math.Min(statBase + dmgContrib + hpContrib + combatContrib, int.MaxValue);
     }
 
     /// <summary>
