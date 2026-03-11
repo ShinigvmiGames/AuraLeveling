@@ -1,8 +1,8 @@
 public enum PlayerClass
 {
-    Assassine,
+    Assassin,
     Warrior,
-    Bogenschuetze,
-    Magier,
-    Nekromant
+    Archer,
+    Mage,
+    Necromancer
 }

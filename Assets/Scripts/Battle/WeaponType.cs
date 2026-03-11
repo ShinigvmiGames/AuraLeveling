@@ -2,7 +2,7 @@ public enum WeaponType
 {
     Sword,
     Bow,
-    Staff,
+    Grimoire,
     Dagger,
     Scythe
 }

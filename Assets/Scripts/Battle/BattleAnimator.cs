@@ -4,106 +4,96 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Handles attack animations in the battle screen.
-/// Each attack: attacker lunges forward, weapon effect flies to defender,
-/// defender flashes red and shakes.
+/// Each attack: weapon swings at the defender (S&F style), defender flashes red and shakes.
+/// No lunge — weapon appears at the defender's position with a swing animation.
 /// </summary>
 public class BattleAnimator : MonoBehaviour
 {
     [Header("Weapon Effect Sprites (assign in Inspector)")]
-    public Sprite slashSprite;   // Sword
-    public Sprite arrowSprite;   // Bow
-    public Sprite orbSprite;     // Staff
-    public Sprite daggerSprite;  // Dagger
-    public Sprite scytheSprite;  // Scythe
+    public Sprite slashSprite;     // Sword (Warrior)
+    public Sprite arrowSprite;     // Bow (Archer)
+    public Sprite grimoireSprite;  // Grimoire (Mage)
+    public Sprite daggerSprite;    // Dagger (Assassin)
+    public Sprite scytheSprite;    // Scythe (Necromancer)
 
     [Header("Animation Settings")]
-    public float lungeDuration = 0.12f;
-    public float lungeDistance = 30f;
-    public float effectFlyDuration = 0.2f;
+    public float weaponSwingDuration = 0.25f;
     public float hitFlashDuration = 0.15f;
     public float hitShakeDuration = 0.15f;
     public float hitShakeIntensity = 8f;
 
     [Header("Effect Pool")]
-    public RectTransform effectContainer; // parent for spawned effect sprites
+    public RectTransform effectContainer;
 
     /// <summary>
     /// Play full attack animation sequence.
-    /// attackerRT: the portrait RectTransform of the attacker
-    /// defenderRT: the portrait RectTransform of the defender
-    /// defenderImage: Image component to flash red
-    /// weaponType: determines which sprite to use
-    /// isPlayerAttack: player is on the left, enemy on the right
+    /// 1. Weapon swing at defender position
+    /// 2. Flash defender red + shake
     /// </summary>
     public IEnumerator PlayAttack(RectTransform attackerRT, RectTransform defenderRT,
         Image defenderImage, WeaponType weaponType, bool isPlayerAttack)
     {
-        // 1. Lunge attacker toward defender
-        float lungeDir = isPlayerAttack ? 1f : -1f;
-        yield return StartCoroutine(Lunge(attackerRT, lungeDir));
+        // 1. Swing weapon at defender
+        yield return StartCoroutine(SwingWeapon(defenderRT, weaponType, isPlayerAttack));
 
-        // 2. Fly weapon effect from attacker to defender
-        yield return StartCoroutine(FlyEffect(attackerRT, defenderRT, weaponType));
-
-        // 3. Flash defender red + shake
+        // 2. Flash defender red + shake (parallel)
         StartCoroutine(FlashRed(defenderImage));
         yield return StartCoroutine(Shake(defenderRT));
     }
 
-    IEnumerator Lunge(RectTransform rt, float direction)
-    {
-        Vector2 original = rt.anchoredPosition;
-        Vector2 target = original + Vector2.right * (lungeDistance * direction);
-
-        // Move forward
-        float t = 0f;
-        while (t < lungeDuration)
-        {
-            t += Time.deltaTime;
-            float p = Mathf.Clamp01(t / lungeDuration);
-            rt.anchoredPosition = Vector2.Lerp(original, target, EaseOutQuad(p));
-            yield return null;
-        }
-
-        // Move back
-        t = 0f;
-        while (t < lungeDuration)
-        {
-            t += Time.deltaTime;
-            float p = Mathf.Clamp01(t / lungeDuration);
-            rt.anchoredPosition = Vector2.Lerp(target, original, EaseInQuad(p));
-            yield return null;
-        }
-
-        rt.anchoredPosition = original;
-    }
-
-    IEnumerator FlyEffect(RectTransform from, RectTransform to, WeaponType weaponType)
+    /// <summary>
+    /// Weapon sprite appears at the defender, swings with rotation and scale,
+    /// then fades out. Similar to Shakes & Fidget style.
+    /// </summary>
+    IEnumerator SwingWeapon(RectTransform defenderRT, WeaponType weaponType, bool isPlayerAttack)
     {
         Sprite effectSprite = GetEffectSprite(weaponType);
         if (effectSprite == null || effectContainer == null)
             yield break;
 
-        // Create temporary effect
-        var go = new GameObject("AttackEffect");
+        // Create temporary weapon effect
+        var go = new GameObject("WeaponSwing");
         go.transform.SetParent(effectContainer, false);
         var effectRT = go.AddComponent<RectTransform>();
-        effectRT.sizeDelta = new Vector2(48, 48);
+        effectRT.sizeDelta = new Vector2(64, 64);
 
         var img = go.AddComponent<Image>();
         img.sprite = effectSprite;
         img.preserveAspect = true;
         img.raycastTarget = false;
 
-        Vector2 startPos = GetWorldToLocal(from, effectContainer);
-        Vector2 endPos = GetWorldToLocal(to, effectContainer);
+        // Position at defender
+        Vector2 defPos = GetWorldToLocal(defenderRT, effectContainer);
+        effectRT.anchoredPosition = defPos;
 
+        // Swing direction: player attacks from left, enemy from right
+        float swingDir = isPlayerAttack ? 1f : -1f;
         float t = 0f;
-        while (t < effectFlyDuration)
+
+        while (t < weaponSwingDuration)
         {
             t += Time.deltaTime;
-            float p = Mathf.Clamp01(t / effectFlyDuration);
-            effectRT.anchoredPosition = Vector2.Lerp(startPos, endPos, p);
+            float p = Mathf.Clamp01(t / weaponSwingDuration);
+
+            // Rotation: swing arc from -45° to +45°
+            float angle = Mathf.Lerp(-45f * swingDir, 45f * swingDir, EaseOutQuad(p));
+            effectRT.localRotation = Quaternion.Euler(0, 0, angle);
+
+            // Scale: quick pop (0.5→1.2) then settle (1.2→0.8)
+            float scale;
+            if (p < 0.3f)
+                scale = Mathf.Lerp(0.5f, 1.2f, p / 0.3f);
+            else
+                scale = Mathf.Lerp(1.2f, 0.8f, (p - 0.3f) / 0.7f);
+            effectRT.localScale = Vector3.one * scale;
+
+            // Fade out in last 30%
+            if (p > 0.7f)
+            {
+                float fade = 1f - (p - 0.7f) / 0.3f;
+                img.color = new Color(1f, 1f, 1f, fade);
+            }
+
             yield return null;
         }
 
@@ -151,19 +141,15 @@ public class BattleAnimator : MonoBehaviour
     {
         switch (type)
         {
-            case WeaponType.Sword:   return slashSprite;
-            case WeaponType.Bow:     return arrowSprite;
-            case WeaponType.Staff:   return orbSprite;
-            case WeaponType.Dagger:  return daggerSprite;
-            case WeaponType.Scythe:  return scytheSprite;
-            default:                 return slashSprite;
+            case WeaponType.Sword:    return slashSprite;
+            case WeaponType.Bow:      return arrowSprite;
+            case WeaponType.Grimoire: return grimoireSprite;
+            case WeaponType.Dagger:   return daggerSprite;
+            case WeaponType.Scythe:   return scytheSprite;
+            default:                  return slashSprite;
         }
     }
 
-    /// <summary>
-    /// Convert a RectTransform's world position into local anchored position
-    /// relative to another RectTransform (the container).
-    /// </summary>
     Vector2 GetWorldToLocal(RectTransform source, RectTransform container)
     {
         Vector3 worldPos = source.position;
@@ -175,5 +161,4 @@ public class BattleAnimator : MonoBehaviour
     }
 
     static float EaseOutQuad(float t) => 1f - (1f - t) * (1f - t);
-    static float EaseInQuad(float t) => t * t;
 }

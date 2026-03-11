@@ -279,7 +279,7 @@ public static class ItemStatGenerator
 
         switch (pc)
         {
-            case PlayerClass.Assassine:
+            case PlayerClass.Assassin:
                 primaryIdx = 1;  // DEX
                 secondaryIdx = 3; // VIT
                 break;
@@ -287,15 +287,15 @@ public static class ItemStatGenerator
                 primaryIdx = 0;  // STR
                 secondaryIdx = 3; // VIT
                 break;
-            case PlayerClass.Bogenschuetze:
+            case PlayerClass.Archer:
                 primaryIdx = 1;  // DEX
                 secondaryIdx = 0; // STR
                 break;
-            case PlayerClass.Magier:
+            case PlayerClass.Mage:
                 primaryIdx = 2;  // INT
                 secondaryIdx = 3; // VIT
                 break;
-            case PlayerClass.Nekromant:
+            case PlayerClass.Necromancer:
                 primaryIdx = 2;  // INT
                 secondaryIdx = 3; // VIT
                 break;

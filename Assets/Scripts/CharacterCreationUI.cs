@@ -142,11 +142,11 @@ public class CharacterCreationUI : MonoBehaviour
         }
 
         // Class buttons
-        if (btnClassAssassin) btnClassAssassin.onClick.AddListener(() => SelectClass(PlayerClass.Assassine));
+        if (btnClassAssassin) btnClassAssassin.onClick.AddListener(() => SelectClass(PlayerClass.Assassin));
         if (btnClassWarrior) btnClassWarrior.onClick.AddListener(() => SelectClass(PlayerClass.Warrior));
-        if (btnClassArcher) btnClassArcher.onClick.AddListener(() => SelectClass(PlayerClass.Bogenschuetze));
-        if (btnClassMage) btnClassMage.onClick.AddListener(() => SelectClass(PlayerClass.Magier));
-        if (btnClassNecromancer) btnClassNecromancer.onClick.AddListener(() => SelectClass(PlayerClass.Nekromant));
+        if (btnClassArcher) btnClassArcher.onClick.AddListener(() => SelectClass(PlayerClass.Archer));
+        if (btnClassMage) btnClassMage.onClick.AddListener(() => SelectClass(PlayerClass.Mage));
+        if (btnClassNecromancer) btnClassNecromancer.onClick.AddListener(() => SelectClass(PlayerClass.Necromancer));
     }
 
     // ==================== Step Control ====================
@@ -269,11 +269,11 @@ public class CharacterCreationUI : MonoBehaviour
     {
         return pc switch
         {
-            PlayerClass.Assassine => "DEX",
+            PlayerClass.Assassin => "DEX",
             PlayerClass.Warrior => "STR",
-            PlayerClass.Bogenschuetze => "DEX",
-            PlayerClass.Magier => "INT",
-            PlayerClass.Nekromant => "INT",
+            PlayerClass.Archer => "DEX",
+            PlayerClass.Mage => "INT",
+            PlayerClass.Necromancer => "INT",
             _ => "-"
         };
     }
@@ -282,11 +282,11 @@ public class CharacterCreationUI : MonoBehaviour
     {
         return pc switch
         {
-            PlayerClass.Assassine => "Shadow Step",
+            PlayerClass.Assassin => "Shadow Step",
             PlayerClass.Warrior => "Iron Fury",
-            PlayerClass.Bogenschuetze => "Eagle Eye",
-            PlayerClass.Magier => "Arcane Power",
-            PlayerClass.Nekromant => "Soul Drain",
+            PlayerClass.Archer => "Eagle Eye",
+            PlayerClass.Mage => "Arcane Power",
+            PlayerClass.Necromancer => "Soul Drain",
             _ => "Unknown"
         };
     }
@@ -295,15 +295,15 @@ public class CharacterCreationUI : MonoBehaviour
     {
         return pc switch
         {
-            PlayerClass.Assassine =>
+            PlayerClass.Assassin =>
                 "+20% Speed, +15% Crit Rate\nStrike fast, strike deadly. Your enemies won't see it coming.",
             PlayerClass.Warrior =>
                 "+15% Max HP, Armor cap raised to 60%\nBorn for the battlefield. Shield up, fight on.",
-            PlayerClass.Bogenschuetze =>
+            PlayerClass.Archer =>
                 "+25% Crit Damage, +10% Speed\nPrecision over power. One perfect shot is all you need.",
-            PlayerClass.Magier =>
+            PlayerClass.Mage =>
                 "+25% Damage\nPure arcane destruction. The strongest burst in the game.",
-            PlayerClass.Nekromant =>
+            PlayerClass.Necromancer =>
                 "+15% Max HP, 15% Lifesteal\nDrains the life force of your enemies to sustain yourself.",
             _ => ""
         };

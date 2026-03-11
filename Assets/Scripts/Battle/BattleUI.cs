@@ -7,29 +7,21 @@ using UnityEngine.UI;
 /// <summary>
 /// Main Battle Screen UI controller.
 /// Displays player vs enemy with turn-by-turn replay of pre-resolved combat.
-///
-/// Layout (portrait mode):
-///   Top area: Player portrait (left) vs Enemy portrait (right) with HP bars
-///   Bottom area: Result panel (hidden during combat) + Skip/Continue button
-///
-/// Setup from BattleManager:
-///   1. Call Initialize(setup, result) with battle data
-///   2. Call StartPlayback() to begin animating turns
-///   3. OnBattleUIFinished fires when player presses Continue
+/// HP bars and numbers animate smoothly toward their target values (like S&F).
 /// </summary>
 public class BattleUI : MonoBehaviour
 {
     [Header("Player Side (Left)")]
     public PortraitBuilder playerPortrait;
-    public Image playerPortraitBg;       // background/frame image for flash effect
+    public Image playerPortraitBg;
     public RectTransform playerPortraitRT;
     public Image playerHPBarFill;
     public TMP_Text playerNameText;
     public TMP_Text playerHPText;
 
     [Header("Enemy Side (Right)")]
-    public Image enemyPortraitImage;     // single sprite for PvE enemies
-    public PortraitBuilder enemyPvPPortrait; // 4-layer portrait for PvP
+    public Image enemyPortraitImage;
+    public PortraitBuilder enemyPvPPortrait;
     public Image enemyPortraitBg;
     public RectTransform enemyPortraitRT;
     public Image enemyHPBarFill;
@@ -37,15 +29,15 @@ public class BattleUI : MonoBehaviour
     public TMP_Text enemyHPText;
 
     [Header("Damage Popup")]
-    public DamagePopup playerDamagePopup;  // popup positioned above player portrait
-    public DamagePopup enemyDamagePopup;   // popup positioned above enemy portrait
+    public DamagePopup playerDamagePopup;
+    public DamagePopup enemyDamagePopup;
 
     [Header("Result Panel")]
     public GameObject resultPanel;
-    public TMP_Text resultTitleText;      // "You've won the battle!" / "You've lost the battle."
+    public TMP_Text resultTitleText;
 
     [Header("Reward Display (inside Result Panel)")]
-    public GameObject rewardRow;          // parent for reward icons+text
+    public GameObject rewardRow;
     public TMP_Text rewardXPText;
     public Image rewardXPIcon;
     public TMP_Text rewardGoldText;
@@ -54,9 +46,9 @@ public class BattleUI : MonoBehaviour
     public Image rewardEssenceIcon;
 
     [Header("Item Drop Display (inside Result Panel)")]
-    public GameObject itemDropDisplay;    // container for dropped item
+    public GameObject itemDropDisplay;
     public Image itemDropIcon;
-    public Image itemDropGlow;            // quality glow
+    public Image itemDropGlow;
     public TMP_Text itemDropNameText;
 
     [Header("Skip / Continue Button")]
@@ -70,6 +62,9 @@ public class BattleUI : MonoBehaviour
     public float delayBetweenActions = 0.6f;
     public float resultShowDelay = 0.5f;
 
+    [Header("HP Animation")]
+    public float hpAnimDuration = 0.4f;
+
     // Events
     public event Action OnBattleUIFinished;
 
@@ -81,8 +76,18 @@ public class BattleUI : MonoBehaviour
     Coroutine playbackCoroutine;
     bool battleFinished;
     bool skipped;
+
+    // Smooth HP animation state
     long displayedPlayerHP;
     long displayedEnemyHP;
+    long targetPlayerHP;
+    long targetEnemyHP;
+    long playerHPAnimStart;
+    long enemyHPAnimStart;
+    float playerHPAnimTimer;
+    float enemyHPAnimTimer;
+    bool playerHPAnimating;
+    bool enemyHPAnimating;
 
     void Awake()
     {
@@ -95,9 +100,43 @@ public class BattleUI : MonoBehaviour
             itemDropDisplay.SetActive(false);
     }
 
-    /// <summary>
-    /// Initialize the battle screen with setup data and pre-resolved result.
-    /// </summary>
+    void Update()
+    {
+        bool needsUpdate = false;
+
+        // Smooth player HP animation
+        if (playerHPAnimating)
+        {
+            playerHPAnimTimer += Time.deltaTime;
+            float t = Mathf.Clamp01(playerHPAnimTimer / hpAnimDuration);
+            t = EaseOutQuad(t);
+            displayedPlayerHP = (long)Mathf.Lerp(playerHPAnimStart, targetPlayerHP, t);
+            if (playerHPAnimTimer >= hpAnimDuration)
+            {
+                displayedPlayerHP = targetPlayerHP;
+                playerHPAnimating = false;
+            }
+            needsUpdate = true;
+        }
+
+        // Smooth enemy HP animation
+        if (enemyHPAnimating)
+        {
+            enemyHPAnimTimer += Time.deltaTime;
+            float t = Mathf.Clamp01(enemyHPAnimTimer / hpAnimDuration);
+            t = EaseOutQuad(t);
+            displayedEnemyHP = (long)Mathf.Lerp(enemyHPAnimStart, targetEnemyHP, t);
+            if (enemyHPAnimTimer >= hpAnimDuration)
+            {
+                displayedEnemyHP = targetEnemyHP;
+                enemyHPAnimating = false;
+            }
+            needsUpdate = true;
+        }
+
+        if (needsUpdate) UpdateHPDisplay();
+    }
+
     public void Initialize(BattleSetupData battleSetup, BattleResult battleResult)
     {
         setup = battleSetup;
@@ -105,7 +144,6 @@ public class BattleUI : MonoBehaviour
         battleFinished = false;
         skipped = false;
 
-        // Determine weapon types
         playerWeaponType = GetWeaponForClass(setup.playerStats.playerClass);
         enemyWeaponType = setup.enemyDefinition != null
             ? setup.enemyDefinition.weaponType
@@ -114,17 +152,14 @@ public class BattleUI : MonoBehaviour
         SetupVisuals();
         SetupHPBars();
 
-        // Hide result panel
         if (resultPanel != null) resultPanel.SetActive(false);
         if (itemDropDisplay != null) itemDropDisplay.SetActive(false);
 
-        // Set button to SKIP mode
         if (actionButtonText != null) actionButtonText.text = "SKIP";
     }
 
     void SetupVisuals()
     {
-        // Player portrait
         if (playerPortrait != null && setup.playerCharData != null)
             playerPortrait.Build(setup.playerCharData);
 
@@ -133,10 +168,8 @@ public class BattleUI : MonoBehaviour
                 ? $"{setup.playerCharData.name} Lv.{setup.playerStats.level}"
                 : $"Player Lv.{setup.playerStats.level}";
 
-        // Enemy portrait
         if (setup.isVsPlayer && enemyPvPPortrait != null && setup.opponentCharData != null)
         {
-            // PvP: use portrait builder
             if (enemyPortraitImage != null) enemyPortraitImage.gameObject.SetActive(false);
             if (enemyPvPPortrait != null) enemyPvPPortrait.gameObject.SetActive(true);
             enemyPvPPortrait.Build(setup.opponentCharData);
@@ -144,7 +177,6 @@ public class BattleUI : MonoBehaviour
         }
         else
         {
-            // PvE: use enemy definition sprite
             if (enemyPvPPortrait != null) enemyPvPPortrait.gameObject.SetActive(false);
             if (enemyPortraitImage != null)
             {
@@ -163,6 +195,10 @@ public class BattleUI : MonoBehaviour
     {
         displayedPlayerHP = result.playerMaxHP;
         displayedEnemyHP = result.enemyMaxHP;
+        targetPlayerHP = result.playerMaxHP;
+        targetEnemyHP = result.enemyMaxHP;
+        playerHPAnimating = false;
+        enemyHPAnimating = false;
         UpdateHPDisplay();
     }
 
@@ -183,9 +219,22 @@ public class BattleUI : MonoBehaviour
             enemyHPText.text = $"{FormatNumber(displayedEnemyHP)}/{FormatNumber(result.enemyMaxHP)}";
     }
 
-    /// <summary>
-    /// Start the turn-by-turn playback coroutine.
-    /// </summary>
+    void AnimatePlayerHP(long newHP)
+    {
+        playerHPAnimStart = displayedPlayerHP;
+        targetPlayerHP = newHP;
+        playerHPAnimTimer = 0f;
+        playerHPAnimating = true;
+    }
+
+    void AnimateEnemyHP(long newHP)
+    {
+        enemyHPAnimStart = displayedEnemyHP;
+        targetEnemyHP = newHP;
+        enemyHPAnimTimer = 0f;
+        enemyHPAnimating = true;
+    }
+
     public void StartPlayback()
     {
         if (playbackCoroutine != null) StopCoroutine(playbackCoroutine);
@@ -194,14 +243,12 @@ public class BattleUI : MonoBehaviour
 
     IEnumerator PlaybackRoutine()
     {
-        // Small delay before combat starts
         yield return new WaitForSeconds(0.5f);
 
         foreach (var action in result.actions)
         {
             if (skipped) break;
 
-            // Determine attacker/defender
             bool isPlayerAttack = action.isPlayerAttack;
             RectTransform attackerRT = isPlayerAttack ? playerPortraitRT : enemyPortraitRT;
             RectTransform defenderRT = isPlayerAttack ? enemyPortraitRT : playerPortraitRT;
@@ -221,11 +268,11 @@ public class BattleUI : MonoBehaviour
                 popup.Show(action.damage, popupType);
             }
 
-            // Update HP
+            // Animate HP smoothly toward target
             if (isPlayerAttack)
-                displayedEnemyHP = action.defenderHPAfter;
+                AnimateEnemyHP(action.defenderHPAfter);
             else
-                displayedPlayerHP = action.defenderHPAfter;
+                AnimatePlayerHP(action.defenderHPAfter);
 
             // Show lifesteal heal popup
             if (action.lifestealAmount > 0)
@@ -234,20 +281,18 @@ public class BattleUI : MonoBehaviour
                 if (healPopup != null)
                     healPopup.Show(action.lifestealAmount, PopupType.Heal);
 
-                // Update attacker HP for lifesteal
                 if (isPlayerAttack)
-                    displayedPlayerHP = action.attackerHPAfter;
+                    AnimatePlayerHP(action.attackerHPAfter);
                 else
-                    displayedEnemyHP = action.attackerHPAfter;
+                    AnimateEnemyHP(action.attackerHPAfter);
             }
 
-            UpdateHPDisplay();
-
-            // Pause between actions
             yield return new WaitForSeconds(delayBetweenActions);
         }
 
-        // Battle finished
+        // Wait for HP animation to complete
+        yield return new WaitForSeconds(hpAnimDuration);
+
         yield return new WaitForSeconds(resultShowDelay);
         ShowResult();
     }
@@ -255,15 +300,9 @@ public class BattleUI : MonoBehaviour
     void OnActionButtonPressed()
     {
         if (!battleFinished)
-        {
-            // SKIP: jump to end
             SkipToEnd();
-        }
         else
-        {
-            // CONTINUE: close battle screen
             OnBattleUIFinished?.Invoke();
-        }
     }
 
     void SkipToEnd()
@@ -276,7 +315,6 @@ public class BattleUI : MonoBehaviour
             playbackCoroutine = null;
         }
 
-        // Jump HP to final values
         if (result.actions.Count > 0)
         {
             var lastAction = result.actions[result.actions.Count - 1];
@@ -291,6 +329,11 @@ public class BattleUI : MonoBehaviour
                 displayedPlayerHP = lastAction.defenderHPAfter;
             }
         }
+
+        targetPlayerHP = displayedPlayerHP;
+        targetEnemyHP = displayedEnemyHP;
+        playerHPAnimating = false;
+        enemyHPAnimating = false;
         UpdateHPDisplay();
 
         ShowResult();
@@ -301,22 +344,18 @@ public class BattleUI : MonoBehaviour
         battleFinished = true;
 
         if (actionButtonText != null) actionButtonText.text = "Continue";
-
         if (resultPanel != null) resultPanel.SetActive(true);
 
         if (result.playerWon)
         {
             if (resultTitleText != null)
                 resultTitleText.text = "You've won the battle! Rewards:";
-
             ShowRewards();
         }
         else
         {
             if (resultTitleText != null)
                 resultTitleText.text = "You've lost the battle.";
-
-            // Hide reward row on loss
             if (rewardRow != null) rewardRow.SetActive(false);
             if (itemDropDisplay != null) itemDropDisplay.SetActive(false);
         }
@@ -328,16 +367,14 @@ public class BattleUI : MonoBehaviour
 
         if (rewardRow != null) rewardRow.SetActive(true);
 
-        // XP
         if (rewardXPText != null)
             rewardXPText.text = FormatNumber(setup.rewards.xp);
         if (rewardXPIcon != null)
         {
-            Sprite xpSprite = CurrencyIcons.Energy; // XP uses energy-like icon or custom
+            Sprite xpSprite = CurrencyIcons.Energy;
             if (xpSprite != null) rewardXPIcon.sprite = xpSprite;
         }
 
-        // Gold
         if (rewardGoldText != null)
             rewardGoldText.text = FormatNumber(setup.rewards.gold);
         if (rewardGoldIcon != null)
@@ -346,7 +383,6 @@ public class BattleUI : MonoBehaviour
             if (goldSprite != null) rewardGoldIcon.sprite = goldSprite;
         }
 
-        // Shadow Essence
         if (rewardEssenceText != null)
             rewardEssenceText.text = FormatNumber(setup.rewards.essence);
         if (rewardEssenceIcon != null)
@@ -355,7 +391,6 @@ public class BattleUI : MonoBehaviour
             if (essenceSprite != null) rewardEssenceIcon.sprite = essenceSprite;
         }
 
-        // Item drop
         if (setup.rewards.droppedItem != null && itemDropDisplay != null)
         {
             itemDropDisplay.SetActive(true);
@@ -380,20 +415,23 @@ public class BattleUI : MonoBehaviour
     {
         switch (pc)
         {
-            case PlayerClass.Warrior:       return WeaponType.Sword;
-            case PlayerClass.Assassine:     return WeaponType.Dagger;
-            case PlayerClass.Bogenschuetze: return WeaponType.Bow;
-            case PlayerClass.Magier:        return WeaponType.Staff;
-            case PlayerClass.Nekromant:     return WeaponType.Scythe;
-            default:                        return WeaponType.Sword;
+            case PlayerClass.Warrior:     return WeaponType.Sword;
+            case PlayerClass.Assassin:    return WeaponType.Dagger;
+            case PlayerClass.Archer:      return WeaponType.Bow;
+            case PlayerClass.Mage:        return WeaponType.Grimoire;
+            case PlayerClass.Necromancer: return WeaponType.Scythe;
+            default:                      return WeaponType.Sword;
         }
     }
 
+    /// <summary>
+    /// Format number with dots as thousands separators.
+    /// e.g. 15000123 → "15.000.123"
+    /// </summary>
     static string FormatNumber(long value)
     {
-        if (value >= 1_000_000_000L) return $"{value / 1_000_000_000f:0.0}B";
-        if (value >= 1_000_000L) return $"{value / 1_000_000f:0.0}M";
-        if (value >= 10_000L) return $"{value / 1_000f:0.0}K";
-        return value.ToString();
+        return value.ToString("#,0").Replace(',', '.');
     }
+
+    static float EaseOutQuad(float t) => 1f - (1f - t) * (1f - t);
 }

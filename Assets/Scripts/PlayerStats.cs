@@ -107,77 +107,80 @@ public class PlayerStats : MonoBehaviour
     }
 
     /// <summary>
+    /// Returns the aura multiplier: 1 + (levelAuraBonus + equipAuraBonus) / 100.
+    /// This multiplier is applied to ALL stats at the end of RecalculateStats.
+    /// </summary>
+    public float GetAuraMultiplier()
+    {
+        return 1f + (auraBonusPercent + bonusAuraPercent) / 100f;
+    }
+
+    /// <summary>
     /// Recalculates all derived stats from base + equipment bonuses + class passives.
+    /// Aura Bonus is applied as a final multiplier to ALL stats (no double-dipping).
     ///
     /// Class Passives:
-    ///   Assassine:      +20% Speed, +15% Crit Rate
-    ///   Warrior:        +15% Max HP, Armor cap raised from 50% to 60%
-    ///   Bogenschuetze:  +25% Crit Damage, +10% Speed
-    ///   Magier:         +25% Damage
-    ///   Nekromant:      +15% Max HP (lifesteal 15% handled in CombatResolver)
+    ///   Assassin:     +20% Speed, +15% Crit Rate
+    ///   Warrior:      +15% Max HP, Armor cap raised from 50% to 60%
+    ///   Archer:       +25% Crit Damage, +10% Speed
+    ///   Mage:         +25% Damage
+    ///   Necromancer:  +15% Max HP (lifesteal 15% handled in CombatResolver)
     /// </summary>
     public void RecalculateStats()
     {
-        // Effective main stats (base + equipment)
+        // Effective main stats (base + equipment) — no aura yet
         int effSTR = STR + bonusSTR;
         int effDEX = DEX + bonusDEX;
         int effINT = INT + bonusINT;
         int effVIT = VIT + bonusVIT;
 
-        // Aura bonus from level
+        // Aura bonus from level progression
         auraBonusPercent = (level - 1) * 1.5f;
-        float auraMultiplier = 1f + (auraBonusPercent + bonusAuraPercent) / 100f;
+        float auraMultiplier = GetAuraMultiplier();
 
-        // ===== HP = VIT * 15 * (1 + level * 0.02) * auraMultiplier =====
-        float rawHP = effVIT * 15f * (1f + level * 0.02f) * auraMultiplier;
-
-        // Class HP bonuses
+        // ===== HP = VIT * 15 * (1 + level * 0.02) =====
+        float rawHP = effVIT * 15f * (1f + level * 0.02f);
         switch (playerClass)
         {
-            case PlayerClass.Warrior:   rawHP *= 1.15f; break; // +15% HP
-            case PlayerClass.Nekromant:  rawHP *= 1.15f; break; // +15% HP
+            case PlayerClass.Warrior:     rawHP *= 1.15f; break;
+            case PlayerClass.Necromancer: rawHP *= 1.15f; break;
         }
-        maxHP = System.Math.Max(1L, (long)rawHP);
 
-        // ===== Damage = mainStat * weaponDmg * (1 + level*0.03) * auraMultiplier =====
-        // Weapon damage: average of min/max for the derived stat display
-        // Actual combat uses per-attack rolls (see CombatResolver)
+        // ===== Damage = mainStat * weaponDmg * (1 + level*0.03) =====
         int classMainStat = GetClassMainStatValue(effSTR, effDEX, effINT, effVIT);
         float avgWeaponDmg = Mathf.Max(1f, (bonusWeaponDmgMin + bonusWeaponDmgMax) / 2f);
-        float rawDamage = classMainStat * avgWeaponDmg * (1f + level * 0.03f) * auraMultiplier;
-
-        // Class damage bonuses
-        if (playerClass == PlayerClass.Magier)
-            rawDamage *= 1.25f; // +25% Damage
-        damage = System.Math.Max(1L, (long)rawDamage);
+        float rawDamage = classMainStat * avgWeaponDmg * (1f + level * 0.03f);
+        if (playerClass == PlayerClass.Mage)
+            rawDamage *= 1.25f;
 
         // ===== Armor = directly from equipped armor items =====
-        armor = bonusArmor;
+        int rawArmor = bonusArmor;
 
-        // ===== Crit Rate = 15% base + bonusCritRate, HARD CAP 100% =====
+        // ===== Crit Rate = 15% base + bonusCritRate =====
         float rawCritRate = 15f + bonusCritRate;
-        // Class crit rate bonus
-        if (playerClass == PlayerClass.Assassine)
-            rawCritRate += 15f; // +15% Crit Rate
-        critRate = Mathf.Clamp(rawCritRate, 0f, 100f);
+        if (playerClass == PlayerClass.Assassin)
+            rawCritRate += 15f;
 
         // ===== Crit Damage = 50% base + bonusCritDamage =====
-        // Crit DMG is ADDITIONAL to normal damage (50% = 1.5x total)
         float rawCritDamage = 50f + bonusCritDamage;
-        // Class crit damage bonus
-        if (playerClass == PlayerClass.Bogenschuetze)
-            rawCritDamage += 25f; // +25% Crit Damage (additive to base 50%)
-        critDamage = rawCritDamage;
+        if (playerClass == PlayerClass.Archer)
+            rawCritDamage += 25f;
 
         // ===== Speed = 100 + DEX*0.5 + bonusSpeed =====
         float rawSpeed = 100f + effDEX * 0.5f + bonusSpeed;
-        // Class speed bonuses
         switch (playerClass)
         {
-            case PlayerClass.Assassine:     rawSpeed *= 1.20f; break; // +20% Speed
-            case PlayerClass.Bogenschuetze: rawSpeed *= 1.10f; break; // +10% Speed
+            case PlayerClass.Assassin: rawSpeed *= 1.20f; break;
+            case PlayerClass.Archer:   rawSpeed *= 1.10f; break;
         }
-        speed = rawSpeed;
+
+        // ===== Apply Aura Bonus to ALL stats =====
+        maxHP = System.Math.Max(1L, (long)(rawHP * auraMultiplier));
+        damage = System.Math.Max(1L, (long)(rawDamage * auraMultiplier));
+        armor = Mathf.Max(0, Mathf.RoundToInt(rawArmor * auraMultiplier));
+        critRate = Mathf.Clamp(rawCritRate * auraMultiplier, 0f, 100f);
+        critDamage = rawCritDamage * auraMultiplier;
+        speed = rawSpeed * auraMultiplier;
 
         onStatsChanged?.Invoke();
     }
@@ -189,12 +192,12 @@ public class PlayerStats : MonoBehaviour
     {
         switch (playerClass)
         {
-            case PlayerClass.Assassine:     return effDEX;
-            case PlayerClass.Warrior:       return effSTR;
-            case PlayerClass.Bogenschuetze: return effDEX;
-            case PlayerClass.Magier:        return effINT;
-            case PlayerClass.Nekromant:     return effINT;
-            default:                        return effSTR;
+            case PlayerClass.Assassin:    return effDEX;
+            case PlayerClass.Warrior:     return effSTR;
+            case PlayerClass.Archer:      return effDEX;
+            case PlayerClass.Mage:        return effINT;
+            case PlayerClass.Necromancer: return effINT;
+            default:                      return effSTR;
         }
     }
 
@@ -205,27 +208,28 @@ public class PlayerStats : MonoBehaviour
     {
         switch (playerClass)
         {
-            case PlayerClass.Assassine:     return StatType.DEX;
-            case PlayerClass.Warrior:       return StatType.STR;
-            case PlayerClass.Bogenschuetze: return StatType.DEX;
-            case PlayerClass.Magier:        return StatType.INT;
-            case PlayerClass.Nekromant:     return StatType.INT;
-            default:                        return StatType.STR;
+            case PlayerClass.Assassin:    return StatType.DEX;
+            case PlayerClass.Warrior:     return StatType.STR;
+            case PlayerClass.Archer:      return StatType.DEX;
+            case PlayerClass.Mage:        return StatType.INT;
+            case PlayerClass.Necromancer: return StatType.INT;
+            default:                      return StatType.STR;
         }
     }
 
     /// <summary>
-    /// Returns the effective value of the class's primary damage stat.
-    /// Used for cross-stat damage reduction calculations.
+    /// Returns the effective value of the class's primary damage stat,
+    /// including aura bonus (so CombatResolver can use it directly).
     /// </summary>
     public int GetEffectiveMainStat()
     {
-        return GetClassMainStatValue(STR + bonusSTR, DEX + bonusDEX, INT + bonusINT, VIT + bonusVIT);
+        int raw = GetClassMainStatValue(STR + bonusSTR, DEX + bonusDEX, INT + bonusINT, VIT + bonusVIT);
+        return Mathf.RoundToInt(raw * GetAuraMultiplier());
     }
 
     /// <summary>
     /// Returns the armor damage reduction cap for this class.
-    /// Tank has 60% cap (passive), all others 50%.
+    /// Warrior has 60% cap (passive), all others 50%.
     /// </summary>
     public float GetArmorCap()
     {

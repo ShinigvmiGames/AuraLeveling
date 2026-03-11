@@ -50,7 +50,7 @@ void Awake()
         EnsureGates();
     }
 
-    
+
 
     void EnsureRefs()
     {
@@ -196,60 +196,120 @@ void Awake()
         }
     }
 
+    /// <summary>
+    /// Generate enemy stats based on player level and gate rank.
+    /// Enemies are always the same level as the player, with a random class.
+    /// Stats are derived from what a player at this level would roughly have,
+    /// scaled by rank difficulty (E-C: easy, B-A: challenging, S: very hard).
+    /// Enemies are intentionally slightly weaker to keep the game fun.
+    /// </summary>
     void GenerateEnemyStats(GateData gate)
     {
         if (player == null) player = FindObjectOfType<PlayerStats>();
 
-        // Rank difficulty multiplier
-        float mult = 1f;
-        switch (gate.rank)
-        {
-            case GateRank.ERank: mult = Random.Range(0.80f, 0.95f); break;
-            case GateRank.DRank: mult = Random.Range(0.95f, 1.05f); break;
-            case GateRank.CRank: mult = Random.Range(1.05f, 1.20f); break;
-            case GateRank.BRank: mult = Random.Range(1.20f, 1.40f); break;
-            case GateRank.ARank: mult = Random.Range(1.40f, 1.65f); break;
-            case GateRank.SRank: mult = Random.Range(1.65f, 2.05f); break;
-        }
+        int lvl = player != null ? player.level : 1;
 
         // Random enemy class
         var classes = System.Enum.GetValues(typeof(PlayerClass));
         gate.enemyClass = (PlayerClass)classes.GetValue(Random.Range(0, classes.Length));
 
-        if (player != null)
+        // Rank power scaling:
+        //   E-C rank: below average gear → easy for well-geared players
+        //   B-A rank: average to strong → need decent gear
+        //   S rank: strong → need near-best gear, but still beatable
+        float rankPower;
+        switch (gate.rank)
         {
-            // Mirror player stats with rank multiplier
-            gate.enemyHP = System.Math.Max(1L, (long)(player.maxHP * mult));
-            gate.enemyDamage = System.Math.Max(1L, (long)(player.damage * mult));
-            gate.enemyArmor = Mathf.Max(0, Mathf.RoundToInt(player.armor * mult));
-            gate.enemyCritRate = Mathf.Clamp(player.critRate * mult * 0.8f, 0f, 100f);
-            gate.enemyCritDamage = Mathf.Max(30f, player.critDamage * mult * 0.85f);
-            gate.enemySpeed = Mathf.Max(50f, player.speed * mult * 0.95f);
+            case GateRank.ERank: rankPower = Random.Range(0.40f, 0.55f); break;
+            case GateRank.DRank: rankPower = Random.Range(0.55f, 0.70f); break;
+            case GateRank.CRank: rankPower = Random.Range(0.70f, 0.85f); break;
+            case GateRank.BRank: rankPower = Random.Range(0.85f, 1.00f); break;
+            case GateRank.ARank: rankPower = Random.Range(1.00f, 1.15f); break;
+            case GateRank.SRank: rankPower = Random.Range(1.10f, 1.25f); break;
+            default: rankPower = 0.5f; break;
+        }
 
-            // Main stats for cross-stat reduction
-            long baseAura = player.GetAura();
-            gate.enemyAura = (int)Mathf.Min(baseAura * mult, int.MaxValue);
-            int points = Mathf.Max(4, Mathf.RoundToInt(gate.enemyAura * 0.005f));
-            gate.enemySTR = Random.Range(points / 5, Mathf.Max(points / 5 + 1, points / 3));
-            gate.enemyVIT = Random.Range(points / 5, Mathf.Max(points / 5 + 1, points / 3));
-            gate.enemyDEX = Random.Range(points / 5, Mathf.Max(points / 5 + 1, points / 3));
-            gate.enemyINT = Mathf.Max(0, points - (gate.enemySTR + gate.enemyVIT + gate.enemyDEX));
-        }
-        else
+        // === Base stats from level (simulates stat point allocation) ===
+        // A character gets 3 points per level, distributed:
+        //   ~55% primary, ~25% VIT, ~10% each to two others
+        int totalPoints = 5 + (lvl - 1) * 3;
+        int basePrimary = 5 + Mathf.RoundToInt((lvl - 1) * 3f * 0.55f);
+        int baseVIT = 5 + Mathf.RoundToInt((lvl - 1) * 3f * 0.25f);
+        int baseOther = 5 + Mathf.RoundToInt((lvl - 1) * 3f * 0.10f);
+
+        // Virtual gear bonus: scales with level and rank
+        // Represents equipment bonuses an enemy of this difficulty would have
+        float gearScale = lvl * 2f * rankPower;
+        int gearPrimary = Mathf.RoundToInt(gearScale * 0.5f);
+        int gearVIT = Mathf.RoundToInt(gearScale * 0.3f);
+        int gearOther = Mathf.RoundToInt(gearScale * 0.2f);
+
+        int effPrimary = basePrimary + gearPrimary;
+        int effVIT = baseVIT + gearVIT;
+        int effOther = baseOther + gearOther;
+
+        // Assign stats based on class
+        switch (gate.enemyClass)
         {
-            // Fallback for when player not found
-            gate.enemyHP = 76;
-            gate.enemyDamage = 5;
-            gate.enemyArmor = 0;
-            gate.enemyCritRate = 15f;
-            gate.enemyCritDamage = 50f;
-            gate.enemySpeed = 100f;
-            gate.enemyAura = 10;
-            gate.enemySTR = 5;
-            gate.enemyVIT = 5;
-            gate.enemyDEX = 5;
-            gate.enemyINT = 5;
+            case PlayerClass.Assassin:
+            case PlayerClass.Archer:
+                gate.enemyDEX = effPrimary;
+                gate.enemySTR = effOther;
+                gate.enemyINT = effOther;
+                break;
+            case PlayerClass.Warrior:
+                gate.enemySTR = effPrimary;
+                gate.enemyDEX = effOther;
+                gate.enemyINT = effOther;
+                break;
+            case PlayerClass.Mage:
+            case PlayerClass.Necromancer:
+                gate.enemyINT = effPrimary;
+                gate.enemySTR = effOther;
+                gate.enemyDEX = effOther;
+                break;
         }
+        gate.enemyVIT = effVIT;
+
+        // === Derived stats (same formulas as PlayerStats) ===
+
+        // HP: VIT * 15 * (1 + level * 0.02)
+        float rawHP = effVIT * 15f * (1f + lvl * 0.02f);
+        if (gate.enemyClass == PlayerClass.Warrior || gate.enemyClass == PlayerClass.Necromancer)
+            rawHP *= 1.15f; // class HP passive
+        gate.enemyHP = System.Math.Max(1L, (long)rawHP);
+
+        // Damage: mainStat * virtualWeaponAvg * (1 + level * 0.03)
+        // Virtual weapon damage simulates what an enemy at this gear level would deal
+        float virtualWeaponAvg = Mathf.Max(1f, lvl * 4.5f * rankPower + Random.Range(-2f, 2f));
+        float rawDmg = effPrimary * virtualWeaponAvg * (1f + lvl * 0.03f);
+        if (gate.enemyClass == PlayerClass.Mage) rawDmg *= 1.25f; // class damage passive
+        gate.enemyDamage = System.Math.Max(1L, (long)rawDmg);
+
+        // Armor: scales with level and rank
+        gate.enemyArmor = Mathf.Max(0, Mathf.RoundToInt(lvl * 3.5f * rankPower));
+
+        // Crit Rate: base 15% + class bonus + level scaling
+        float baseCritRate = 15f;
+        if (gate.enemyClass == PlayerClass.Assassin) baseCritRate += 15f;
+        gate.enemyCritRate = Mathf.Clamp(baseCritRate + lvl * 0.15f * rankPower, 0f, 100f);
+
+        // Crit Damage: base 50% + class bonus + level scaling
+        float baseCritDmg = 50f;
+        if (gate.enemyClass == PlayerClass.Archer) baseCritDmg += 25f;
+        gate.enemyCritDamage = Mathf.Max(30f, baseCritDmg + lvl * 0.3f * rankPower);
+
+        // Speed: base 100 + DEX*0.5 + class bonus
+        int speedDEX = (gate.enemyClass == PlayerClass.Assassin || gate.enemyClass == PlayerClass.Archer)
+            ? effPrimary : effOther;
+        float rawSpeed = 100f + speedDEX * 0.5f;
+        if (gate.enemyClass == PlayerClass.Assassin) rawSpeed *= 1.20f;
+        else if (gate.enemyClass == PlayerClass.Archer) rawSpeed *= 1.10f;
+        gate.enemySpeed = Mathf.Max(50f, rawSpeed);
+
+        // Aura for display/cross-stat
+        gate.enemyAura = (int)Mathf.Min(
+            (gate.enemySTR + gate.enemyDEX + gate.enemyINT + gate.enemyVIT) * 100f, int.MaxValue);
     }
 
     // ---------- Accept / Run / Resolve ----------
@@ -280,7 +340,7 @@ void Awake()
         activeGateEndUnix = activeGateStartUnix + activeGate.durationSeconds;
         readyEventFired = false;
 
-        // Once a gate is active, the selection list should be cleared (so we don\'t accept another)
+        // Once a gate is active, the selection list should be cleared (so we don't accept another)
         availableGates.Clear();
 
         if (gateRunningPanel != null)
@@ -453,17 +513,23 @@ void Awake()
     /// <summary>
     /// Pre-roll the item drop for battle reward display.
     /// Returns null if no drop.
+    /// Epic drops on S-Rank use the top 3 rarities from the player's anvil,
+    /// weighted by their actual drop rates.
     /// </summary>
     ItemData RollDropItem(GateData gate)
     {
         EnsureRefs();
         if (gate == null) return null;
 
-        // Epic has priority
+        // Epic has priority (S-Rank only)
         float rollEpic = UnityEngine.Random.Range(0f, 100f);
         if (rollEpic <= gate.epicItemChance)
         {
-            var rarity = RollDropRarity(forceMinimum: ItemRarity.Hero);
+            // Use the top 3 rarities from the anvil, weighted by actual drop rates
+            ItemRarity rarity = ItemRarity.ERank;
+            if (anvil != null)
+                rarity = anvil.RollTopRarities(3);
+
             return GenerateDropItem(rarity, ItemQuality.Epic);
         }
 
@@ -485,18 +551,21 @@ void Awake()
         return GenerateItemFromDatabase(anvil.itemDatabase, player.playerClass, rarity, quality, player.level);
     }
 
-    
+
     void HandleDrops(GateData gate)
     {
         EnsureRefs();
         if (gate == null) return;
 
-        // Epic has priority over random item
+        // Epic has priority over random item (S-Rank only)
         float rollEpic = UnityEngine.Random.Range(0f, 100f);
         if (rollEpic <= gate.epicItemChance)
         {
-            // Epic drop -> at least Hero rarity, guaranteed Epic quality
-            var rarity = RollDropRarity(forceMinimum: ItemRarity.Hero);
+            // Use top 3 rarities from anvil, weighted by actual drop rates
+            ItemRarity rarity = ItemRarity.ERank;
+            if (anvil != null)
+                rarity = anvil.RollTopRarities(3);
+
             TryGrantDropItem(rarity, ItemQuality.Epic, source: "Gate(Epic)");
             return;
         }
@@ -591,7 +660,7 @@ void Awake()
         // Pool = items for this class AND quality
         var pool = db.GetFor(pc, quality);
 
-        // Fallback: if no Epic/Legendary item exists → Normal
+        // Fallback: if no Epic/Legendary item exists -> Normal
         if ((pool == null || pool.Count == 0) && quality != ItemQuality.Normal)
         {
             quality = ItemQuality.Normal;

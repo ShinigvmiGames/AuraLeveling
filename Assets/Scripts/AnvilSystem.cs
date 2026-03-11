@@ -259,6 +259,40 @@ public class AnvilSystem : MonoBehaviour
         return ItemRarity.ERank; // fallback
     }
 
+    /// <summary>
+    /// Roll one of the top N rarities available at the current anvil level,
+    /// weighted by their actual drop rates (normalized to 100%).
+    /// Used for S-Rank epic gate drops.
+    /// </summary>
+    public ItemRarity RollTopRarities(int topN = 3)
+    {
+        var weights = GetRarityWeightsForAnvilLevel(anvilLevel);
+
+        // Sort by rarity tier descending (highest rarity first)
+        weights.Sort((a, b) => b.rarity.CompareTo(a.rarity));
+
+        // Take top N
+        int count = Mathf.Min(topN, weights.Count);
+
+        int totalWeight = 0;
+        for (int i = 0; i < count; i++)
+            totalWeight += weights[i].weight;
+
+        if (totalWeight <= 0) return weights[0].rarity;
+
+        int roll = UnityEngine.Random.Range(1, totalWeight + 1);
+
+        int acc = 0;
+        for (int i = 0; i < count; i++)
+        {
+            acc += weights[i].weight;
+            if (roll <= acc)
+                return weights[i].rarity;
+        }
+
+        return weights[0].rarity; // fallback
+    }
+
     // ========= Upgrade Duration System =========
 
     /// <summary>
